@@ -1,0 +1,79 @@
+[
+  {
+    "id": "fe9899f5-b4a1-42aa-b313-15cfa77ce92d",
+    "site_name": "ArsInstalações",
+    "site_description": "Especialistas em instalações elétricas e hidráulicas.",
+    "contact_email": "contato@arsinstalacoes.com.br",
+    "contact_phone": "(11)96775-3400",
+    "address": "Rua New York, 18",
+    "logo_url": null,
+    "social_links": {
+      "facebook": "",
+      "linkedin": "",
+      "whatsapp": "5511967753400",
+      "instagram": ""
+    },
+    "created_at": "2026-01-25T15:03:35.4173+00:00",
+    "updated_at": "2026-02-07T05:03:04.698+00:00",
+    "image_settings": {
+      "global": {
+        "enabled": true,
+        "quality": 80,
+        "max_width": 1920,
+        "max_height": 1920
+      },
+      "resize": {
+        "enabled": true,
+        "max_width": 1920,
+        "max_height": 1920,
+        "keep_aspect_ratio": true
+      },
+      "contexts": {
+        "pages": {
+          "enabled": true,
+          "max_width": 840,
+          "max_height": 500
+        },
+        "services": {
+          "enabled": true,
+          "max_width": 800,
+          "max_height": 600
+        },
+        "portfolio": {
+          "enabled": true,
+          "max_width": 840,
+          "max_height": 500
+        }
+      },
+      "metadata": {
+        "keep_exif": false
+      },
+      "banner_url": "",
+      "output_formats": [
+        "webp",
+        "jpeg"
+      ],
+      "max_upload_size_mb": 5
+    },
+    "privacy_policy": "<h2>Política de Privacidade</h2><p>Em construção...</p>",
+    "terms_of_use": "<h2>Termos de Uso</h2><p>Em construção...</p>",
+    "seo_keywords": "instalações, elétrica, manutenção, residencial, industrial",
+    "seo_title_suffix": "| ArsInstalações",
+    "not_found_title": "Página não encontrada",
+    "not_found_message": "Desculpe, a página que você está procurando não existe ou foi movida.",
+    "email_settings": {
+      "emailjs": {
+        "publicKey": "",
+        "serviceId": "",
+        "templateId": ""
+      },
+      "provider": "emailjs",
+      "supabase": {
+        "anonKey": "",
+        "functionUrl": ""
+      }
+    },
+    "indexing_enabled": true,
+    "analytics_settings": {}
+  }
+]

@@ -1,0 +1,68 @@
+[
+  {
+    "id": "80c4d7e1-4c8d-414e-a872-c199d7308eac",
+    "title": "Adequação NR-10",
+    "slug": "adequacao-nr10",
+    "short_description": "Adequação de instalações elétricas às normas de segurança da NR-10.",
+    "image_url": "https://vymiwxuizkcvtgrobgro.supabase.co/storage/v1/object/public/media/services/omf8j2ocl0b_1769710430556_opt.webp",
+    "icon": "FileText",
+    "category": "Consultoria",
+    "order": 0,
+    "published": true
+  },
+  {
+    "id": "b686e19c-310b-43dd-b2c0-9e1f4d287a9a",
+    "title": "Instalação de Ar Condicionado Split4",
+    "slug": "instalacao-ar-condicionado-split",
+    "short_description": "Instalação profissional de aparelhos de ar condicionado split com garantia.",
+    "image_url": "https://vymiwxuizkcvtgrobgro.supabase.co/storage/v1/object/public/media/services/omf8j2ocl0b_1769710430556_opt.webp",
+    "icon": "PenTool",
+    "category": "Instalação",
+    "order": 0,
+    "published": true
+  },
+  {
+    "id": "d5f6128f-252d-4150-bd25-e33f4697b3d9",
+    "title": "Manutenção Preventiva Industrial",
+    "slug": "manutencao-preventiva-industrial1",
+    "short_description": "Planos de manutenção programada para indústrias, visando reduzir paradas e custos.",
+    "image_url": "https://vymiwxuizkcvtgrobgro.supabase.co/storage/v1/object/public/media/services/krizsd40hy_1770258076465_opt.webp",
+    "icon": "Settings",
+    "category": "Manutenção",
+    "order": 0,
+    "published": true
+  },
+  {
+    "id": "94892f67-8744-4a06-9035-3af0eb059b19",
+    "title": "Projeto Elétrico Residencial",
+    "slug": "projeto-eletrico-residencial",
+    "short_description": "Elaboração de projetos elétricos completos para residências, seguindo a norma NBR 5410.",
+    "image_url": "https://vymiwxuizkcvtgrobgro.supabase.co/storage/v1/object/public/media/ltw8kjni5cp_1769706785132_opt.webp",
+    "icon": "FileText",
+    "category": "Projetos",
+    "order": 1,
+    "published": true
+  },
+  {
+    "id": "787606e8-4908-4576-9e26-b3826b6d7b4e",
+    "title": "Reforma de Quadro de Energia",
+    "slug": "reforma-quadro-energia",
+    "short_description": "Modernização e organização de quadros de distribuição de energia.",
+    "image_url": "https://vymiwxuizkcvtgrobgro.supabase.co/storage/v1/object/public/media/rj689x4c91c_1769705183537_opt.webp",
+    "icon": "Settings",
+    "category": "Manutenção",
+    "order": 2,
+    "published": true
+  },
+  {
+    "id": "ae8e33ed-6490-42fb-acf8-1bdf24cf2233",
+    "title": "Laudo Técnico SPDA",
+    "slug": "laudo-tecnico-spda",
+    "short_description": "Vistoria e emissão de laudo para Sistemas de Proteção contra Descargas Atmosféricas.",
+    "image_url": "https://vymiwxuizkcvtgrobgro.supabase.co/storage/v1/object/public/media/evb6ijx3s4i_1769708919726_opt.webp",
+    "icon": "FileText",
+    "category": "Laudos",
+    "order": 3,
+    "published": true
+  }
+]

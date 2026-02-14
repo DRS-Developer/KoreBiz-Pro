@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>ArsInstalações</title>
+    
+    <!-- Preconnect to Supabase Storage -->
+    <link rel="preconnect" href="https://vymiwxuizkcvtgrobgro.supabase.co" />
+    <link rel="dns-prefetch" href="https://vymiwxuizkcvtgrobgro.supabase.co" />
+
+    <script>
+      // Runtime Configuration Loader
+      (function() {
+        window.ENV = window.ENV || {};
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', '/config.json', false); // Synchronous to ensure config is loaded before app
+        try {
+          xhr.send(null);
+          if (xhr.status === 200) {
+            var config = JSON.parse(xhr.responseText);
+            Object.assign(window.ENV, config);
+          }
+        } catch (e) {
+          // Config file might not exist in dev or vercel env, relying on build-time env vars
+          console.log('No runtime config found, using environment variables.');
+        }
+      })();
+    </script>
+
+    <script type="module">
+      if (import.meta.hot?.on) {
+        import.meta.hot.on('vite:error', (error) => {
+          if (error.err) {
+            console.error(
+              [error.err.message, error.err.frame].filter(Boolean).join('\n'),
+            )
+          }
+        })
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
