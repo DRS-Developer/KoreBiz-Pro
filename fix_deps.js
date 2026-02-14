@@ -1,4 +1,4 @@
-const { execSync } = require('child_process');
+import { execSync } from 'child_process';
 console.log("Starting npm install...");
 try {
   // Try npm.cmd first (Windows batch file, usually works)
