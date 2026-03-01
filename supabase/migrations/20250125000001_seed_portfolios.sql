@@ -12,9 +12,9 @@ VALUES
     'Condomínio Edifício Horizon',
     '2023-11-15',
     'Comercial',
-    'https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069&auto=format&fit=crop',
+    NULL,
     'São Paulo, SP',
-    '["https://images.unsplash.com/photo-1541888946425-d81bb19240f5?q=80&w=2070&auto=format&fit=crop", "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=2071&auto=format&fit=crop"]'::jsonb,
+    '[]'::jsonb,
     true
 ),
 (
@@ -24,7 +24,7 @@ VALUES
     'Condomínio Viva Vida',
     '2023-09-10',
     'Residencial',
-    'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop',
+    NULL,
     'Barueri, SP',
     '[]'::jsonb,
     true
@@ -36,7 +36,7 @@ VALUES
     'Fábrica ABC Ltda',
     '2024-01-05',
     'Industrial',
-    'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=2070&auto=format&fit=crop',
+    NULL,
     'Guarulhos, SP',
     '[]'::jsonb,
     true
@@ -60,7 +60,7 @@ VALUES
     'Shopping Center Osasco',
     '2023-08-15',
     'Comercial',
-    'https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=2070&auto=format&fit=crop',
+    NULL,
     'Osasco, SP',
     '[]'::jsonb,
     true

@@ -34,7 +34,6 @@ const formats = [
   'strike',
   'blockquote',
   'list',
-  'bullet',
   'indent',
   'link',
   'image',

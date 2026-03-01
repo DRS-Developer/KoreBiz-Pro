@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useEditor, EditorContent, BubbleMenu } from '@tiptap/react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -12,6 +12,7 @@ import {
   Quote, Undo, Redo 
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { THEME_COLORS } from '../../constants/themeColors';
 
 interface TiptapEditorProps {
   value: string;
@@ -55,7 +56,7 @@ const MenuBar = ({ editor, onOpenMedia }: { editor: any, onOpenMedia: () => void
     <button
       onClick={(e) => { e.preventDefault(); onClick(); }}
       disabled={disabled}
-      className={`p-2 rounded hover:bg-gray-100 transition-colors ${
+      className={`p-2 rounded ${
         isActive ? 'bg-gray-200 text-blue-600' : 'text-gray-600'
       } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       title={title}
@@ -209,15 +210,20 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
   const [mediaModalOpen, setMediaModalOpen] = useState(false);
   
   // Normalize content to check if it's truly empty
-  const isContentEmpty = (html: string) => {
-    if (!html) return true;
-    const cleanHtml = html.replace(/<[^>]*>?/gm, '').trim();
-    return cleanHtml === '' && !html.includes('<img');
+  const isContentEmpty = (content: string | object | null | undefined) => {
+    if (!content) return true;
+    
+    // If it's an object (JSON), we assume it's valid content for Tiptap
+    if (typeof content !== 'string') {
+      return false; 
+    }
+
+    const cleanHtml = content.replace(/<[^>]*>?/gm, '').trim();
+    return cleanHtml === '' && !content.includes('<img');
   };
 
   const extensions = useMemo(() => [
     StarterKit.configure({
-      history: true,
       link: {
         openOnClick: false,
         HTMLAttributes: {
@@ -225,7 +231,6 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
           class: 'text-blue-600 underline',
         },
       },
-      underline: true,
     }),
     Image.configure({
       HTMLAttributes: {
@@ -264,7 +269,7 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
       // Only update if it's not just a normalization difference
       const isBothEmpty = isContentEmpty(value) && isContentEmpty(editor.getHTML());
       if (!isBothEmpty) {
-        editor.commands.setContent(value || '', false);
+        editor.commands.setContent(value || '', { emitUpdate: false });
       }
     }
   }, [value, editor]);
@@ -298,7 +303,7 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
       {/* CSS para personalizar o Tiptap (ProseMirror) se necessário */}
       <style>{`
         .ProseMirror p.is-editor-empty:first-child::before {
-          color: #adb5bd;
+          color: ${THEME_COLORS.gray.placeholder};
           content: attr(data-placeholder);
           float: left;
           height: 0;

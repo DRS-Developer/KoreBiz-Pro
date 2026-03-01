@@ -1,6 +1,6 @@
 import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, FormProvider } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { ArrowLeft, Save, Loader2, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
@@ -8,13 +8,14 @@ import { toast } from 'sonner';
 import { supabase } from '../../../lib/supabase';
 import ImageUpload from '../../../components/Admin/ImageUpload';
 import SEOSnippetPreview from '../../../components/Admin/SEOSnippetPreview';
+import PageSectionsEditor from '../../../components/Admin/PageSectionsEditor';
 import { useFormGuard } from '../../../hooks/useFormGuard';
 import { useFormDraft } from '../../../hooks/useFormDraft';
 import { useDebounce } from '../../../hooks/useDebounce';
 import { useSlug } from '../../../hooks/useSlug';
 import { useGlobalStore } from '../../../stores/useGlobalStore';
 import UnsavedChangesModal from '../../../components/Admin/UnsavedChangesModal';
-import UnsavedChangesBar from '../../../components/Admin/UnsavedChangesBar';
+import FormSkeleton from '../../../components/Skeletons/FormSkeleton';
 
 // Lazy load heavy components
 const TiptapEditor = lazy(() => import('../../../components/Admin/TiptapEditor'));
@@ -26,6 +27,7 @@ const schema = yup.object({
   meta_title: yup.string().nullable(),
   meta_description: yup.string().nullable(),
   featured_image: yup.string().url('URL inválida').nullable(),
+  sections: yup.mixed().nullable(),
   published: yup.boolean(),
 }).required();
 
@@ -51,15 +53,7 @@ const PageForm: React.FC = () => {
   const draftKey = `page_form_${id || 'new'}`;
   const [draft, setDraft, clearDraft] = useFormDraft<FormData | null>(draftKey, null);
 
-  const {
-    register,
-    handleSubmit,
-    control,
-    setValue,
-    watch,
-    reset,
-    formState: { errors, isDirty },
-  } = useForm<FormData>({
+  const methods = useForm<FormData>({
     mode: 'onSubmit',
     reValidateMode: 'onSubmit',
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -72,8 +66,19 @@ const PageForm: React.FC = () => {
       meta_title: '',
       meta_description: '',
       featured_image: '',
+      sections: {},
     },
   });
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    setValue,
+    watch,
+    reset,
+    formState: { errors, isDirty },
+  } = methods;
 
   // Watch all fields to save draft
   const allFields = watch();
@@ -216,6 +221,7 @@ const PageForm: React.FC = () => {
           meta_title: data.meta_title || '',
           meta_description: data.meta_description || '',
           featured_image: data.featured_image || '',
+          sections: data.sections || {},
           published: data.published,
         });
       }
@@ -327,22 +333,17 @@ const PageForm: React.FC = () => {
   };
 
   if (initialLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        <span className="ml-2 text-gray-600">Carregando dados da página...</span>
-      </div>
-    );
+    return <FormSkeleton />;
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
+    <div className="max-w-4xl mx-auto">
+      <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
           <Link
-            to="/admin/paginas"
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-          >
+          to="/admin/paginas"
+          className="p-2 rounded-full"
+        >
             <ArrowLeft size={24} className="text-gray-600" />
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">
@@ -358,15 +359,9 @@ const PageForm: React.FC = () => {
         onCancel={() => blocker.reset?.()}
       />
 
-      <UnsavedChangesBar
-        visible={isDirty && !showModal && isEditing}
-        onSave={() => handleSubmit(onSubmit, onError)()}
-        onReset={() => reset()}
-        loading={loading}
-      />
-
-      <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-6">
+      <FormProvider {...methods}>
+        <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-6">
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-6">
           <h2 className="text-lg font-semibold text-gray-800 border-b pb-4">Informações Principais</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -393,7 +388,7 @@ const PageForm: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleManualGenerateSlug}
-                  className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                  className="text-xs text-blue-600 flex items-center gap-1"
                   title="Gerar slug baseado no título"
                 >
                   <RefreshCw size={12} /> Gerar Automático
@@ -411,7 +406,7 @@ const PageForm: React.FC = () => {
                 />
                 <div className="absolute right-3 top-2.5 flex items-center pointer-events-none">
                     {slugStatus === 'checking' ? (
-                        <Loader2 className="animate-spin text-blue-500" size={16} />
+                        <Loader2 className="text-blue-500" size={16} />
                     ) : slugStatus === 'available' ? (
                         <CheckCircle className="text-green-500" size={16} />
                     ) : slugStatus === 'duplicate' || slugStatus === 'error' ? (
@@ -505,6 +500,8 @@ const PageForm: React.FC = () => {
               minWidth={840}
               minHeight={500}
               description="Formato recomendado: 840x500px (Proporção 1.68:1)"
+              pageKey="home"
+              role="card"
             />
           </div>
 
@@ -517,13 +514,13 @@ const PageForm: React.FC = () => {
                 name="content"
                 control={control}
                 render={({ field }) => (
-                  <Suspense fallback={<div className="h-64 bg-gray-50 animate-pulse rounded-lg border border-gray-200" />}>
-                    <TiptapEditor
-                      value={field.value as string}
-                      onChange={field.onChange}
-                      placeholder="Conteúdo da página..."
-                    />
-                  </Suspense>
+                  <Suspense fallback={<div className="h-64 bg-gray-50 rounded-lg border border-gray-200" />}>
+              <TiptapEditor
+                value={field.value as any}
+                onChange={field.onChange}
+                placeholder="Conteúdo da página..."
+              />
+            </Suspense>
                 )}
               />
             </div>
@@ -545,23 +542,26 @@ const PageForm: React.FC = () => {
           </div>
         </div>
 
+        <PageSectionsEditor />
+
         <div className="flex justify-end gap-4">
           <Link
             to="/admin/paginas"
-            className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-colors"
+            className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium"
           >
             Cancelar
           </Link>
           <button
             type="submit"
             disabled={loading || slugStatus === 'duplicate'}
-            className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg font-medium disabled:opacity-50"
           >
-            {loading ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
+            {loading ? <Loader2 size={20} /> : <Save size={20} />}
             Salvar Página
           </button>
         </div>
       </form>
+      </FormProvider>
     </div>
   );
 };

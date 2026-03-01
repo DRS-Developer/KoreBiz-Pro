@@ -137,7 +137,7 @@ const MediaManager: React.FC<MediaManagerProps> = ({
     }
   }, [selectedFolder, fetchFiles]);
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  const { getRootProps, getInputProps } = useDropzone({
     onDrop,
     accept: { 'image/*': [] },
     disabled: uploading
@@ -208,7 +208,7 @@ const MediaManager: React.FC<MediaManagerProps> = ({
               key={folder.id}
               type="button"
               onClick={() => setSelectedFolder(folder.id)}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium ${
                 selectedFolder === folder.id 
                   ? 'bg-blue-100 text-blue-700' 
                   : 'text-gray-600 hover:bg-gray-100'
@@ -263,7 +263,7 @@ const MediaManager: React.FC<MediaManagerProps> = ({
               <button
                 type="button"
                 onClick={() => setViewMode('list')}
-                className={`p-1.5 rounded-md transition-all ${viewMode === 'list' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                className={`p-1.5 rounded-md ${viewMode === 'list' ? 'bg-white shadow text-blue-600' : 'text-gray-500'}`}
               >
                 <ListIcon size={18} />
               </button>
@@ -275,7 +275,7 @@ const MediaManager: React.FC<MediaManagerProps> = ({
             <button 
               type="button"
               disabled={uploading}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium disabled:opacity-50"
             >
               <Upload size={18} />
               Upload
@@ -315,15 +315,7 @@ const MediaManager: React.FC<MediaManagerProps> = ({
                       )}
                     </div>
 
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
-                    
-                    {onSelect && (
-                       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg transform scale-95 group-hover:scale-100 transition-transform">
-                            Selecionar
-                          </span>
-                       </div>
-                    )}
+
                   </div>
                 );
               })}
@@ -372,7 +364,7 @@ const MediaManager: React.FC<MediaManagerProps> = ({
                           {new Date(file.created_at).toLocaleDateString()}
                         </td>
                         <td className="px-4 py-3 text-right">
-                          <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100">
                             {onSelect ? (
                               <button 
                                 type="button"
@@ -386,7 +378,7 @@ const MediaManager: React.FC<MediaManagerProps> = ({
                                 <button 
                                   type="button"
                                   onClick={() => setPreviewFile(file)}
-                                  className="p-1.5 text-gray-500 hover:bg-gray-100 rounded"
+                                  className="p-1.5 text-gray-500 rounded"
                                   title="Ver detalhes"
                                 >
                                   <Search size={16} />

@@ -16,33 +16,33 @@ const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           {/* Company Info */}
           <div>
-            <h3 className="text-xl font-bold mb-4">{settings?.site_name || 'ArsInstalações'}</h3>
+            <h3 className="text-xl font-bold mb-4">{settings?.site_name || 'KoreBiz'}</h3>
             <p className="text-gray-400 mb-4">
-              {settings?.site_description || 'Soluções completas em instalações e manutenção para sua empresa e residência.'}
+              {settings?.site_description || 'Soluções inteligentes em instalações e manutenção.'}
             </p>
             
             <div className="flex flex-col space-y-2 mb-4">
-              <Link to="/politica-privacidade" className="text-gray-400 hover:text-white text-sm transition-colors">
+              <Link to="/politica-privacidade" className="text-gray-400 text-sm">
                 Política de Privacidade
               </Link>
-              <Link to="/termos-uso" className="text-gray-400 hover:text-white text-sm transition-colors">
+              <Link to="/termos-uso" className="text-gray-400 text-sm">
                 Termos de Uso
               </Link>
             </div>
 
             <div className="flex space-x-4">
               {socialLinks.facebook && (
-                <a href={socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
+                <a href={socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="text-gray-400">
                   <Facebook size={20} />
                 </a>
               )}
               {socialLinks.instagram && (
-                <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
+                <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="text-gray-400">
                   <Instagram size={20} />
                 </a>
               )}
               {socialLinks.linkedin && (
-                <a href={socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
+                <a href={socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="text-gray-400">
                   <Linkedin size={20} />
                 </a>
               )}
@@ -53,11 +53,13 @@ const Footer: React.FC = () => {
           <div>
             <h4 className="text-lg font-semibold mb-4">Links Rápidos</h4>
             <ul className="space-y-2">
-              <li><Link to="/" className="text-gray-400 hover:text-white transition-colors">Home</Link></li>
-              <li><Link to="/empresa" className="text-gray-400 hover:text-white transition-colors">Empresa</Link></li>
-              <li><Link to="/servicos" className="text-gray-400 hover:text-white transition-colors">Serviços</Link></li>
-              <li><Link to="/portfolio" className="text-gray-400 hover:text-white transition-colors">Portfólio</Link></li>
-              <li><Link to="/contato" className="text-gray-400 hover:text-white transition-colors">Contato</Link></li>
+              <li><Link to="/" className="text-gray-400">Home</Link></li>
+              <li><Link to="/areas-de-atuacao" className="text-gray-400">Áreas de Atuação</Link></li>
+              <li><Link to="/servicos" className="text-gray-400">Serviços</Link></li>
+              <li><Link to="/portfolio" className="text-gray-400">Portfólio</Link></li>
+              <li><Link to="/parceiros" className="text-gray-400">Parceiros</Link></li>
+              <li><Link to="/empresa" className="text-gray-400">Empresa</Link></li>
+              <li><Link to="/contato" className="text-gray-400">Contato</Link></li>
             </ul>
           </div>
 
@@ -65,10 +67,10 @@ const Footer: React.FC = () => {
           <div>
             <h4 className="text-lg font-semibold mb-4">Serviços</h4>
             <ul className="space-y-2">
-              <li><Link to="/areas-de-atuacao" className="text-gray-400 hover:text-white transition-colors">Instalações Elétricas</Link></li>
-              <li><Link to="/areas-de-atuacao" className="text-gray-400 hover:text-white transition-colors">Manutenção Predial</Link></li>
-              <li><Link to="/areas-de-atuacao" className="text-gray-400 hover:text-white transition-colors">Climatização</Link></li>
-              <li><Link to="/areas-de-atuacao" className="text-gray-400 hover:text-white transition-colors">Automação</Link></li>
+              <li><Link to="/areas-de-atuacao" className="text-gray-400">Instalações Elétricas</Link></li>
+              <li><Link to="/areas-de-atuacao" className="text-gray-400">Manutenção Predial</Link></li>
+              <li><Link to="/areas-de-atuacao" className="text-gray-400">Climatização</Link></li>
+              <li><Link to="/areas-de-atuacao" className="text-gray-400">Automação</Link></li>
             </ul>
           </div>
 
@@ -85,7 +87,7 @@ const Footer: React.FC = () => {
                 <a 
                   href={`tel:${settings?.contact_phone?.replace(/\D/g, '')}`} 
                   onClick={() => trackEvent('Contact', 'Click Phone', 'Footer')}
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-gray-400"
                 >
                   {displayPhone}
                 </a>
@@ -95,7 +97,7 @@ const Footer: React.FC = () => {
                 <a 
                   href={`mailto:${settings?.contact_email}`} 
                   onClick={() => trackEvent('Contact', 'Click Email', 'Footer')}
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-gray-400"
                 >
                   {settings?.contact_email || 'contato@arsinstalacoes.com.br'}
                 </a>

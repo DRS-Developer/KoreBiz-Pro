@@ -92,7 +92,7 @@ const MediaPreviewModal: React.FC<MediaPreviewModalProps> = ({
                <button 
                  type="button"
                  onClick={handleCopyUrl}
-                 className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm font-medium"
+                 className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium"
                >
                  <Copy size={16} />
                  Copiar URL
@@ -101,7 +101,7 @@ const MediaPreviewModal: React.FC<MediaPreviewModalProps> = ({
                  href={file.url} 
                  target="_blank" 
                  rel="noopener noreferrer"
-                 className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm font-medium"
+                 className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium"
                >
                  <ExternalLink size={16} />
                  Abrir
@@ -185,7 +185,7 @@ const MediaPreviewModal: React.FC<MediaPreviewModalProps> = ({
              <button 
                type="button"
                onClick={handleDeleteClick}
-               className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 rounded-lg transition-all text-sm font-medium"
+               className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 rounded-lg text-sm font-medium"
              >
                <Trash2 size={16} />
                Excluir Permanentemente

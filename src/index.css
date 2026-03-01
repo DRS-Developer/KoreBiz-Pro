@@ -1,7 +1,28 @@
 @import "tailwindcss";
 
 @layer base {
+  :root {
+    /* Spacing Variables - Standardized Grid System */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    --spacing-2xl: 48px;
+    --container-padding: var(--spacing-lg); /* 24px / p-6 */
+    --header-margin-bottom: var(--spacing-lg); /* 24px / mb-6 */
+    --grid-gap: var(--spacing-lg); /* 24px / gap-6 */
+  }
+
   body {
     @apply text-gray-900 bg-white font-sans;
   }
 }
+
+/* 
+  Utility Classes for Standardization 
+  Usage: Use Tailwind classes that map to these values.
+  p-6 = 1.5rem = 24px = --spacing-lg
+  gap-6 = 1.5rem = 24px = --spacing-lg
+  mb-6 = 1.5rem = 24px = --spacing-lg
+*/

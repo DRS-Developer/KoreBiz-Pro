@@ -37,6 +37,7 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
       pages: {
         Row: {
@@ -44,6 +45,7 @@ export interface Database {
           slug: string
           title: string
           content: Json
+          sections: Json
           meta_title: string | null
           meta_description: string | null
           featured_image: string | null
@@ -56,6 +58,7 @@ export interface Database {
           slug: string
           title: string
           content?: Json
+          sections?: Json
           meta_title?: string | null
           meta_description?: string | null
           featured_image?: string | null
@@ -68,6 +71,7 @@ export interface Database {
           slug?: string
           title?: string
           content?: Json
+          sections?: Json
           meta_title?: string | null
           meta_description?: string | null
           featured_image?: string | null
@@ -75,6 +79,31 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
+      }
+      home_content: {
+        Row: {
+          id: string
+          section_key: string
+          content: Json
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          section_key: string
+          content?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          section_key?: string
+          content?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       services: {
         Row: {
@@ -119,6 +148,7 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
       areas: {
         Row: {
@@ -154,6 +184,49 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
+      }
+      practice_areas: {
+        Row: {
+          id: string
+          title: string
+          description: string | null
+          image_url: string | null
+          link: string | null
+          order_index: number
+          is_active: boolean
+          what_we_offer: Json | null
+          methodology: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          description?: string | null
+          image_url?: string | null
+          link?: string | null
+          order_index?: number
+          is_active?: boolean
+          what_we_offer?: Json | null
+          methodology?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          description?: string | null
+          image_url?: string | null
+          link?: string | null
+          order_index?: number
+          is_active?: boolean
+          what_we_offer?: Json | null
+          methodology?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       portfolios: {
         Row: {
@@ -203,38 +276,43 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
       partners: {
         Row: {
           id: string
           name: string
+          description: string | null
           logo_url: string | null
           website_url: string | null
-          order: number
-          published: boolean
+          order_index: number
+          is_active: boolean
           created_at: string
           updated_at: string
         }
         Insert: {
           id?: string
           name: string
+          description?: string | null
           logo_url?: string | null
           website_url?: string | null
-          order?: number
-          published?: boolean
+          order_index?: number
+          is_active?: boolean
           created_at?: string
           updated_at?: string
         }
         Update: {
           id?: string
           name?: string
+          description?: string | null
           logo_url?: string | null
           website_url?: string | null
-          order?: number
-          published?: boolean
+          order_index?: number
+          is_active?: boolean
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
       contacts: {
         Row: {
@@ -267,6 +345,7 @@ export interface Database {
           status?: 'new' | 'read' | 'archived'
           created_at?: string
         }
+        Relationships: []
       }
       site_settings: {
         Row: {
@@ -287,6 +366,8 @@ export interface Database {
           not_found_message: string | null
           email_settings: Json
           analytics_settings: Json
+          map_settings: Json
+          layout_settings: Json
           indexing_enabled: boolean
           created_at: string
           updated_at: string
@@ -309,6 +390,8 @@ export interface Database {
           not_found_message?: string | null
           email_settings?: Json
           analytics_settings?: Json
+          map_settings?: Json
+          layout_settings?: Json
           indexing_enabled?: boolean
           created_at?: string
           updated_at?: string
@@ -331,11 +414,141 @@ export interface Database {
           not_found_message?: string | null
           email_settings?: Json
           analytics_settings?: Json
+          map_settings?: Json
+          layout_settings?: Json
           indexing_enabled?: boolean
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
+      }
+      performance_metrics: {
+        Row: {
+          id: string
+          metric_name: string
+          value: number
+          rating: string | null
+          path: string | null
+          user_agent: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          metric_name: string
+          value: number
+          rating?: string | null
+          path?: string | null
+          user_agent?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          metric_name?: string
+          value?: number
+          rating?: string | null
+          path?: string | null
+          user_agent?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      system_modules: {
+        Row: {
+          id: string
+          key: string
+          name: string
+          is_active: boolean
+          updated_at: string
+          updated_by: string
+        }
+        Insert: {
+          id?: string
+          key: string
+          name: string
+          is_active?: boolean
+          updated_at?: string
+          updated_by?: string
+        }
+        Update: {
+          id?: string
+          key?: string
+          name?: string
+          is_active?: boolean
+          updated_at?: string
+          updated_by?: string
+        }
+        Relationships: []
+      }
+      audit_logs: {
+        Row: {
+          id: string
+          action: string
+          details: Json | null
+          user_id: string | null
+          path: string | null
+          user_agent: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          action: string
+          details?: Json | null
+          user_id?: string | null
+          path?: string | null
+          user_agent?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          action?: string
+          details?: Json | null
+          user_id?: string | null
+          path?: string | null
+          user_agent?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      media_files: {
+        Row: {
+          id: string
+          filename: string
+          url: string
+          size: number | null
+          width: number | null
+          height: number | null
+          mime_type: string | null
+          folder: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          filename: string
+          url: string
+          size?: number | null
+          width?: number | null
+          height?: number | null
+          mime_type?: string | null
+          folder?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          filename?: string
+          url?: string
+          size?: number | null
+          width?: number | null
+          height?: number | null
+          mime_type?: string | null
+          folder?: string
+          created_at?: string
+        }
+        Relationships: []
       }
     }
+    Views: { [_ in never]: never }
+    Functions: { [_ in never]: never }
+    Enums: { [_ in never]: never }
+    CompositeTypes: { [_ in never]: never }
   }
 }

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Loader2, Database, CheckCircle2 } from 'lucide-react';
+import { Database } from 'lucide-react';
 import { useGlobalStore } from '../stores/useGlobalStore';
+import { toast } from 'sonner';
 
 interface AppLoaderProps {
   children: React.ReactNode;
@@ -26,6 +27,7 @@ const AppLoader: React.FC<AppLoaderProps> = ({ children }) => {
     const timeout = setTimeout(() => {
         if (!useGlobalStore.getState().isHydrated) {
             console.warn('Hydration timeout forced. Releasing app anyway.');
+            toast.warning('Carregamento demorando. Continuando com dados em cache.');
             setIsReady(true);
         }
     }, 5000);
@@ -46,6 +48,7 @@ const AppLoader: React.FC<AppLoaderProps> = ({ children }) => {
         setTimeout(() => {
             setProgress(100);
             setStatus('Sistema pronto!');
+            console.log('[AppLoader] Hidratação completa');
             setTimeout(() => setIsReady(true), 500);
         }, 500);
     }
@@ -58,19 +61,19 @@ const AppLoader: React.FC<AppLoaderProps> = ({ children }) => {
       <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-xl text-center">
         <div className="mb-6 flex justify-center relative">
           <div className="relative">
-             <div className="absolute inset-0 bg-blue-100 rounded-full animate-ping opacity-75"></div>
+             <div className="absolute inset-0 bg-blue-100 rounded-full opacity-75"></div>
              <div className="relative bg-blue-600 text-white p-4 rounded-full">
                 <Database size={32} />
              </div>
           </div>
         </div>
         
-        <h2 className="text-xl font-bold text-gray-800 mb-2">ArsInstalações Admin</h2>
+        <h2 className="text-xl font-bold text-gray-800 mb-2">KoreBiz Admin</h2>
         <p className="text-gray-500 text-sm mb-6">{status}</p>
 
         <div className="w-full bg-gray-100 rounded-full h-2 mb-4 overflow-hidden">
           <div 
-            className="bg-blue-600 h-2 rounded-full transition-all duration-500 ease-out"
+            className="bg-blue-600 h-2 rounded-full"
             style={{ width: `${progress}%` }}
           />
         </div>

@@ -30,7 +30,8 @@ function DataTable<T extends { id: string | number }>({
   addButtonLabel,
   addButtonLink,
   editLinkBase,
-  isLoading = false,
+  onEdit: _onEdit,
+  isLoading: _isLoading = false,
   getPreviewLink,
 }: DataTableProps<T>) {
   const [searchTerm, setSearchTerm] = React.useState('');
@@ -76,7 +77,7 @@ function DataTable<T extends { id: string | number }>({
           {addButtonLabel && addButtonLink && (
             <Link
               to={addButtonLink}
-              className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium whitespace-nowrap"
+              className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium whitespace-nowrap"
             >
               <Plus size={18} />
               {addButtonLabel}
@@ -99,16 +100,7 @@ function DataTable<T extends { id: string | number }>({
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {isLoading && filteredData.length === 0 ? (
-              <tr>
-                <td colSpan={columns.length + 1} className="px-6 py-12 text-center text-gray-500">
-                  <div className="flex flex-col items-center justify-center">
-                    <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
-                    <p>Carregando dados...</p>
-                  </div>
-                </td>
-              </tr>
-            ) : filteredData.length === 0 ? (
+            {filteredData.length === 0 ? (
               <tr>
                 <td colSpan={columns.length + 1} className="px-6 py-12 text-center text-gray-500">
                   Nenhum registro encontrado.
@@ -116,7 +108,7 @@ function DataTable<T extends { id: string | number }>({
               </tr>
             ) : (
               filteredData.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+                <tr key={item.id}>
                   {columns.map((col, index) => (
                     <td key={index} className={`px-6 py-4 ${col.className || ''}`}>
                       {typeof col.accessor === 'function'
@@ -134,7 +126,7 @@ function DataTable<T extends { id: string | number }>({
                               href={link}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                              className="p-2 text-gray-600 rounded-full"
                               title="Visualizar página"
                             >
                               <Eye size={18} />
@@ -144,7 +136,7 @@ function DataTable<T extends { id: string | number }>({
                         {(addButtonLink || editLinkBase) && (
                           <Link
                             to={editLinkBase ? `${editLinkBase}/${item.id}` : `${addButtonLink}/${item.id}`}
-                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+                            className="p-2 text-blue-600 rounded-full"
                             title="Editar"
                           >
                             <Edit size={18} />
@@ -153,7 +145,7 @@ function DataTable<T extends { id: string | number }>({
                         {onDelete && (
                           <button
                             onClick={() => handleDeleteClick(item)}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                            className="p-2 text-red-600 rounded-full"
                             title="Excluir"
                           >
                             <Trash2 size={18} />

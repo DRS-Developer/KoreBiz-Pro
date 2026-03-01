@@ -1,11 +1,11 @@
 [
   {
     "id": "fe9899f5-b4a1-42aa-b313-15cfa77ce92d",
-    "site_name": "ArsInstalações",
+    "site_name": "koreBiz",
     "site_description": "Especialistas em instalações elétricas e hidráulicas.",
     "contact_email": "contato@arsinstalacoes.com.br",
     "contact_phone": "(11)96775-3400",
-    "address": "Rua New York, 18",
+    "address": "Rua New York, 18\nVila São Pedro\nSão Bernardo do Campo.",
     "logo_url": null,
     "social_links": {
       "facebook": "",
@@ -14,7 +14,7 @@
       "instagram": ""
     },
     "created_at": "2026-01-25T15:03:35.4173+00:00",
-    "updated_at": "2026-02-07T05:03:04.698+00:00",
+    "updated_at": "2026-03-01T01:05:20.867+00:00",
     "image_settings": {
       "global": {
         "enabled": true,
@@ -58,7 +58,7 @@
     "privacy_policy": "<h2>Política de Privacidade</h2><p>Em construção...</p>",
     "terms_of_use": "<h2>Termos de Uso</h2><p>Em construção...</p>",
     "seo_keywords": "instalações, elétrica, manutenção, residencial, industrial",
-    "seo_title_suffix": "| ArsInstalações",
+    "seo_title_suffix": "| KoreBiz",
     "not_found_title": "Página não encontrada",
     "not_found_message": "Desculpe, a página que você está procurando não existe ou foi movida.",
     "email_settings": {
@@ -74,6 +74,16 @@
       }
     },
     "indexing_enabled": true,
-    "analytics_settings": {}
+    "analytics_settings": {},
+    "primary_color": "#540e5d",
+    "secondary_color": "#29708e",
+    "map_settings": {
+      "lat": -23.55052,
+      "lng": -46.633308,
+      "zoom": 15
+    },
+    "layout_settings": {
+      "topbar_enabled": false
+    }
   }
 ]

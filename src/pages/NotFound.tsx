@@ -23,7 +23,7 @@ const NotFound: React.FC = () => {
         </div>
         
         {loading ? (
-          <div className="animate-pulse space-y-4">
+          <div className="space-y-4">
              <div className="h-8 bg-gray-200 rounded w-3/4 mx-auto"></div>
              <div className="h-4 bg-gray-200 rounded w-full"></div>
              <div className="h-4 bg-gray-200 rounded w-5/6 mx-auto"></div>
@@ -38,7 +38,7 @@ const NotFound: React.FC = () => {
         <div className="pt-4">
           <Link 
             to="/" 
-            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-800 text-white rounded-lg hover:bg-blue-900 transition-colors font-medium shadow-md hover:shadow-lg"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-800 text-white rounded-lg font-medium"
           >
             <Home size={20} />
             Voltar para o Início

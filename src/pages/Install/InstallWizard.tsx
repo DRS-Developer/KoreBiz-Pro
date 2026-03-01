@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Check, Copy, Download, AlertTriangle, Database, Shield, User, Settings, ArrowRight, Loader2, FileText } from 'lucide-react';
+import { Check, Copy, Download, Database, Shield, User, Settings, ArrowRight, Loader2, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { INSTALL_SCHEMA_SQL } from '../../data/install_schema';
 import { INSTALL_DATA_SQL } from '../../data/install_data';
@@ -21,7 +21,6 @@ export default function InstallWizard() {
     url: '',
     key: '',
   });
-  const [testStatus, setTestStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [adminData, setAdminData] = useState({
     email: '',
     password: '',
@@ -59,12 +58,10 @@ export default function InstallWizard() {
       }
       
       setTempClient(client);
-      setTestStatus('success');
       toast.success('Conexão estabelecida com sucesso!');
       handleNext();
     } catch (err: any) {
       console.error(err);
-      setTestStatus('error');
       toast.error('Falha na conexão. Verifique a URL e a Chave.');
     } finally {
       setLoading(false);
@@ -107,7 +104,7 @@ export default function InstallWizard() {
     }
     
     setLoading(true);
-    const { data, error } = await tempClient.auth.signUp({
+    const { error } = await tempClient.auth.signUp({
       email: adminData.email,
       password: adminData.password,
       options: {
@@ -161,7 +158,7 @@ export default function InstallWizard() {
             </div>
             <button 
               onClick={handleNext}
-              className="mt-4 flex items-center bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              className="mt-4 flex items-center bg-blue-600 text-white px-6 py-2 rounded-lg"
             >
               Começar <ArrowRight className="ml-2 w-4 h-4" />
             </button>
@@ -196,9 +193,9 @@ export default function InstallWizard() {
             <button 
               onClick={testConnection}
               disabled={loading}
-              className="mt-4 flex items-center bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+              className="mt-4 flex items-center bg-blue-600 text-white px-6 py-2 rounded-lg disabled:opacity-50"
             >
-              {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              {loading ? <Loader2 className="w-4 h-4 mr-2" /> : null}
               Testar Conexão
             </button>
           </div>
@@ -213,7 +210,7 @@ export default function InstallWizard() {
             <div className="bg-gray-800 rounded-lg p-4 relative group">
               <button 
                 onClick={copySchema}
-                className="absolute top-2 right-2 bg-white/10 hover:bg-white/20 text-white p-2 rounded transition-colors"
+                className="absolute top-2 right-2 bg-white/10 text-white p-2 rounded"
                 title="Copiar SQL"
               >
                 <Copy className="w-4 h-4" />
@@ -225,9 +222,9 @@ export default function InstallWizard() {
             <button 
               onClick={checkTables}
               disabled={loading}
-              className="mt-4 flex items-center bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+              className="mt-4 flex items-center bg-green-600 text-white px-6 py-2 rounded-lg disabled:opacity-50"
             >
-              {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              {loading ? <Loader2 className="w-4 h-4 mr-2" /> : null}
               Verificar Tabelas
             </button>
           </div>
@@ -242,7 +239,7 @@ export default function InstallWizard() {
             <div className="bg-gray-800 rounded-lg p-4 relative group">
               <button 
                 onClick={copyData}
-                className="absolute top-2 right-2 bg-white/10 hover:bg-white/20 text-white p-2 rounded transition-colors"
+                className="absolute top-2 right-2 bg-white/10 text-white p-2 rounded"
                 title="Copiar SQL"
               >
                 <Copy className="w-4 h-4" />
@@ -254,7 +251,7 @@ export default function InstallWizard() {
             <div className="flex gap-4">
               <button 
                 onClick={handleNext}
-                className="mt-4 flex items-center bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+                className="mt-4 flex items-center bg-gray-600 text-white px-6 py-2 rounded-lg"
               >
                 Próximo (Pular ou Já Executei)
               </button>
@@ -298,14 +295,14 @@ export default function InstallWizard() {
                <button 
                 onClick={createAdmin}
                 disabled={loading}
-                className="mt-4 flex items-center bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                className="mt-4 flex items-center bg-blue-600 text-white px-6 py-2 rounded-lg disabled:opacity-50"
               >
-                {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                {loading ? <Loader2 className="w-4 h-4 mr-2" /> : null}
                 Criar Usuário
               </button>
               <button 
                 onClick={handleNext}
-                className="mt-4 flex items-center bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition-colors"
+                className="mt-4 flex items-center bg-gray-200 text-gray-700 px-6 py-2 rounded-lg"
               >
                 Pular
               </button>
@@ -323,7 +320,7 @@ export default function InstallWizard() {
                 <h3 className="font-semibold text-gray-800 mb-2">Opção 1: Hospedagem Compartilhada</h3>
                 <button 
                   onClick={downloadConfig}
-                  className="w-full flex items-center justify-center bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+                  className="w-full flex items-center justify-center bg-indigo-600 text-white px-4 py-2 rounded"
                 >
                   <Download className="w-4 h-4 mr-2" />
                   Baixar config.json
@@ -340,7 +337,7 @@ export default function InstallWizard() {
             </div>
 
             <div className="mt-6 text-center">
-              <a href="/" className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium">
+              <a href="/" className="inline-flex items-center text-blue-600 font-medium">
                 Ir para a Página Inicial <ArrowRight className="ml-1 w-4 h-4" />
               </a>
             </div>
@@ -372,7 +369,7 @@ export default function InstallWizard() {
                 return (
                   <div key={step.id} className="flex flex-col items-center flex-1 relative">
                     <div 
-                      className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-colors z-10
+                      className={`w-10 h-10 rounded-full flex items-center justify-center border-2 z-10
                         ${isActive ? 'border-blue-600 bg-white text-blue-600' : 
                           isCompleted ? 'border-blue-600 bg-blue-600 text-white' : 
                           'border-gray-200 bg-white text-gray-400'}`}

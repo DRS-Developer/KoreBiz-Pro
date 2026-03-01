@@ -15,7 +15,7 @@ const CardSkeleton: React.FC<CardSkeletonProps> = ({
   return (
     <div className={className}>
       {Array.from({ length: count }).map((_, index) => (
-        <div key={index} className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 animate-pulse">
+        <div key={index} className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100">
           {/* Image Skeleton */}
           <div className={clsx("bg-gray-200 w-full", imageHeight)}></div>
           

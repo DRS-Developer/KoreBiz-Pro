@@ -55,7 +55,7 @@ const PagesList: React.FC = () => {
   ];
 
   return (
-    <div className="p-6">
+    <div>
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Gerenciar Páginas</h1>
         <p className="text-gray-600">Crie e edite as páginas institucionais do site.</p>

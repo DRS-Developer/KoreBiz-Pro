@@ -1,5 +1,4 @@
 import React from 'react';
-import { clsx } from 'clsx';
 
 interface PageSkeletonProps {
   type?: 'default' | 'home';
@@ -9,7 +8,7 @@ const PageSkeleton: React.FC<PageSkeletonProps> = ({ type = 'default' }) => {
   if (type === 'home') {
     return (
       <div className="flex flex-col min-h-screen">
-        <section className="relative bg-gray-200 h-[500px] md:h-[600px] flex items-center animate-pulse">
+        <section className="relative bg-gray-200 h-[500px] md:h-[600px] flex items-center">
           <div className="container mx-auto px-4 relative z-10">
             <div className="max-w-3xl space-y-6">
               <div className="h-16 bg-gray-300 rounded w-3/4"></div>
@@ -26,7 +25,7 @@ const PageSkeleton: React.FC<PageSkeletonProps> = ({ type = 'default' }) => {
   }
 
   return (
-    <div className="flex flex-col min-h-screen animate-pulse">
+    <div className="flex flex-col min-h-screen">
       {/* Header Skeleton */}
       <div className="bg-gray-200 h-64 w-full">
         <div className="container mx-auto px-4 py-16 h-full flex flex-col justify-center">

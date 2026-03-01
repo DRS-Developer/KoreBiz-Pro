@@ -1,197 +1,246 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { useGlobalStore, Service, Portfolio, Page } from '../stores/useGlobalStore';
-import { toast } from 'sonner';
+import { useGlobalStore, Service, Portfolio, Page, Profile, PracticeArea } from '../stores/useGlobalStore';
+import { isAllowedImageSource } from '../utils/imageManager';
+
+// Helper to check if we are in a browser environment
+const isBrowser = typeof window !== 'undefined';
+
+// Helper to sanitize data from remote DB (remove blocked URLs)
+const sanitizeData = (data: any[] | any): any => {
+  if (!data) return data;
+  
+  if (Array.isArray(data)) {
+    return data.map(item => sanitizeItem(item));
+  }
+  
+  return sanitizeItem(data);
+};
+
+const sanitizeItem = (item: any): any => {
+  if (!item || typeof item !== 'object') return item;
+  
+  const newItem = { ...item };
+  
+  // Check common image fields
+  if (newItem.image_url && !isAllowedImageSource(newItem.image_url)) {
+    // console.warn(`[RealtimeSync] Sanitized blocked URL: ${newItem.image_url}`);
+    newItem.image_url = null;
+  }
+  
+  if (newItem.icon_url && !isAllowedImageSource(newItem.icon_url)) {
+    newItem.icon_url = null;
+  }
+  
+  if (newItem.avatar_url && !isAllowedImageSource(newItem.avatar_url)) {
+    newItem.avatar_url = null;
+  }
+
+  return newItem;
+};
+
+// Simple deep equal for JSON-serializable data
+function isDeepEqual(a: any, b: any): boolean {
+  try {
+    return JSON.stringify(a) === JSON.stringify(b);
+  } catch {
+    return false;
+  }
+}
+
+// Helper to check if any item in a list has blocked URLs
+const hasBlockedUrls = (data: any[] | any): boolean => {
+  if (!data) return false;
+  
+  if (Array.isArray(data)) {
+    return data.some(item => hasBlockedUrlsItem(item));
+  }
+  
+  return hasBlockedUrlsItem(data);
+};
+
+const hasBlockedUrlsItem = (item: any): boolean => {
+  if (!item || typeof item !== 'object') return false;
+  
+  if (item.image_url && !isAllowedImageSource(item.image_url)) return true;
+  if (item.icon_url && !isAllowedImageSource(item.icon_url)) return true;
+  if (item.avatar_url && !isAllowedImageSource(item.avatar_url)) return true;
+  
+  return false;
+};
 
 export const useRealtimeSync = () => {
-  const { 
-    setServices, setPortfolio, setPages, setSettings, setHydrated,
-    updateService, removeService,
-    updatePortfolio, removePortfolio,
-    updatePage, removePage
-  } = useGlobalStore();
-  const retryRef = useRef<{ count: number; timer: number | null }>({ count: 0, timer: null });
-
+  // We use getState() inside the effect to avoid subscribing the component (App.tsx) 
+  // to store updates, preventing unnecessary re-renders of the root component.
+  
   useEffect(() => {
+    if (!isBrowser) return;
+
     let isMounted = true;
-    let channel: ReturnType<typeof supabase.channel> | null = null;
-
-    const isAbortError = (error: unknown) => {
-      const err = error as { name?: string; message?: string };
-      return err?.name === 'AbortError' || err?.message?.includes('AbortError');
-    };
-    const isNetworkError = (error: unknown) => {
-      const err = error as { message?: string };
-      return err?.message?.includes('Failed to fetch') || err?.message?.includes('NetworkError');
-    };
-
-    const loadStaticFallback = async () => {
-      try {
-        const [servicesRes, portfolioRes, pagesRes, settingsRes] = await Promise.all([
-          fetch('/static-db/services_list.json', { cache: 'no-store' }).then((r) => r.ok ? r.json() : null),
-          fetch('/static-db/portfolio_list.json', { cache: 'no-store' }).then((r) => r.ok ? r.json() : null),
-          fetch('/static-db/pages_list.json', { cache: 'no-store' }).then((r) => r.ok ? r.json() : null),
-          fetch('/static-db/site_settings.json', { cache: 'no-store' }).then((r) => r.ok ? r.json() : null),
-        ]);
-
-        if (!isMounted) return false;
-
-        if (servicesRes) setServices(servicesRes as Service[]);
-        if (portfolioRes) setPortfolio(portfolioRes as Portfolio[]);
-        if (pagesRes) setPages(pagesRes as any[]);
-        if (Array.isArray(settingsRes) && settingsRes[0]) setSettings(settingsRes[0] as any);
-
-        return Boolean(servicesRes || portfolioRes || pagesRes || settingsRes);
-      } catch (error) {
-        console.warn('[RealtimeSync] Static fallback failed', error);
-        return false;
-      }
-    };
-
-    // Check if data is already loaded to avoid unnecessary refetch on re-mounts
-    const currentStore = useGlobalStore.getState();
-    if (currentStore.isHydrated && currentStore.services.length > 0) {
-       console.log('[RealtimeSync] Data already hydrated. Skipping bootstrap.');
-       // We still need to setup realtime subscription though, so we proceed to subscription part
-       // But we skip the fetch
-    }
+    let retryTimeout: NodeJS.Timeout | null = null;
 
     const bootstrap = async () => {
       try {
-        const state = useGlobalStore.getState();
-        const alreadyHydrated = state.isHydrated;
-        const hasDataInStore = state.services.length > 0 || state.portfolio.length > 0;
+        console.log('[RealtimeSync] Checking for updates...');
         
-        // Se estiver "hidratado" mas sem dados (cache vazio ou inválido), força o fetch
-        if (!alreadyHydrated || !hasDataInStore) {
-            console.log('[RealtimeSync] Starting bootstrap fetch from Supabase...', { alreadyHydrated, hasDataInStore });
+        // Access store actions and state non-reactively
+        const state = useGlobalStore.getState();
+        const { 
+            setServices, setPortfolio, setPages, setProfiles, setSettings, setPracticeAreas, setHydrated, setLastUpdateCheck,
+            lastUpdateCheck 
+        } = state;
+
+        // 1. Check Global Update Timestamp first (Lightweight)
+        const { data: updateConfig } = await supabase
+            .from('site_settings')
+            .select('updated_at')
+            .single();
             
-            // 1. Initial Fetch (Parallel)
-            const [servicesRes, portfolioRes, pagesRes, settingsRes] = await Promise.all<any>([
-              supabase.from('services').select('*').order('order', { ascending: true }),
-              supabase.from('portfolios').select('*').order('created_at', { ascending: false }),
-              supabase.from('pages').select('*').order('title', { ascending: true }),
-              supabase.from('site_settings').select('*').single()
-            ]);
+        const remoteTime = updateConfig?.updated_at;
+        
+        // Check if current state has blocked URLs (dirty cache from old version)
+        const isDirty = 
+            hasBlockedUrls(state.services) || 
+            hasBlockedUrls(state.portfolio) || 
+            hasBlockedUrls(state.pages) || 
+            hasBlockedUrls(state.profiles) || 
+            hasBlockedUrls(state.settings) || 
+            hasBlockedUrls(state.practiceAreas);
 
-            console.log('[RealtimeSync] Supabase responses received', {
-              services: { count: servicesRes.data?.length, error: servicesRes.error },
-              portfolio: { count: portfolioRes.data?.length, error: portfolioRes.error },
-              pages: { count: pagesRes.data?.length, error: pagesRes.error },
-              settings: { exists: !!settingsRes.data, error: settingsRes.error }
-            });
+        // If we have a local timestamp and it matches remote, AND cache is clean, SKIP everything
+        if (!isDirty && lastUpdateCheck && remoteTime && lastUpdateCheck === remoteTime) {
+            console.log('[RealtimeSync] System up to date. Using cache.');
+            if (!state.isHydrated) setHydrated(true);
+            return;
+        }
 
-            if (isMounted) {
-              const responses = [servicesRes, portfolioRes, pagesRes, settingsRes];
-              const hasAbort = responses.some((res) => isAbortError(res.error));
-              const hasNetwork = responses.some((res) => isNetworkError(res.error));
-              const hasError = responses.some((res) => res.error);
-              
-              if (hasError) {
-                console.error('[RealtimeSync] Detected errors in responses:', responses.filter(r => r.error).map(r => r.error));
-              }
-
-              if (servicesRes.data) setServices(servicesRes.data as Service[]);
-              if (portfolioRes.data) setPortfolio(portfolioRes.data as Portfolio[]);
-              if (pagesRes.data) setPages(pagesRes.data as any[]);
-              if (settingsRes.data) setSettings(settingsRes.data as any);
-
-              const hasData =
-                Boolean(servicesRes.data && servicesRes.data.length > 0) ||
-                Boolean(portfolioRes.data && portfolioRes.data.length > 0) ||
-                Boolean(pagesRes.data && pagesRes.data.length > 0) ||
-                Boolean(settingsRes.data);
-
-              if (hasError || !hasData) {
-                console.warn('[RealtimeSync] Fetch failed or returned no data. Attempting static fallback...', { hasError, hasData });
-                const fallbackLoaded = await loadStaticFallback();
-                if (fallbackLoaded) {
-                  setHydrated(true);
-                  console.log('[RealtimeSync] Static fallback applied successfully. Hydrated.');
-                } else {
-                  console.error('[RealtimeSync] Both Supabase and static fallback failed.');
-                  scheduleRetry();
-                }
-              } else {
-                setHydrated(true);
-                console.log('[RealtimeSync] Bootstrap complete from Supabase. Hydrated.');
-              }
-
-              if (hasAbort || hasNetwork) {
-                console.log('[RealtimeSync] Scheduling retry due to abort/network error');
-                scheduleRetry();
-              }
-            }
+        if (isDirty) {
+            console.warn('[RealtimeSync] Cache dirty (blocked URLs found). Forcing refresh and sanitization...');
         } else {
-             console.log('[RealtimeSync] Skipped fetch, already hydrated and has data in store.');
+            console.log('[RealtimeSync] Update detected or first load. Fetching fresh data...');
         }
 
-        if (!channel && useGlobalStore.getState().isHydrated) {
-          channel = supabase.channel('global-changes')
-          .on(
-            'postgres_changes',
-            { event: '*', schema: 'public', table: 'services' },
-            (payload) => {
-              if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-                updateService(payload.new as Service);
-                toast.info('Serviços atualizados em tempo real');
-              } else if (payload.eventType === 'DELETE') {
-                removeService(payload.old.id);
-              }
-            }
-          )
-          .on(
-            'postgres_changes',
-            { event: '*', schema: 'public', table: 'portfolios' },
-            (payload) => {
-              if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-                updatePortfolio(payload.new as Portfolio);
-                toast.info('Portfólio atualizado em tempo real');
-              } else if (payload.eventType === 'DELETE') {
-                removePortfolio(payload.old.id);
-              }
-            }
-          )
-          .on(
-            'postgres_changes',
-            { event: '*', schema: 'public', table: 'pages' },
-            (payload) => {
-              if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-                updatePage(payload.new as Page);
-                toast.info('Páginas atualizadas em tempo real');
-              } else if (payload.eventType === 'DELETE') {
-                removePage(payload.old.id);
-              }
-            }
-          )
-          .subscribe();
-        }
+        // 2. Fetch All Data (Only if needed)
+        const [servicesRes, portfolioRes, pagesRes, profilesRes, settingsRes, practiceAreasRes] = await Promise.all<any>([
+          supabase.from('services').select('*').order('order', { ascending: true }),
+          supabase.from('portfolios').select('*').order('created_at', { ascending: false }),
+          supabase.from('pages').select('*').order('title', { ascending: true }),
+          supabase.from('profiles').select('*').order('created_at', { ascending: false }),
+          supabase.from('site_settings').select('*').single(),
+          supabase.from('practice_areas').select('*').order('order_index', { ascending: true })
+        ]);
 
+        if (isMounted) {
+          // Only update state if data actually changed to prevent re-renders
+          if (servicesRes.data && !isDeepEqual(state.services, servicesRes.data)) {
+             setServices(sanitizeData(servicesRes.data) as Service[]);
+          }
+          if (portfolioRes.data && !isDeepEqual(state.portfolio, portfolioRes.data)) {
+             setPortfolio(sanitizeData(portfolioRes.data) as Portfolio[]);
+          }
+          if (pagesRes.data && !isDeepEqual(state.pages, pagesRes.data)) {
+             setPages(sanitizeData(pagesRes.data) as any[]);
+          }
+          if (profilesRes.data && !isDeepEqual(state.profiles, profilesRes.data)) {
+             setProfiles(sanitizeData(profilesRes.data) as Profile[]);
+          }
+          if (settingsRes.data && !isDeepEqual(state.settings, settingsRes.data)) {
+             setSettings(sanitizeData(settingsRes.data) as any);
+          }
+          if (practiceAreasRes.data && !isDeepEqual(state.practiceAreas, practiceAreasRes.data)) {
+             setPracticeAreas(sanitizeData(practiceAreasRes.data) as PracticeArea[]);
+          }
+
+          // Update the timestamp after successful fetch
+          if (remoteTime && typeof setLastUpdateCheck === 'function') {
+              setLastUpdateCheck(remoteTime);
+          }
+          
+          if (!state.isHydrated) setHydrated(true);
+          console.log('[RealtimeSync] Data synchronized.');
+        }
       } catch (error) {
-        if (!isAbortError(error)) {
-          console.error('[RealtimeSync] Bootstrap failed', error);
-        }
+        console.error('[RealtimeSync] Sync error:', error);
       }
-    };
-
-    const scheduleRetry = () => {
-      if (retryRef.current.count >= 5) return;
-      if (retryRef.current.timer !== null) {
-        window.clearTimeout(retryRef.current.timer);
-      }
-      const delay = Math.min(10000, 1000 * Math.pow(2, retryRef.current.count));
-      retryRef.current.count += 1;
-      retryRef.current.timer = window.setTimeout(() => {
-        if (isMounted) bootstrap();
-      }, delay);
     };
 
     bootstrap();
+    
+    // Subscribe to Realtime changes
+    // We access actions directly from store instance to avoid closure staleness if we used destructured vars
+    const getActions = () => useGlobalStore.getState();
+
+    const channels = [
+      supabase
+        .channel('public:services')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'services' },
+          (payload) => {
+            const { updateService, removeService } = getActions();
+            if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+              updateService(payload.new as Service);
+            } else if (payload.eventType === 'DELETE') {
+              removeService(payload.old.id);
+            }
+          }
+        )
+        .subscribe(),
+
+      supabase
+        .channel('public:portfolios')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'portfolios' },
+          (payload) => {
+            const { updatePortfolio, removePortfolio } = getActions();
+            if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+              updatePortfolio(payload.new as Portfolio);
+            } else if (payload.eventType === 'DELETE') {
+              removePortfolio(payload.old.id);
+            }
+          }
+        )
+        .subscribe(),
+
+      supabase
+        .channel('public:pages')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'pages' },
+          (payload) => {
+            const { updatePage, removePage } = getActions();
+            if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+              updatePage(payload.new as Page);
+            } else if (payload.eventType === 'DELETE') {
+              removePage(payload.old.id);
+            }
+          }
+        )
+        .subscribe(),
+
+        supabase
+          .channel('public:practice_areas')
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'practice_areas' },
+            async (payload) => {
+                if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE' || payload.eventType === 'DELETE') {
+                    // Re-fetch entire list for ordered items
+                    const { data } = await supabase.from('practice_areas').select('*').order('order_index', { ascending: true });
+                    if (data) {
+                        useGlobalStore.getState().setPracticeAreas(data as PracticeArea[]);
+                    }
+                }
+            }
+          )
+          .subscribe()
+    ];
 
     return () => {
-      isMounted = false;
-      if (channel) supabase.removeChannel(channel);
-      if (retryRef.current.timer !== null) window.clearTimeout(retryRef.current.timer);
+        isMounted = false;
+        if (retryTimeout) clearTimeout(retryTimeout);
+        channels.forEach((channel) => supabase.removeChannel(channel));
     };
-  }, []); // Run once on mount
+  }, []);
 };

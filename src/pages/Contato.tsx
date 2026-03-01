@@ -2,16 +2,16 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { MapPin, Phone, Mail, MessageSquare, Send, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { MapPin, Phone, Mail, MessageSquare, Send } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { Database } from '../types/database.types';
 import SEO from '../components/SEO';
-import { sendContactEmail } from '../services/emailService';
 import { toast } from 'sonner';
 import { useSiteSettings } from '../hooks/useSiteSettings';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import PageHeader from '../components/PageHeader';
+
+import LocationMap from '../components/LocationMap';
 
 // Validation Schema
 const schema = yup.object({
@@ -31,39 +31,18 @@ const Contato: React.FC = () => {
   const { register, handleSubmit, reset, formState: { errors } } = useForm({
     resolver: yupResolver(schema)
   });
+  
+  const mapSettings = (settings?.map_settings as any) || { lat: -23.55052, lng: -46.633308, zoom: 15 };
 
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
 
     try {
-      // 1. Save to Supabase (Backup)
-      const newContact: Database['public']['Tables']['contacts']['Insert'] = {
-        name: data.name,
-        email: data.email,
-        phone: data.phone,
-        subject: data.subject,
-        message: data.message,
-        status: 'new'
-      };
+      const { error } = await supabase.functions.invoke('submit-contact', {
+        body: data
+      });
 
-      const { error: dbError } = await supabase
-        .from('contacts')
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .insert([newContact] as any);
-
-      if (dbError) {
-        console.error('Error saving to database:', dbError);
-        // We continue to try sending email even if DB fails, or you can decide to stop here
-      }
-
-      // 2. Send Email via EmailJS
-      await sendContactEmail({
-        name: data.name,
-        email: data.email,
-        phone: data.phone,
-        message: `Assunto: ${data.subject}\n\n${data.message}`,
-        to_name: 'Administrador'
-      }, settings?.email_settings);
+      if (error) throw error;
 
       toast.success('Mensagem enviada com sucesso! Entraremos em contato em breve.');
       reset();
@@ -131,7 +110,9 @@ const Contato: React.FC = () => {
                   </div>
                   <div>
                     <h4 className="font-bold text-gray-900">Email</h4>
-                    <p className="text-gray-600">contato@arsinstalacoes.com.br</p>
+                    <p className="text-gray-600">
+                      {settingsLoading ? <Skeleton width={180} /> : (settings?.contact_email || 'contato@arsinstalacoes.com.br')}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -142,7 +123,7 @@ const Contato: React.FC = () => {
                   href={whatsappLink} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition-colors"
+                  className="flex items-center justify-center w-full bg-green-500 text-white font-bold py-3 px-4 rounded-lg"
                 >
                   <MessageSquare className="mr-2" size={20} />
                   Iniciar Conversa
@@ -150,9 +131,14 @@ const Contato: React.FC = () => {
               </div>
             </div>
 
-            {/* Map (Placeholder) */}
-            <div className="bg-gray-200 h-64 rounded-xl flex items-center justify-center text-gray-500">
-              <span className="flex items-center"><MapPin className="mr-2" /> Mapa de Localização</span>
+            {/* Map */}
+            <div className="bg-gray-200 h-80 rounded-xl flex items-center justify-center text-gray-500 overflow-hidden">
+              <LocationMap 
+                  lat={mapSettings.lat} 
+                  lng={mapSettings.lng} 
+                  zoom={mapSettings.zoom} 
+                  address={displayAddress} 
+              />
             </div>
           </div>
 
@@ -169,7 +155,7 @@ const Contato: React.FC = () => {
                       type="text" 
                       id="name" 
                       {...register('name')}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-colors ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
                       placeholder="Seu nome"
                     />
                     {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name.message}</p>}
@@ -181,7 +167,7 @@ const Contato: React.FC = () => {
                       type="tel" 
                       id="phone" 
                       {...register('phone')}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-colors ${errors.phone ? 'border-red-500' : 'border-gray-300'}`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${errors.phone ? 'border-red-500' : 'border-gray-300'}`}
                       placeholder="(11) 99999-9999"
                     />
                     {errors.phone && <p className="mt-1 text-sm text-red-500">{errors.phone.message}</p>}
@@ -195,7 +181,7 @@ const Contato: React.FC = () => {
                       type="email" 
                       id="email" 
                       {...register('email')}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-colors ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
                       placeholder="seu@email.com"
                     />
                     {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>}
@@ -206,7 +192,7 @@ const Contato: React.FC = () => {
                     <select 
                       id="subject" 
                       {...register('subject')}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-colors ${errors.subject ? 'border-red-500' : 'border-gray-300'}`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${errors.subject ? 'border-red-500' : 'border-gray-300'}`}
                     >
                       <option value="">Selecione um assunto</option>
                       <option value="Orçamento">Solicitar Orçamento</option>
@@ -224,7 +210,7 @@ const Contato: React.FC = () => {
                     id="message" 
                     rows={5}
                     {...register('message')}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-colors ${errors.message ? 'border-red-500' : 'border-gray-300'}`}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${errors.message ? 'border-red-500' : 'border-gray-300'}`}
                     placeholder="Descreva sua solicitação com detalhes..."
                   ></textarea>
                   {errors.message && <p className="mt-1 text-sm text-red-500">{errors.message.message}</p>}
@@ -233,7 +219,7 @@ const Contato: React.FC = () => {
                 <button 
                   type="submit" 
                   disabled={isSubmitting}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg transition-colors flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="w-full bg-blue-600 text-white font-bold py-4 px-6 rounded-lg flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? (
                     <span className="flex items-center">Enviando...</span>

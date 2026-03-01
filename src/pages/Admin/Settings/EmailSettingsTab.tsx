@@ -110,11 +110,11 @@ const EmailSettingsTab: React.FC = () => {
             <button
               type="button"
               onClick={() => handleProviderChange('emailjs')}
-              className={`relative p-4 rounded-lg border-2 text-left transition-all ${
-                activeProvider === 'emailjs'
-                  ? 'border-blue-500 bg-blue-50'
-                  : 'border-gray-200 hover:border-gray-300'
-              }`}
+              className={`relative p-4 rounded-lg border-2 text-left ${
+            activeProvider === 'emailjs'
+              ? 'border-blue-500 bg-blue-50'
+              : 'border-gray-200'
+          }`}
             >
               <div className="flex items-center justify-between mb-2">
                 <span className="font-bold text-gray-900">EmailJS</span>
@@ -128,10 +128,10 @@ const EmailSettingsTab: React.FC = () => {
             <button
               type="button"
               onClick={() => handleProviderChange('supabase')}
-              className={`relative p-4 rounded-lg border-2 text-left transition-all ${
+              className={`relative p-4 rounded-lg border-2 text-left ${
                 activeProvider === 'supabase'
                   ? 'border-green-500 bg-green-50'
-                  : 'border-gray-200 hover:border-gray-300'
+                  : 'border-gray-200'
               }`}
             >
               <div className="flex items-center justify-between mb-2">
@@ -147,7 +147,7 @@ const EmailSettingsTab: React.FC = () => {
 
         {/* EmailJS Configuration */}
         {activeProvider === 'emailjs' && (
-          <div className="space-y-6 animate-fadeIn">
+          <div className="space-y-6">
             <div className="bg-blue-50 p-4 rounded-md flex items-start gap-3 text-blue-800 text-sm">
               <Info className="w-5 h-5 flex-shrink-0 mt-0.5" />
               <div>
@@ -166,18 +166,17 @@ const EmailSettingsTab: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Service ID <span className="text-red-500">*</span>
                 </label>
-                <div className="relative group">
+                <div className="relative">
                   <input
                     type="text"
                     {...register('email_settings.emailjs.serviceId', { required: activeProvider === 'emailjs' })}
                     placeholder="ex: service_xxxxxx"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
-                  <div className="absolute right-2 top-2 text-gray-400 cursor-help group-hover:text-gray-600">
+                  <div className="absolute right-2 top-2 text-gray-400">
                     <Info size={16} />
                   </div>
-                  {/* Tooltip */}
-                  <div className="absolute bottom-full right-0 mb-2 w-64 p-2 bg-gray-800 text-white text-xs rounded hidden group-hover:block z-10">
+                  <div className="text-xs text-gray-500 mt-1">
                     Encontrado na aba "Email Services" do painel EmailJS.
                   </div>
                 </div>
@@ -190,17 +189,17 @@ const EmailSettingsTab: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Template ID <span className="text-red-500">*</span>
                 </label>
-                <div className="relative group">
+                <div className="relative">
                   <input
                     type="text"
                     {...register('email_settings.emailjs.templateId', { required: activeProvider === 'emailjs' })}
                     placeholder="ex: template_xxxxxx"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
-                  <div className="absolute right-2 top-2 text-gray-400 cursor-help group-hover:text-gray-600">
+                  <div className="absolute right-2 top-2 text-gray-400">
                     <Info size={16} />
                   </div>
-                   <div className="absolute bottom-full right-0 mb-2 w-64 p-2 bg-gray-800 text-white text-xs rounded hidden group-hover:block z-10">
+                   <div className="text-xs text-gray-500 mt-1">
                     Encontrado na aba "Email Templates".
                   </div>
                 </div>
@@ -217,10 +216,10 @@ const EmailSettingsTab: React.FC = () => {
                     placeholder="ex: user_xxxxxx ou chave pública"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent font-mono"
                   />
-                  <div className="absolute right-2 top-2 text-gray-400 cursor-help group-hover:text-gray-600">
+                  <div className="absolute right-2 top-2 text-gray-400">
                     <Info size={16} />
                   </div>
-                   <div className="absolute bottom-full right-0 mb-2 w-64 p-2 bg-gray-800 text-white text-xs rounded hidden group-hover:block z-10">
+                  <div className="text-xs text-gray-500 mt-1">
                     Encontrado em "Account" &gt; "API Keys".
                   </div>
                 </div>
@@ -231,7 +230,7 @@ const EmailSettingsTab: React.FC = () => {
 
         {/* Supabase Configuration */}
         {activeProvider === 'supabase' && (
-          <div className="space-y-6 animate-fadeIn">
+          <div className="space-y-6">
             <div className="bg-yellow-50 p-4 rounded-md flex items-start gap-3 text-yellow-800 text-sm">
               <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
               <div>
@@ -287,7 +286,7 @@ const EmailSettingsTab: React.FC = () => {
             type="button"
             onClick={testConnection}
             disabled={isTesting}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-900 transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-md disabled:opacity-50"
           >
             <Send className="w-4 h-4" />
             Testar Conexão ({activeProvider === 'emailjs' ? 'EmailJS' : 'Supabase'})

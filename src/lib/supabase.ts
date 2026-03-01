@@ -18,8 +18,7 @@ declare global {
 // 2. Vite Env (import.meta.env) - para desenvolvimento local e configuração manual
 // 3. Vercel System Env (import.meta.env + process.env) - para integração nativa
 const getEnvVar = (key: string, nextKey: string) => {
-  // @ts-expect-error window.ENV is injected at runtime in index.html
-  const runtimeEnv = typeof window !== 'undefined' ? window.ENV : {};
+  const runtimeEnv = (typeof window !== 'undefined' ? window.ENV : {}) as Record<string, string | undefined>;
   
   // Tenta recuperar na ordem de prioridade
   const value = 
@@ -27,7 +26,6 @@ const getEnvVar = (key: string, nextKey: string) => {
     runtimeEnv?.[nextKey] ||
     import.meta.env[key] || 
     import.meta.env[nextKey] || 
-    // @ts-expect-error process.env may be undefined in browser runtime; used in build/SSR only
     (typeof process !== 'undefined' ? process.env?.[nextKey] : undefined);
 
   if (!value) {
@@ -44,6 +42,18 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('Missing Supabase environment variables. Check config.json, .env file or Vercel settings.');
 }
 
+// Custom Lock implementation to avoid timeout issues in some environments (like Trae internal browser)
+// This effectively disables the lock mechanism, allowing concurrent access but preventing the timeout.
+// Based on Supabase Auth LockFunc signature: (name, acquireTimeout, fn) => Promise<R>
+const debugLock = async (_name: string, _acquireTimeout: number, fn: () => Promise<any>) => {
+  try {
+    return await fn();
+  } catch (e) {
+    console.error('[Supabase] Lock callback error:', e);
+    throw e;
+  }
+};
+
 export const supabase = createClient<Database>(
   supabaseUrl || 'https://placeholder.supabase.co', 
   supabaseAnonKey || 'placeholder',
@@ -51,6 +61,10 @@ export const supabase = createClient<Database>(
     auth: {
       persistSession: true,
       autoRefreshToken: true,
+      // Use custom lock to prevent "Acquiring an exclusive Navigator LockManager lock" timeouts
+      // The lock option expects a function with signature (name, acquireTimeout, fn) => Promise<R>
+      lock: typeof navigator !== 'undefined' && navigator.locks ? debugLock : undefined,
+      detectSessionInUrl: true,
     },
     global: {
       headers: {

@@ -1,0 +1,30 @@
+Contexto,Local,Código Original,RGB,Hex,Uso
+Frontend - Editor de Imagem,BackgroundControls.tsx:16,#ffffff,rgb(255,255,255),#ffffff,Preset Fundo Branco
+Frontend - Editor de Imagem,BackgroundControls.tsx:17,#000000,rgb(0,0,0),#000000,Preset Fundo Preto
+Frontend - Editor de Imagem,BackgroundControls.tsx:18,#f3f4f6,rgb(243,244,246),#f3f4f6,Preset Gray 100
+Frontend - Editor de Imagem,BackgroundControls.tsx:19,#9ca3af,rgb(156,163,175),#9ca3af,Preset Gray 400
+Frontend - Editor de Imagem,BackgroundControls.tsx:20,#ef4444,rgb(239,68,68),#ef4444,Preset Red 500
+Frontend - Editor de Imagem,BackgroundControls.tsx:21,#f97316,rgb(249,115,22),#f97316,Preset Orange 500
+Frontend - Editor de Imagem,BackgroundControls.tsx:22,#eab308,rgb(234,179,8),#eab308,Preset Yellow 500
+Frontend - Editor de Imagem,BackgroundControls.tsx:23,#22c55e,rgb(34,197,94),#22c55e,Preset Green 500
+Frontend - Editor de Imagem,BackgroundControls.tsx:24,#3b82f6,rgb(59,130,246),#3b82f6,Preset Blue 500
+Frontend - Editor de Imagem,BackgroundControls.tsx:25,#8b5cf6,rgb(139,92,246),#8b5cf6,Preset Violet 500
+Frontend - Editor de Imagem,BackgroundControls.tsx:26,#ec4899,rgb(236,72,153),#ec4899,Preset Pink 500
+Frontend - Editor de Imagem,BackgroundControls.tsx:60,#ffffff,rgb(255,255,255),#ffffff,Default Custom Color
+Frontend - Editor de Imagem,ImageEditorModal.tsx:33,#ffffff,rgb(255,255,255),#ffffff,Estado Inicial Background
+Frontend - Editor de Imagem,ImageEditorModal.tsx:102,#000,rgb(0,0,0),#000000,Fallback Background Contain
+Frontend - Editor de Imagem,ImageEditorModal.tsx:120,#000000,rgb(0,0,0),#000000,Container Style Cover
+Frontend - Editor de Imagem,AdvancedImageEditorModal.tsx:286,#3b82f6,rgb(59,130,246),#3b82f6,Slider Thumb (Hardcoded Style)
+Frontend - Editor de Imagem,AdvancedImageEditorModal.tsx:294,#374151,rgb(55,65,81),#374151,Slider Track (Hardcoded Style)
+Frontend - Editor de Imagem,imageUtils.ts:36,#ff0000,rgb(255,0,0),#ff0000,Comentário/Exemplo Gradiente
+Frontend - Editor de Imagem,imageUtils.ts:36,#0000ff,rgb(0,0,255),#0000ff,Comentário/Exemplo Gradiente
+Frontend - Editor de Imagem,imageUtils.ts:45,#ffffff,rgb(255,255,255),#ffffff,Default Background Param
+Frontend - SEO Preview,SEOSnippetPreview.tsx:35,#1a0dab,rgb(26,13,171),#1a0dab,Título Google (Hardcoded)
+Frontend - SEO Preview,SEOSnippetPreview.tsx:38,#4d5156,rgb(77,81,86),#4d5156,Descrição Google (Hardcoded)
+Frontend - Editor Texto,TiptapEditor.tsx:307,#adb5bd,rgb(173,181,189),#adb5bd,Placeholder Color (Hardcoded Style)
+Frontend - Page Header,PageHeader.tsx:24,rgba(30, 58, 138, 0.9),rgba(30, 58, 138, 0.9),#1e3a8a,Overlay Gradiente (Hardcoded)
+Backend - Email,send-email/index.ts:37,#f9f9f9,rgb(249,249,249),#f9f9f9,Fundo Container Mensagem
+Backend - Email,send-email/index.ts:45,#eee,rgb(238,238,238),#eeeeee,Borda Separador
+Backend - Email,send-email/index.ts:46,#888,rgb(136,136,136),#888888,Texto Rodapé
+Banco de Dados,migrations/site_settings,#2563EB,rgb(37,99,235),#2563EB,Primary Color Default (Removido na auditoria anterior mas presente no histórico)
+Banco de Dados,migrations/site_settings,#1E40AF,rgb(30,64,175),#1E40AF,Secondary Color Default (Removido na auditoria anterior mas presente no histórico)

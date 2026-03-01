@@ -6,9 +6,11 @@ import { Database } from '../../types/database.types';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import SEO from '../../components/SEO';
-import PageSkeleton from '../../components/Skeletons/PageSkeleton';
 import OptimizedImage from '../../components/OptimizedImage';
 import { useGlobalStore } from '../../stores/useGlobalStore';
+import PageHeader from '../../components/PageHeader';
+
+import HtmlContent from '../../components/HtmlContent';
 
 type PortfolioItem = Database['public']['Tables']['portfolios']['Row'];
 
@@ -30,13 +32,13 @@ const PortfolioDetalhes: React.FC = () => {
         return;
     }
 
-    const fetchProject = async () => {
+    const fetchProject = async (slugValue: string) => {
         try {
             setLoading(true);
             const { data, error } = await supabase
                 .from('portfolios')
                 .select('*')
-                .eq('slug', slug)
+                .eq('slug', slugValue)
                 .single();
             
             if (error) throw error;
@@ -48,14 +50,10 @@ const PortfolioDetalhes: React.FC = () => {
         }
     };
 
-    if (slug) fetchProject();
+    if (slug) fetchProject(slug);
   }, [slug, memoryProject]);
 
-  if (loading) {
-    return <PageSkeleton />;
-  }
-
-  if (error || !project) {
+  if (!loading && (error || !project)) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-4">
         <AlertCircle className="w-16 h-16 text-red-500 mb-4" />
@@ -65,7 +63,7 @@ const PortfolioDetalhes: React.FC = () => {
         </p>
         <Link 
           to="/portfolio" 
-          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors flex items-center"
+          className="bg-blue-600 text-white font-bold py-3 px-6 rounded-lg flex items-center"
         >
           <ArrowLeft size={20} className="mr-2" /> Voltar para Portfólio
         </Link>
@@ -74,42 +72,52 @@ const PortfolioDetalhes: React.FC = () => {
   }
 
   // Safely cast gallery images
-  const galleryImages = Array.isArray(project.gallery_images) 
+  const galleryImages = (project && Array.isArray(project.gallery_images))
     ? project.gallery_images as string[] 
     : [];
+    
+  // Safe title for header/SEO during loading
+  const pageTitle = project?.title || 'Carregando...';
 
   return (
     <div className="flex flex-col min-h-screen">
       <SEO 
-        title={project.title} 
-        description={project.description ? project.description.substring(0, 160) : `Detalhes do projeto ${project.title}`}
-        image={project.image_url || undefined}
+        title={pageTitle} 
+        description={project?.description ? project.description.substring(0, 160) : `Detalhes do projeto ${pageTitle}`}
+        image={project?.image_url || undefined}
       />
       {/* Header */}
-      <div className="bg-gray-900 text-white py-12">
-        <div className="container mx-auto px-4">
-          <Link to="/portfolio" className="text-gray-400 hover:text-white flex items-center mb-4 transition-colors text-sm">
-            <ArrowLeft size={16} className="mr-2" /> Voltar para Portfólio
-          </Link>
-          <h1 className="text-3xl md:text-4xl font-bold">{project.title}</h1>
-        </div>
-      </div>
+      <PageHeader title={pageTitle}>
+        <Link to="/portfolio" className="text-blue-100 flex items-center mb-0 text-sm hover:text-white transition-colors">
+          <ArrowLeft size={16} className="mr-2" /> Voltar para Portfólio
+        </Link>
+      </PageHeader>
 
       <div className="container mx-auto px-4 py-12">
         <div className="flex flex-col lg:flex-row gap-12">
           {/* Main Content */}
           <div className="lg:w-2/3">
             <OptimizedImage
-              src={project.image_url || 'https://via.placeholder.com/1200x800?text=Sem+Imagem'} 
-              alt={project.title} 
+              src={project?.image_url || undefined}
+              alt={project?.title || 'Projeto'} 
+              pageKey="portfolio:detail"
+              role="hero"
               className="w-full h-[500px] object-cover rounded-xl shadow-lg mb-8"
               priority={true} // LCP optimization
             />
             
-            <div 
-              className="prose prose-lg max-w-none text-gray-700"
-              dangerouslySetInnerHTML={{ __html: project.description || '' }}
-            />
+            {project ? (
+              <HtmlContent 
+                className="prose prose-lg max-w-none text-gray-700"
+                content={project.description || ''}
+              />
+            ) : (
+              <div className="space-y-4 mb-8">
+                <div className="h-4 bg-gray-100 rounded w-full"></div>
+                <div className="h-4 bg-gray-100 rounded w-full"></div>
+                <div className="h-4 bg-gray-100 rounded w-3/4"></div>
+              </div>
+            )}
 
             {/* Gallery Grid */}
             {galleryImages.length > 0 && (
@@ -120,8 +128,11 @@ const PortfolioDetalhes: React.FC = () => {
                     <OptimizedImage
                       key={index} 
                       src={imgUrl} 
-                      className="rounded-lg h-64 object-cover w-full shadow-sm hover:shadow-md transition-shadow" 
-                      alt={`${project.title} - Foto ${index + 1}`} 
+                      pageKey="portfolio:detail"
+                      role="card"
+                      className="rounded-lg h-64 object-cover w-full shadow-sm" 
+                      alt={`${project?.title} - Foto ${index + 1}`}
+                      effect=""
                     />
                   ))}
                 </div>
@@ -135,7 +146,7 @@ const PortfolioDetalhes: React.FC = () => {
               <h3 className="text-xl font-bold text-gray-900 mb-6">Informações do Projeto</h3>
               
               <div className="space-y-6">
-                {project.client && (
+                {project?.client && (
                   <div className="flex items-start">
                     <User className="text-blue-600 mt-1 mr-4" size={20} />
                     <div>
@@ -145,7 +156,7 @@ const PortfolioDetalhes: React.FC = () => {
                   </div>
                 )}
 
-                {project.location && (
+                {project?.location && (
                   <div className="flex items-start">
                     <MapPin className="text-blue-600 mt-1 mr-4" size={20} />
                     <div>
@@ -155,7 +166,7 @@ const PortfolioDetalhes: React.FC = () => {
                   </div>
                 )}
 
-                {project.completion_date && (
+                {project?.completion_date && (
                   <div className="flex items-start">
                     <Calendar className="text-blue-600 mt-1 mr-4" size={20} />
                     <div>
@@ -167,7 +178,7 @@ const PortfolioDetalhes: React.FC = () => {
                   </div>
                 )}
 
-                {project.category && (
+                {project?.category && (
                   <div className="flex items-start">
                     <Tag className="text-blue-600 mt-1 mr-4" size={20} />
                     <div>
@@ -176,12 +187,26 @@ const PortfolioDetalhes: React.FC = () => {
                     </div>
                   </div>
                 )}
+                
+                {!project && (
+                   <div className="animate-pulse space-y-6">
+                     {[1,2,3,4].map(i => (
+                       <div key={i} className="flex items-start">
+                         <div className="w-5 h-5 bg-gray-200 rounded-full mr-4"></div>
+                         <div className="flex-1">
+                           <div className="h-3 bg-gray-200 rounded w-1/3 mb-2"></div>
+                           <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                         </div>
+                       </div>
+                     ))}
+                   </div>
+                )}
               </div>
 
               <div className="mt-8 pt-6 border-t border-gray-200">
                 <Link 
                   to="/contato" 
-                  className="block w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors text-center"
+                  className="block w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg text-center"
                 >
                   Solicitar Projeto Similar
                 </Link>

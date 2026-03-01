@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useEffect } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import { createBrowserRouter, RouterProvider, createRoutesFromElements, Route, Outlet, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { supabase } from './lib/supabase';
@@ -11,6 +11,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import ScrollToTop from './components/ScrollToTop';
 import AnalyticsProvider from './components/AnalyticsProvider';
 import AppLoader from './components/AppLoader';
+import ModuleGuard from './components/ModuleGuard';
 import { useRealtimeSync } from './hooks/useRealtimeSync';
 
 // Eager load core pages
@@ -22,29 +23,34 @@ import Portfolio from './pages/Portfolio';
 import Parceiros from './pages/Parceiros';
 import Contato from './pages/Contato';
 
-// Lazy load detail pages and less critical public pages
-const AreasAtuacaoDetalhes = lazy(() => import('./pages/AreasAtuacao/Detalhes'));
+// Lazy load less critical public pages and details
 const ServicosDetalhes = lazy(() => import('./pages/Servicos/Detalhes'));
 const PortfolioDetalhes = lazy(() => import('./pages/Portfolio/Detalhes'));
+const AreasAtuacaoDetalhes = lazy(() => import('./pages/AreasAtuacao/Detalhes'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const TermsOfUse = lazy(() => import('./pages/TermsOfUse'));
 
-// Admin Pages (Eager load for instant navigation feeling since data is cached)
-import Login from './pages/Admin/Login';
-import Dashboard from './pages/Admin/Dashboard';
-import PortfolioList from './pages/Admin/Portfolio/List';
-import PortfolioForm from './pages/Admin/Portfolio/Form';
-import ServicesList from './pages/Admin/Services/List';
-import ServicesForm from './pages/Admin/Services/Form';
-import ContactsList from './pages/Admin/Contacts/List';
-import MediaManager from './pages/Admin/Media/Manager';
-import PagesList from './pages/Admin/Pages/List';
-import PageForm from './pages/Admin/Pages/Form';
-import Settings from './pages/Admin/Settings';
-import UsersList from './pages/Admin/Users/List';
-import UserForm from './pages/Admin/Users/Form';
-import SystemHealth from './pages/Admin/SystemHealth';
+// Lazy Load Admin Pages (Code Splitting)
+const Login = lazy(() => import('./pages/Admin/Login'));
+const Dashboard = lazy(() => import('./pages/Admin/Dashboard'));
+const PortfolioList = lazy(() => import('./pages/Admin/Portfolio/List'));
+const PortfolioForm = lazy(() => import('./pages/Admin/Portfolio/Form'));
+const ServicesList = lazy(() => import('./pages/Admin/Services/List'));
+const ServicesForm = lazy(() => import('./pages/Admin/Services/Form'));
+const ContactsList = lazy(() => import('./pages/Admin/Contacts/List'));
+const MediaManager = lazy(() => import('./pages/Admin/Media/Manager'));
+const PagesList = lazy(() => import('./pages/Admin/Pages/List'));
+const PageForm = lazy(() => import('./pages/Admin/Pages/Form'));
+const Settings = lazy(() => import('./pages/Admin/Settings'));
+const UsersList = lazy(() => import('./pages/Admin/Users/List'));
+const UserForm = lazy(() => import('./pages/Admin/Users/Form'));
+const SystemHealth = lazy(() => import('./pages/Admin/SystemHealth'));
+const HomeSettings = lazy(() => import('./pages/Admin/Home'));
+const PracticeAreasList = lazy(() => import('./pages/Admin/PracticeAreas/List'));
+const PracticeAreasForm = lazy(() => import('./pages/Admin/PracticeAreas/Form'));
+const PartnersList = lazy(() => import('./pages/Admin/Partners/List'));
+const PartnersForm = lazy(() => import('./pages/Admin/Partners/Form'));
 
 // Lazy load less critical or one-off pages
 const InstallWizard = lazy(() => import('./pages/Install/InstallWizard'));
@@ -56,17 +62,35 @@ const withSuspense = (Component: React.LazyExoticComponent<any>) => (props: any)
   </Suspense>
 );
 
-// Wrapped Components (Only for lazy loaded components)
-const AreasAtuacaoDetalhesLazy = withSuspense(AreasAtuacaoDetalhes);
-const ServicosDetalhesLazy = withSuspense(ServicosDetalhes);
-const PortfolioDetalhesLazy = withSuspense(PortfolioDetalhes);
+// Wrapped Components
 const NotFoundLazy = withSuspense(NotFound);
 const PrivacyPolicyLazy = withSuspense(PrivacyPolicy);
 const TermsOfUseLazy = withSuspense(TermsOfUse);
-const LoginLazy = withSuspense(Login);
-// Admin components are now eager loaded, no need for withSuspense wrapper
-// But we need to use them directly in routes
+const ServicosDetalhesLazy = withSuspense(ServicosDetalhes);
+const PortfolioDetalhesLazy = withSuspense(PortfolioDetalhes);
+const AreasAtuacaoDetalhesLazy = withSuspense(AreasAtuacaoDetalhes);
 const InstallWizardLazy = withSuspense(InstallWizard);
+
+// Wrapped Admin Components
+const LoginLazy = withSuspense(Login);
+const DashboardLazy = withSuspense(Dashboard);
+const PortfolioListLazy = withSuspense(PortfolioList);
+const PortfolioFormLazy = withSuspense(PortfolioForm);
+const ServicesListLazy = withSuspense(ServicesList);
+const ServicesFormLazy = withSuspense(ServicesForm);
+const ContactsListLazy = withSuspense(ContactsList);
+const MediaManagerLazy = withSuspense(MediaManager);
+const PagesListLazy = withSuspense(PagesList);
+const PageFormLazy = withSuspense(PageForm);
+const SettingsLazy = withSuspense(Settings);
+const UsersListLazy = withSuspense(UsersList);
+const UserFormLazy = withSuspense(UserForm);
+const SystemHealthLazy = withSuspense(SystemHealth);
+const HomeSettingsLazy = withSuspense(HomeSettings);
+const PracticeAreasListLazy = withSuspense(PracticeAreasList);
+const PracticeAreasFormLazy = withSuspense(PracticeAreasForm);
+const PartnersListLazy = withSuspense(PartnersList);
+const PartnersFormLazy = withSuspense(PartnersForm);
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -78,14 +102,71 @@ const router = createBrowserRouter(
 
         {/* Public Routes with Layout */}
         <Route path="/" element={<Layout><Home /></Layout>} errorElement={<ErrorBoundary />} />
-        <Route path="/empresa" element={<Layout><Empresa /></Layout>} errorElement={<ErrorBoundary />} />
-        <Route path="/areas-de-atuacao" element={<Layout><AreasAtuacao /></Layout>} errorElement={<ErrorBoundary />} />
-        <Route path="/areas-de-atuacao/:slug" element={<Layout><AreasAtuacaoDetalhesLazy /></Layout>} errorElement={<ErrorBoundary />} />
-        <Route path="/servicos" element={<Layout><Servicos /></Layout>} errorElement={<ErrorBoundary />} />
-        <Route path="/servicos/:slug" element={<Layout><ServicosDetalhesLazy /></Layout>} errorElement={<ErrorBoundary />} />
-        <Route path="/portfolio" element={<Layout><Portfolio /></Layout>} errorElement={<ErrorBoundary />} />
-        <Route path="/portfolio/:slug" element={<Layout><PortfolioDetalhesLazy /></Layout>} errorElement={<ErrorBoundary />} />
-        <Route path="/parceiros" element={<Layout><Parceiros /></Layout>} errorElement={<ErrorBoundary />} />
+        
+        <Route path="/empresa" element={
+          <Layout>
+            <ModuleGuard moduleKey="paginas">
+              <Empresa />
+            </ModuleGuard>
+          </Layout>
+        } errorElement={<ErrorBoundary />} />
+        
+        <Route path="/areas-de-atuacao" element={
+          <Layout>
+            <ModuleGuard moduleKey="areas_atuacao">
+              <AreasAtuacao />
+            </ModuleGuard>
+          </Layout>
+        } errorElement={<ErrorBoundary />} />
+        
+        <Route path="/areas-de-atuacao/:slug" element={
+          <Layout>
+            <ModuleGuard moduleKey="areas_atuacao">
+              <AreasAtuacaoDetalhesLazy />
+            </ModuleGuard>
+          </Layout>
+        } errorElement={<ErrorBoundary />} />
+        
+        <Route path="/servicos" element={
+          <Layout>
+            <ModuleGuard moduleKey="servicos">
+              <Servicos />
+            </ModuleGuard>
+          </Layout>
+        } errorElement={<ErrorBoundary />} />
+        
+        <Route path="/servicos/:slug" element={
+          <Layout>
+            <ModuleGuard moduleKey="servicos">
+              <ServicosDetalhesLazy />
+            </ModuleGuard>
+          </Layout>
+        } errorElement={<ErrorBoundary />} />
+        
+        <Route path="/portfolio" element={
+          <Layout>
+            <ModuleGuard moduleKey="portfolio">
+              <Portfolio />
+            </ModuleGuard>
+          </Layout>
+        } errorElement={<ErrorBoundary />} />
+        
+        <Route path="/portfolio/:slug" element={
+          <Layout>
+            <ModuleGuard moduleKey="portfolio">
+              <PortfolioDetalhesLazy />
+            </ModuleGuard>
+          </Layout>
+        } errorElement={<ErrorBoundary />} />
+        
+        <Route path="/parceiros" element={
+          <Layout>
+            <ModuleGuard moduleKey="parceiros">
+              <Parceiros />
+            </ModuleGuard>
+          </Layout>
+        } errorElement={<ErrorBoundary />} />
+        
         <Route path="/contato" element={<Layout><Contato /></Layout>} errorElement={<ErrorBoundary />} />
         <Route path="/politica-privacidade" element={<Layout><PrivacyPolicyLazy /></Layout>} errorElement={<ErrorBoundary />} />
         <Route path="/termos-uso" element={<Layout><TermsOfUseLazy /></Layout>} errorElement={<ErrorBoundary />} />
@@ -98,36 +179,49 @@ const router = createBrowserRouter(
         
         {/* Protected Admin Routes */}
         <Route element={<ProtectedRoute />} errorElement={<ErrorBoundary />}>
-          <Route path="/admin/dashboard" element={<AdminLayout><Dashboard /></AdminLayout>} />
+          <Route path="/admin/dashboard" element={<AdminLayout><DashboardLazy /></AdminLayout>} />
           
           {/* Portfolio Management */}
-          <Route path="/admin/portfolio" element={<AdminLayout><PortfolioList /></AdminLayout>} />
-          <Route path="/admin/portfolio/novo" element={<AdminLayout><PortfolioForm /></AdminLayout>} />
-          <Route path="/admin/portfolio/:id" element={<AdminLayout><PortfolioForm /></AdminLayout>} />
+          <Route path="/admin/portfolio" element={<AdminLayout><PortfolioListLazy /></AdminLayout>} />
+          <Route path="/admin/portfolio/novo" element={<AdminLayout><PortfolioFormLazy /></AdminLayout>} />
+          <Route path="/admin/portfolio/:id" element={<AdminLayout><PortfolioFormLazy /></AdminLayout>} />
           
           {/* Services Management */}
-          <Route path="/admin/services" element={<AdminLayout><ServicesList /></AdminLayout>} />
-          <Route path="/admin/services/novo" element={<AdminLayout><ServicesForm /></AdminLayout>} />
-          <Route path="/admin/services/:id" element={<AdminLayout><ServicesForm /></AdminLayout>} />
+          <Route path="/admin/services" element={<AdminLayout><ServicesListLazy /></AdminLayout>} />
+          <Route path="/admin/services/novo" element={<AdminLayout><ServicesFormLazy /></AdminLayout>} />
+          <Route path="/admin/services/:id" element={<AdminLayout><ServicesFormLazy /></AdminLayout>} />
           
           {/* Contacts Management */}
-          <Route path="/admin/contatos" element={<AdminLayout><ContactsList /></AdminLayout>} />
+          <Route path="/admin/contatos" element={<AdminLayout><ContactsListLazy /></AdminLayout>} />
 
-          <Route path="/admin/midia" element={<AdminLayout><MediaManager /></AdminLayout>} />
+          <Route path="/admin/midia" element={<AdminLayout><MediaManagerLazy /></AdminLayout>} />
 
           {/* Pages Management */}
-          <Route path="/admin/paginas" element={<AdminLayout><PagesList /></AdminLayout>} />
-          <Route path="/admin/paginas/nova" element={<AdminLayout><PageForm /></AdminLayout>} />
-          <Route path="/admin/paginas/editar/:id" element={<AdminLayout><PageForm /></AdminLayout>} />
+          <Route path="/admin/paginas" element={<AdminLayout><PagesListLazy /></AdminLayout>} />
+          <Route path="/admin/paginas/nova" element={<AdminLayout><PageFormLazy /></AdminLayout>} />
+          <Route path="/admin/paginas/editar/:id" element={<AdminLayout><PageFormLazy /></AdminLayout>} />
 
-          <Route path="/admin/usuarios" element={<AdminLayout><UsersList /></AdminLayout>} />
-          <Route path="/admin/usuarios/novo" element={<AdminLayout><UserForm /></AdminLayout>} />
+          <Route path="/admin/usuarios" element={<AdminLayout><UsersListLazy /></AdminLayout>} />
+          <Route path="/admin/usuarios/novo" element={<AdminLayout><UserFormLazy /></AdminLayout>} />
           
+          {/* Home Settings */}
+          <Route path="/admin/home" element={<AdminLayout><HomeSettingsLazy /></AdminLayout>} />
+
+          {/* Practice Areas Management */}
+          <Route path="/admin/areas-atuacao" element={<AdminLayout><PracticeAreasListLazy /></AdminLayout>} />
+          <Route path="/admin/areas-atuacao/novo" element={<AdminLayout><PracticeAreasFormLazy /></AdminLayout>} />
+          <Route path="/admin/areas-atuacao/:id" element={<AdminLayout><PracticeAreasFormLazy /></AdminLayout>} />
+
+          {/* Partners Management */}
+          <Route path="/admin/parceiros" element={<AdminLayout><PartnersListLazy /></AdminLayout>} />
+          <Route path="/admin/parceiros/novo" element={<AdminLayout><PartnersFormLazy /></AdminLayout>} />
+          <Route path="/admin/parceiros/:id" element={<AdminLayout><PartnersFormLazy /></AdminLayout>} />
+
           {/* Settings */}
-          <Route path="/admin/configuracoes" element={<AdminLayout><Settings /></AdminLayout>} />
+          <Route path="/admin/configuracoes" element={<AdminLayout><SettingsLazy /></AdminLayout>} />
           
           {/* System Health */}
-          <Route path="/admin/system-health" element={<AdminLayout><SystemHealth /></AdminLayout>} />
+          <Route path="/admin/system-health" element={<AdminLayout><SystemHealthLazy /></AdminLayout>} />
         </Route>
 
         {/* 404 Catch-All */}
@@ -143,6 +237,10 @@ function App() {
   
   // Initialize Global Realtime Sync
   useRealtimeSync();
+
+  useEffect(() => {
+    // We don't need to manually set hydrated here as useRealtimeSync handles it via AppLoader/store
+  }, []);
 
   useEffect(() => {
     // Check active session

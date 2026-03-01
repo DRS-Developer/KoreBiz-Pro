@@ -1,11 +1,13 @@
 import React, { useState, useRef, useMemo } from 'react';
-import { Upload, X, Loader2, Edit2, FolderOpen } from 'lucide-react';
+import { Upload, X, Loader2, Edit2, FolderOpen, ImageIcon } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { toast } from 'sonner';
 import imageCompression from 'browser-image-compression';
 import MediaLibraryModal from './Media/MediaLibraryModal';
 import { MediaFolder } from '../../types/media';
 import { useSiteSettings } from '../../hooks/useSiteSettings';
+import { resolveManagedImage } from '../../utils/imageManager';
+import type { PageKey, ImageRole } from '../../config/imageProfiles';
 
 interface ImageUploadProps {
   label?: string;
@@ -17,6 +19,8 @@ interface ImageUploadProps {
   minWidth?: number;
   minHeight?: number;
   description?: string; // Instructions for the user
+  pageKey?: PageKey;
+  role?: ImageRole;
 }
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -31,10 +35,23 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   aspectRatio = 16 / 9,
   minWidth = 800,
   minHeight = 450,
-  description
+  description,
+  pageKey,
+  role
 }) => {
   const { settings } = useSiteSettings();
   const [uploading, setUploading] = useState(false);
+  
+  // Get default image if no value is present
+  const defaultImageSrc = useMemo(() => {
+    if (value) return null;
+    if (pageKey && role) {
+      const managed = resolveManagedImage(pageKey, role, undefined);
+      return managed.original;
+    }
+    return null;
+  }, [value, pageKey, role]);
+
   const [editorOpen, setEditorOpen] = useState(false);
   const [mediaModalOpen, setMediaModalOpen] = useState(false);
   const [selectedImageSrc, setSelectedImageSrc] = useState<string | null>(null);
@@ -155,8 +172,8 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   };
 
   // Add a small delay to ensure the component is loaded
+  const [EditorComponent, setEditorComponent] = useState<React.ComponentType<any> | null>(null);
   const [isComponentLoaded, setIsComponentLoaded] = useState(false);
-  const [AdvancedImageEditorModal, setAdvancedImageEditorModal] = useState<React.ComponentType<any> | null>(null);
   
   React.useEffect(() => {
     let mounted = true;
@@ -166,7 +183,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         try {
             const module = await import('./ImageEditor/AdvancedImageEditorModal');
             if (mounted) {
-                setAdvancedImageEditorModal(() => module.default);
+                setEditorComponent(() => module.default);
                 setIsComponentLoaded(true);
             }
         } catch (err) {
@@ -293,7 +310,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
            img.src = objectUrl;
         });
 
-        const { error: dbError } = await supabase.from('media_files').insert({
+        const mediaData = {
           filename: optimizedFile!.name,
           url: publicUrl,
           size: optimizedFile!.size,
@@ -301,7 +318,9 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
           height: dimensions.height,
           mime_type: optimizedFile!.type,
           folder: getMediaFolder(folder)
-        });
+        };
+
+        const { error: dbError } = await supabase.from('media_files').insert(mediaData as any);
 
         if (dbError) throw dbError;
       } catch (err) {
@@ -346,7 +365,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
             <button
                 type="button"
                 onClick={() => setMediaModalOpen(true)}
-                className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1 bg-blue-50 px-2 py-1 rounded transition-colors"
+                className="text-xs text-blue-600 flex items-center gap-1 bg-blue-50 px-2 py-1 rounded"
             >
                 <FolderOpen size={14} />
                 Biblioteca
@@ -354,8 +373,8 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         </div>
       </div>
       
-      <div className={`border-2 border-dashed rounded-lg p-4 transition-colors ${
-        error ? 'border-red-300 bg-red-50' : 'border-gray-300 hover:border-blue-400 bg-gray-50'
+      <div className={`border-2 border-dashed rounded-lg p-4 ${
+        error ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-gray-50'
       }`}>
         {value ? (
           <div className="relative group max-w-md mx-auto">
@@ -364,11 +383,11 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
               alt="Preview" 
               className="w-full max-h-64 object-contain rounded-md bg-white shadow-sm"
             />
-            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-200 rounded-md flex items-center justify-center gap-2">
+            <div className="absolute inset-0 bg-black bg-opacity-40 rounded-md flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
               <button
                 type="button"
                 onClick={handleEditExisting}
-                className="opacity-0 group-hover:opacity-100 bg-blue-600 text-white p-2 rounded-full transform scale-90 group-hover:scale-100 transition-all shadow-lg"
+                className="bg-blue-600 text-white p-2 rounded-full shadow-lg hover:bg-blue-700 transition-colors"
                 title="Editar imagem"
               >
                 <Edit2 size={20} />
@@ -376,7 +395,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
               <button
                 type="button"
                 onClick={() => setMediaModalOpen(true)}
-                className="opacity-0 group-hover:opacity-100 bg-indigo-600 text-white p-2 rounded-full transform scale-90 group-hover:scale-100 transition-all shadow-lg"
+                className="bg-indigo-600 text-white p-2 rounded-full shadow-lg hover:bg-indigo-700 transition-colors"
                 title="Trocar pela Biblioteca"
               >
                 <FolderOpen size={20} />
@@ -384,7 +403,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="opacity-0 group-hover:opacity-100 bg-gray-600 text-white p-2 rounded-full transform scale-90 group-hover:scale-100 transition-all shadow-lg"
+                className="bg-gray-600 text-white p-2 rounded-full shadow-lg hover:bg-gray-700 transition-colors"
                 title="Fazer Upload de Nova"
               >
                 <Upload size={20} />
@@ -392,12 +411,60 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
               <button
                 type="button"
                 onClick={handleRemove}
-                className="opacity-0 group-hover:opacity-100 bg-red-600 text-white p-2 rounded-full transform scale-90 group-hover:scale-100 transition-all shadow-lg"
+                className="bg-red-600 text-white p-2 rounded-full shadow-lg hover:bg-red-700 transition-colors"
                 title="Remover imagem"
               >
                 <X size={20} />
               </button>
             </div>
+          </div>
+        ) : defaultImageSrc ? (
+          <div className="relative group max-w-md mx-auto">
+             <div className="absolute top-2 right-2 bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full font-bold shadow-sm z-10 border border-yellow-200 flex items-center gap-1">
+               <ImageIcon size={12} />
+               Padrão do Sistema
+             </div>
+             
+             <img 
+               src={defaultImageSrc} 
+               alt="Preview Padrão" 
+               className="w-full max-h-64 object-contain rounded-md bg-white shadow-sm opacity-80 grayscale-[30%]"
+             />
+             
+             <div className="absolute inset-0 bg-black/5 hover:bg-black/10 transition-colors rounded-md flex flex-col items-center justify-center gap-4">
+                 <div className="flex gap-3">
+                    <button
+                        type="button"
+                        onClick={() => setMediaModalOpen(true)}
+                        className="flex items-center gap-2 bg-white text-gray-700 px-4 py-2 rounded-full shadow-md hover:bg-gray-50 transition-colors font-medium text-sm"
+                        title="Selecionar da Biblioteca"
+                    >
+                        <FolderOpen size={18} className="text-indigo-600" />
+                        Biblioteca
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-full shadow-md hover:bg-blue-700 transition-colors font-medium text-sm"
+                        title="Fazer Upload"
+                    >
+                        <Upload size={18} />
+                        Upload
+                    </button>
+                 </div>
+                 <p className="text-xs text-gray-500 bg-white/80 px-2 py-1 rounded backdrop-blur-sm">
+                    {minWidth}x{minHeight}px (Proporção {aspectRatio}:1)
+                 </p>
+             </div>
+             
+             {uploading && (
+                <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-20 rounded-md">
+                     <div className="flex flex-col items-center">
+                        <Loader2 className="text-blue-500 mb-2 animate-spin" size={32} />
+                        <p className="text-sm text-gray-500 font-medium">Processando...</p>
+                     </div>
+                </div>
+            )}
           </div>
         ) : (
           <div 
@@ -407,7 +474,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                 <button
                     type="button"
                     onClick={() => setMediaModalOpen(true)}
-                    className="flex flex-col items-center gap-2 p-3 rounded-lg hover:bg-white hover:shadow-md transition-all text-gray-500 hover:text-blue-600"
+                    className="flex flex-col items-center gap-2 p-3 rounded-lg text-gray-500"
                 >
                     <FolderOpen size={24} />
                     <span className="text-xs font-medium">Biblioteca</span>
@@ -416,7 +483,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                 <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="flex flex-col items-center gap-2 p-3 rounded-lg hover:bg-white hover:shadow-md transition-all text-gray-500 hover:text-blue-600"
+                    className="flex flex-col items-center gap-2 p-3 rounded-lg text-gray-500"
                 >
                     <Upload size={24} />
                     <span className="text-xs font-medium">Upload</span>
@@ -426,7 +493,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
             {uploading && (
                 <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-20">
                      <div className="flex flex-col items-center">
-                        <Loader2 className="animate-spin text-blue-500 mb-2" size={32} />
+                        <Loader2 className="text-blue-500 mb-2" size={32} />
                         <p className="text-sm text-gray-500 font-medium">Processando...</p>
                      </div>
                 </div>
@@ -451,8 +518,8 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         <span className="text-red-500 text-sm mt-1">{error}</span>
       )}
 
-      {editorOpen && selectedImageSrc && isComponentLoaded && (
-        <AdvancedImageEditorModal
+      {editorOpen && selectedImageSrc && isComponentLoaded && EditorComponent && (
+        <EditorComponent
           imageSrc={selectedImageSrc}
           onClose={handleEditorClose}
           onSave={handleEditorSave}

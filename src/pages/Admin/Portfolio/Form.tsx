@@ -12,8 +12,8 @@ import { useFormDraft } from '../../../hooks/useFormDraft';
 import { useSlug } from '../../../hooks/useSlug';
 import { useGlobalStore } from '../../../stores/useGlobalStore';
 import UnsavedChangesModal from '../../../components/Admin/UnsavedChangesModal';
-import UnsavedChangesBar from '../../../components/Admin/UnsavedChangesBar';
 import SEOSnippetPreview from '../../../components/Admin/SEOSnippetPreview';
+import FormSkeleton from '../../../components/Skeletons/FormSkeleton';
 import { useDebounce } from '../../../hooks/useDebounce'; 
 
 // Lazy load heavy components
@@ -214,7 +214,6 @@ const PortfolioForm: React.FC = () => {
               }))
             : []
         });
-        const baseSlug = formatSlug(data.title || '');
       }
     } catch (error) {
       console.error('Error fetching portfolio item:', error);
@@ -343,20 +342,16 @@ const PortfolioForm: React.FC = () => {
   };
 
   if (initialLoading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <Loader2 className="w-10 h-10 animate-spin text-blue-600" />
-      </div>
-    );
+    return <FormSkeleton />;
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
+    <div className="max-w-4xl mx-auto">
+      <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
           <Link
             to="/admin/portfolio"
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            className="p-2 rounded-full"
           >
             <ArrowLeft size={24} className="text-gray-600" />
           </Link>
@@ -371,13 +366,6 @@ const PortfolioForm: React.FC = () => {
         onSave={handleSaveFromModal}
         onDiscard={handleDiscard}
         onCancel={() => blocker.reset?.()}
-      />
-
-      <UnsavedChangesBar
-        visible={isDirty && !showModal && isEditing}
-        onSave={() => handleSubmit(onSubmit, onError)()}
-        onReset={() => reset()}
-        loading={loading}
       />
 
       <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-6">
@@ -407,7 +395,7 @@ const PortfolioForm: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleManualGenerateSlug}
-                  className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                  className="text-xs text-blue-600 flex items-center gap-1"
                   title="Gerar slug baseado no título"
                 >
                   <RefreshCw size={12} /> Gerar Automático
@@ -429,7 +417,7 @@ const PortfolioForm: React.FC = () => {
                 />
                 <div className="absolute right-3 top-2.5 flex items-center pointer-events-none">
                     {isChecking ? (
-                        <Loader2 className="animate-spin text-blue-500" size={16} />
+                        <Loader2 className="text-blue-500" size={16} />
                     ) : isSlugAvailable === true ? (
                         <CheckCircle className="text-green-500" size={16} />
                     ) : isSlugAvailable === false || slugError ? (
@@ -541,11 +529,13 @@ const PortfolioForm: React.FC = () => {
               minWidth={840}
               minHeight={500}
               description="Formato recomendado: 840x500px (Proporção 1.68:1)"
+              pageKey="portfolio:detail"
+              role="hero"
             />
           </div>
 
           <div>
-            <Suspense fallback={<div className="h-64 bg-gray-50 animate-pulse rounded-lg border border-gray-200" />}>
+            <Suspense fallback={<div className="h-64 bg-gray-50 rounded-lg border border-gray-200" />}>
               <TiptapEditor
                 label="Descrição Detalhada"
                 value={watch('description') || ''}
@@ -572,17 +562,17 @@ const PortfolioForm: React.FC = () => {
         <div className="flex justify-end gap-4">
           <Link
             to="/admin/portfolio"
-            className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-colors"
+            className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium"
           >
             Cancelar
           </Link>
           <button
             type="submit"
             disabled={loading}
-            className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg font-medium disabled:opacity-50"
           >
-            {loading ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
-            Salvar Projeto
+            {loading ? null : <Save size={20} />}
+            {loading ? 'Salvando...' : 'Salvar Projeto'}
           </button>
         </div>
       </form>

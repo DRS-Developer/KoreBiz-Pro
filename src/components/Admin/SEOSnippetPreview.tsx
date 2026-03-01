@@ -1,4 +1,5 @@
 import React from 'react';
+import { THEME_COLORS } from '../../constants/themeColors';
 
 interface SEOSnippetPreviewProps {
   title: string;
@@ -7,7 +8,7 @@ interface SEOSnippetPreviewProps {
 }
 
 const SEOSnippetPreview: React.FC<SEOSnippetPreviewProps> = ({ title, description, slug }) => {
-  const baseUrl = 'https://arsinstalacoes.com.br';
+  const baseUrl = 'https://korebiz.com.br';
   // Clean slug to remove leading slash if present
   const cleanSlug = slug?.replace(/^\//, '') || 'pagina';
   const displayUrl = `${baseUrl} › ${cleanSlug}`;
@@ -25,17 +26,31 @@ const SEOSnippetPreview: React.FC<SEOSnippetPreviewProps> = ({ title, descriptio
       <div className="font-sans">
         <div className="flex items-center mb-1">
           <div className="bg-gray-100 rounded-full w-7 h-7 mr-2 flex items-center justify-center overflow-hidden">
-            <img src="/logo.png" alt="Logo" className="w-full h-full object-cover opacity-80" onError={(e) => (e.currentTarget.style.display = 'none')} />
+            <img 
+              src="/favicon.svg" 
+              alt="Logo" 
+              className="w-full h-full object-cover opacity-80" 
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                e.currentTarget.parentElement?.classList.add('bg-blue-100'); // Fallback background
+              }} 
+            />
           </div>
           <div className="leading-tight">
-            <div className="text-sm text-gray-800">ArsInstalações</div>
+            <div className="text-sm text-gray-800">KoreBiz</div>
             <div className="text-xs text-gray-500">{displayUrl}</div>
           </div>
         </div>
-        <div className="text-xl text-[#1a0dab] font-medium hover:underline cursor-pointer mb-1 truncate">
+        <div 
+          className="text-xl font-medium cursor-pointer mb-1 truncate"
+          style={{ color: THEME_COLORS.google.title }}
+        >
           {truncatedTitle || 'Título da Página'}
         </div>
-        <div className="text-sm text-[#4d5156] leading-snug break-words">
+        <div 
+          className="text-sm leading-snug break-words"
+          style={{ color: THEME_COLORS.google.description }}
+        >
           {truncatedDesc || 'A descrição da página aparecerá aqui nos resultados de busca. Certifique-se de incluir palavras-chave relevantes.'}
         </div>
       </div>

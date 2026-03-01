@@ -5,11 +5,13 @@ import { Database } from '../../../types/database.types';
 import DataTable from '../../../components/Admin/DataTable';
 import { Shield, User } from 'lucide-react';
 import { toast } from 'sonner';
+import { useGlobalStore } from '../../../stores/useGlobalStore';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 
 const UsersList: React.FC = () => {
-  const [items, setItems] = useState<Profile[]>([]);
+  const { profiles, setProfiles, updateProfile } = useGlobalStore();
+  const [isLoading, setIsLoading] = useState(true);
 
   const navigate = useNavigate();
 
@@ -19,6 +21,7 @@ const UsersList: React.FC = () => {
 
   const fetchItems = async () => {
     try {
+      setIsLoading(true);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -26,11 +29,13 @@ const UsersList: React.FC = () => {
 
       if (error) throw error;
       
-      setItems(data || []);
+      setProfiles(data || []);
 
     } catch (error) {
       console.error('Error fetching users:', error);
       toast.error('Erro ao carregar usuários');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -44,9 +49,10 @@ const UsersList: React.FC = () => {
 
       if (error) throw error;
       
-      setItems(items.map(item => 
-        item.id === id ? { ...item, role: newRole } : item
-      ));
+      const profileToUpdate = profiles.find(p => p.id === id);
+      if (profileToUpdate) {
+        updateProfile({ ...profileToUpdate, role: newRole });
+      }
       
       toast.success('Função atualizada com sucesso');
     } catch (error) {
@@ -98,7 +104,7 @@ const UsersList: React.FC = () => {
   ];
 
   return (
-    <div className="p-6">
+    <div>
       <div className="mb-6 flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Gerenciar Usuários</h1>
@@ -106,7 +112,7 @@ const UsersList: React.FC = () => {
         </div>
         <button
           onClick={() => navigate('/admin/usuarios/novo')}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-800 text-white rounded-md hover:bg-blue-900 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-blue-800 text-white rounded-md"
         >
           <User className="w-4 h-4" />
           Adicionar Novo Usuário
@@ -115,9 +121,9 @@ const UsersList: React.FC = () => {
 
       <DataTable
         title="Usuários"
-        data={items}
+        data={profiles}
         columns={columns}
-        // No delete or add button for now as it requires Auth Admin API or Edge Functions
+        isLoading={isLoading}
       />
     </div>
   );

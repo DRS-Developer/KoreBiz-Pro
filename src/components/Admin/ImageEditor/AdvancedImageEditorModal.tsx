@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { Cropper, CropperRef } from 'react-advanced-cropper';
 import 'react-advanced-cropper/dist/style.css';
-import { X, Check, Smartphone, Monitor, Maximize, Sliders, RotateCw } from 'lucide-react';
+import { Check, Smartphone, Monitor, Sliders, RotateCw } from 'lucide-react';
+import { THEME_COLORS } from '../../../constants/themeColors';
 
 interface AdvancedImageEditorModalProps {
   imageSrc: string;
@@ -77,8 +78,8 @@ const AdvancedImageEditorModal: React.FC<AdvancedImageEditorModalProps> = ({
             <button
               type="button"
               onClick={() => setPreviewMode('desktop')}
-              className={`p-2 rounded transition-colors ${
-                previewMode === 'desktop' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'
+              className={`p-2 rounded ${
+                previewMode === 'desktop' ? 'bg-blue-600 text-white' : 'text-gray-400'
               }`}
               title="Preview Desktop (Corte Original)"
             >
@@ -87,8 +88,8 @@ const AdvancedImageEditorModal: React.FC<AdvancedImageEditorModalProps> = ({
             <button
               type="button"
               onClick={() => setPreviewMode('mobile')}
-              className={`p-2 rounded transition-colors ${
-                previewMode === 'mobile' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'
+              className={`p-2 rounded ${
+                previewMode === 'mobile' ? 'bg-blue-600 text-white' : 'text-gray-400'
               }`}
               title="Simular Mobile (Safe Zone Central)"
             >
@@ -103,8 +104,8 @@ const AdvancedImageEditorModal: React.FC<AdvancedImageEditorModalProps> = ({
             <button
               type="button"
               onClick={() => setShowFilters(!showFilters)}
-              className={`p-2 rounded transition-colors ${
-                showFilters ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'
+              className={`p-2 rounded ${
+                showFilters ? 'bg-blue-600 text-white' : 'text-gray-400'
               }`}
               title="Ajustes de Imagem"
             >
@@ -113,7 +114,7 @@ const AdvancedImageEditorModal: React.FC<AdvancedImageEditorModalProps> = ({
              <button
               type="button"
               onClick={rotateImage}
-              className="p-2 rounded transition-colors text-gray-400 hover:text-white"
+              className="p-2 rounded text-gray-400"
               title="Rotacionar 90°"
             >
               <RotateCw size={18} />
@@ -125,14 +126,14 @@ const AdvancedImageEditorModal: React.FC<AdvancedImageEditorModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-gray-300 hover:text-white transition-colors"
+            className="px-4 py-2 text-gray-300"
           >
             Cancelar
           </button>
           <button
             type="button"
             onClick={onSaveClick}
-            className="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+            className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg font-medium"
           >
             <Check size={18} />
             Salvar Corte
@@ -158,6 +159,7 @@ const AdvancedImageEditorModal: React.FC<AdvancedImageEditorModalProps> = ({
             transformImage={{
                 adjustStencil: true,
             }}
+            // @ts-ignore
             rotate={rotation}
             style={{
                 filter: `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`,
@@ -247,7 +249,7 @@ const AdvancedImageEditorModal: React.FC<AdvancedImageEditorModalProps> = ({
                                 setSaturation(100);
                                 setRotation(0);
                             }}
-                            className="w-full py-2 text-xs text-red-400 hover:text-red-300 border border-red-900/50 rounded hover:bg-red-900/20 transition-colors"
+                            className="w-full py-2 text-xs text-red-400 border border-red-900/50 rounded"
                         >
                             Resetar Ajustes
                         </button>
@@ -283,7 +285,7 @@ const AdvancedImageEditorModal: React.FC<AdvancedImageEditorModalProps> = ({
             height: 12px;
             width: 12px;
             border-radius: 50%;
-            background: #3b82f6;
+            background: ${THEME_COLORS.primary.blue500};
             cursor: pointer;
             margin-top: -4px;
         }
@@ -291,7 +293,7 @@ const AdvancedImageEditorModal: React.FC<AdvancedImageEditorModalProps> = ({
             width: 100%;
             height: 4px;
             cursor: pointer;
-            background: #374151;
+            background: ${THEME_COLORS.gray.sliderTrack};
             border-radius: 2px;
         }
       `}</style>

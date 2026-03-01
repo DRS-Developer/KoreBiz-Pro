@@ -3,7 +3,7 @@ import { useFormContext } from 'react-hook-form';
 import { BarChart3, Code } from 'lucide-react';
 
 const AnalyticsSettingsTab: React.FC = () => {
-  const { register, formState: { errors } } = useFormContext();
+  const { register } = useFormContext();
 
   return (
     <div className="space-y-8">

@@ -7,6 +7,13 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Email Styles
+const STYLES = {
+  containerBg: '#f9f9f9',
+  borderColor: '#eee',
+  footerText: '#888',
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -24,17 +31,17 @@ serve(async (req) => {
 
     // Send the email
     const { data, error } = await resend.emails.send({
-      from: 'Ars Instalações <onboarding@resend.dev>', // Update this if you have a verified domain
+      from: 'KoreBiz <onboarding@resend.dev>', // Update this if you have a verified domain
       to: ['devdrsoares@gmail.com'], // Default admin email - change this or use env var
       reply_to: email,
       subject: subject || `Novo contato de ${name}`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2>Novo Contato via Site</h2>
+          <h2>Novo Contato via Site KoreBiz</h2>
           <p>Olá <strong>${to_name || 'Admin'}</strong>,</p>
           <p>Você recebeu uma nova mensagem através do formulário de contato.</p>
           
-          <div style="background: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;">
+          <div style="background: ${STYLES.containerBg}; padding: 15px; border-radius: 5px; margin: 20px 0;">
             <p><strong>Nome:</strong> ${name}</p>
             <p><strong>E-mail:</strong> ${email}</p>
             <p><strong>Telefone:</strong> ${phone || 'Não informado'}</p>
@@ -42,8 +49,8 @@ serve(async (req) => {
             <p style="white-space: pre-wrap;">${message}</p>
           </div>
 
-          <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
-          <p style="font-size: 12px; color: #888;">Mensagem enviada automaticamente pelo sistema Ars Instalações.</p>
+          <hr style="border: 0; border-top: 1px solid ${STYLES.borderColor}; margin: 20px 0;" />
+          <p style="font-size: 12px; color: ${STYLES.footerText};">Mensagem enviada automaticamente pelo sistema KoreBiz.</p>
         </div>
       `,
     })

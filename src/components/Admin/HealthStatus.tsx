@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Activity, AlertTriangle, CheckCircle, XCircle, CloudOff, RefreshCw } from 'lucide-react';
+import { Activity, AlertTriangle, CheckCircle, CloudOff } from 'lucide-react';
 import { HealthCheckService, HealthReport } from '../../services/healthCheck';
 
 const HealthStatus: React.FC = () => {
@@ -28,7 +28,7 @@ const HealthStatus: React.FC = () => {
     return (
       <div className="mt-auto px-4 py-3 border-t border-blue-800">
         <div className="flex items-center space-x-2 text-blue-300 text-sm">
-          <Activity size={16} className="animate-pulse" />
+          <Activity size={16} />
           <span>Verificando sistema...</span>
         </div>
       </div>
@@ -53,9 +53,9 @@ const HealthStatus: React.FC = () => {
       <Link to="/admin/system-health" className="group block">
         <div className="flex items-center justify-between mb-1">
           <span className="text-xs font-semibold text-blue-300 uppercase tracking-wider">Status do Sistema</span>
-          <Activity size={14} className="text-blue-400 group-hover:text-white transition-colors" />
+          <Activity size={14} className="text-blue-400" />
         </div>
-        <div className={`flex items-center space-x-2 ${config.color} font-medium text-sm group-hover:opacity-80 transition-opacity`}>
+        <div className={`flex items-center space-x-2 ${config.color} font-medium text-sm`}>
           {config.icon}
           <span>{config.label}</span>
         </div>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { Lock, Mail, AlertCircle } from 'lucide-react';
+import SEO from '../../components/SEO';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -57,6 +58,7 @@ const Login: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+      <SEO title="Login Administrativo" />
       <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-8">
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-blue-900">Área Administrativa</h1>
@@ -104,7 +106,7 @@ const Login: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors disabled:opacity-70"
+            className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg disabled:opacity-70"
           >
             {loading ? 'Entrando...' : 'Entrar'}
           </button>

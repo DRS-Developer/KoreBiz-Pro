@@ -2,15 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { Database } from '../../../types/database.types';
 import DataTable from '../../../components/Admin/DataTable';
-import { Eye, Mail, Archive } from 'lucide-react';
+import { Eye, Mail, Archive, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 import { useGlobalStore } from '../../../stores/useGlobalStore';
+import ContactInfoEditor from '../../../components/Admin/ContactInfoEditor';
 
 type ContactItem = Database['public']['Tables']['contacts']['Row'];
 
 const ContactsList: React.FC = () => {
   const { contacts, setContacts } = useGlobalStore();
   const [selectedMessage, setSelectedMessage] = useState<ContactItem | null>(null);
+  const [isContactInfoEditorOpen, setIsContactInfoEditorOpen] = useState(false);
+  const [canEditContactInfo, setCanEditContactInfo] = useState(false);
+  const [loadingRole, setLoadingRole] = useState(true);
   
   // Contacts might not be preloaded by initial AppLoader since they are private
   // So we might need to fetch them here
@@ -18,6 +22,30 @@ const ContactsList: React.FC = () => {
     if (contacts.length === 0) {
         fetchItems();
     }
+  }, []);
+
+  useEffect(() => {
+    const loadRole = async () => {
+      try {
+        const { data: userData } = await supabase.auth.getUser();
+        if (!userData?.user) return;
+
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', userData.user.id)
+          .single();
+
+        if (error) throw error;
+        setCanEditContactInfo(data?.role === 'admin' || data?.role === 'editor');
+      } catch {
+        setCanEditContactInfo(false);
+      } finally {
+        setLoadingRole(false);
+      }
+    };
+
+    loadRole();
   }, []);
 
   const fetchItems = async () => {
@@ -114,14 +142,14 @@ const ContactsList: React.FC = () => {
               setSelectedMessage(item);
               if (item.status === 'new') handleStatusUpdate(item.id, 'read');
             }}
-            className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+            className="p-1 text-blue-600 rounded"
             title="Ver Detalhes"
           >
             <Eye size={18} />
           </button>
           <a
             href={`mailto:${item.email}?subject=Re: ${item.subject}`}
-            className="p-1 text-green-600 hover:bg-green-50 rounded"
+            className="p-1 text-green-600 rounded"
             title="Responder por E-mail"
           >
             <Mail size={18} />
@@ -139,12 +167,32 @@ const ContactsList: React.FC = () => {
   ];
 
   return (
-    <div className="p-6 flex flex-col md:flex-row gap-6 h-[calc(100vh-64px)] overflow-hidden">
+    <div className="flex flex-col md:flex-row gap-6 h-full overflow-hidden">
       <div className={`flex-1 overflow-auto ${selectedMessage ? 'hidden md:block' : ''}`}>
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Gerenciar Contatos</h1>
-          <p className="text-gray-600">Visualize e responda as mensagens recebidas.</p>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Gerenciar Contatos</h1>
+              <p className="text-gray-600">Visualize e responda as mensagens recebidas.</p>
+            </div>
+            <button
+              type="button"
+              disabled={loadingRole || !canEditContactInfo}
+              onClick={() => setIsContactInfoEditorOpen(true)}
+              className={`inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg transition-opacity ${
+                loadingRole || !canEditContactInfo ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+            >
+              <Settings size={18} />
+              Configurar Contato
+            </button>
+          </div>
         </div>
+
+        <ContactInfoEditor
+          isOpen={isContactInfoEditorOpen}
+          onClose={() => setIsContactInfoEditorOpen(false)}
+        />
 
         <DataTable
           title="Mensagens"
@@ -199,7 +247,7 @@ const ContactsList: React.FC = () => {
             <div className="pt-6 border-t border-gray-200 flex flex-col gap-3">
               <a
                 href={`mailto:${selectedMessage.email}?subject=Re: ${selectedMessage.subject}`}
-                className="flex items-center justify-center gap-2 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                className="flex items-center justify-center gap-2 w-full bg-blue-600 text-white py-2 rounded-lg"
               >
                 <Mail size={18} /> Responder por E-mail
               </a>
@@ -207,7 +255,7 @@ const ContactsList: React.FC = () => {
               <div className="flex gap-3">
                 <button
                   onClick={() => handleStatusUpdate(selectedMessage.id, selectedMessage.status === 'archived' ? 'read' : 'archived')}
-                  className="flex-1 flex items-center justify-center gap-2 bg-gray-100 text-gray-700 py-2 rounded-lg hover:bg-gray-200 transition-colors"
+                  className="flex-1 flex items-center justify-center gap-2 bg-gray-100 text-gray-700 py-2 rounded-lg"
                 >
                   <Archive size={18} /> {selectedMessage.status === 'archived' ? 'Desarquivar' : 'Arquivar'}
                 </button>

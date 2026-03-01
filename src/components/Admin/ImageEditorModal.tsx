@@ -3,6 +3,7 @@ import Cropper, { Area } from 'react-easy-crop';
 import { X, Check, ZoomIn, Sun, Contrast, Droplet, RotateCw, Maximize, Minimize } from 'lucide-react';
 import getCroppedImg from '../../utils/imageUtils';
 import BackgroundControls, { BackgroundConfig } from './ImageEditor/BackgroundControls';
+import { THEME_COLORS } from '../../constants/themeColors';
 
 interface ImageEditorModalProps {
   imageSrc: string;
@@ -30,7 +31,7 @@ const ImageEditorModal: React.FC<ImageEditorModalProps> = ({
   const [objectFit, setObjectFit] = useState<'contain' | 'cover'>('cover');
   const [backgroundConfig, setBackgroundConfig] = useState<BackgroundConfig>({ 
     type: 'solid', 
-    color: '#ffffff' 
+    color: THEME_COLORS.white 
   });
 
   // Filters
@@ -64,7 +65,7 @@ const ImageEditorModal: React.FC<ImageEditorModalProps> = ({
     };
   }, [imageSrc, minWidth, minHeight]);
 
-  const onCropComplete = useCallback((croppedArea: Area, croppedAreaPixels: Area) => {
+  const onCropComplete = useCallback((_: Area, croppedAreaPixels: Area) => {
     setCroppedAreaPixels(croppedAreaPixels);
   }, []);
 
@@ -99,7 +100,7 @@ const ImageEditorModal: React.FC<ImageEditorModalProps> = ({
            <div 
              className="absolute inset-0 z-0 pointer-events-none"
              style={{ 
-               backgroundColor: backgroundConfig.type === 'solid' ? backgroundConfig.color : '#000',
+               backgroundColor: backgroundConfig.type === 'solid' ? backgroundConfig.color : THEME_COLORS.black,
                // Center the "canvas" visually if needed, but easy-crop takes full space
              }} 
            />
@@ -117,7 +118,7 @@ const ImageEditorModal: React.FC<ImageEditorModalProps> = ({
           objectFit={objectFit === 'contain' ? 'contain' : 'cover'} // Use easy-crop's objectFit
           style={{
             containerStyle: {
-                backgroundColor: objectFit === 'contain' ? backgroundConfig.color : '#000000',
+                backgroundColor: objectFit === 'contain' ? backgroundConfig.color : THEME_COLORS.black,
             },
             mediaStyle: {
               filter: `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`
@@ -130,7 +131,7 @@ const ImageEditorModal: React.FC<ImageEditorModalProps> = ({
       <div className="w-full md:w-80 bg-gray-900 p-6 text-white overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-lg font-bold">Editar Imagem</h3>
-          <button type="button" onClick={onClose} className="text-gray-400 hover:text-white">
+          <button type="button" onClick={onClose} className="text-gray-400">
             <X size={24} />
           </button>
         </div>
@@ -144,8 +145,8 @@ const ImageEditorModal: React.FC<ImageEditorModalProps> = ({
                   setObjectFit('cover');
                   setZoom(1); // Reset zoom usually helps
               }}
-              className={`flex-1 flex items-center justify-center py-2 text-sm font-medium rounded-md transition-colors ${
-                objectFit === 'cover' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'
+              className={`flex-1 flex items-center justify-center py-2 text-sm font-medium rounded-md ${
+                objectFit === 'cover' ? 'bg-blue-600 text-white' : 'text-gray-400'
               }`}
             >
               <Maximize size={16} className="mr-2" /> Preencher
@@ -156,8 +157,8 @@ const ImageEditorModal: React.FC<ImageEditorModalProps> = ({
                   setObjectFit('contain');
                   setZoom(1);
               }}
-              className={`flex-1 flex items-center justify-center py-2 text-sm font-medium rounded-md transition-colors ${
-                objectFit === 'contain' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'
+              className={`flex-1 flex items-center justify-center py-2 text-sm font-medium rounded-md ${
+                objectFit === 'contain' ? 'bg-blue-600 text-white' : 'text-gray-400'
               }`}
             >
               <Minimize size={16} className="mr-2" /> Ajustar
@@ -281,7 +282,7 @@ const ImageEditorModal: React.FC<ImageEditorModalProps> = ({
             <button
               type="button"
               onClick={handleSave}
-              className="w-full flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors"
+              className="w-full flex items-center justify-center bg-blue-600 text-white font-bold py-3 px-4 rounded-lg"
             >
               <Check size={20} className="mr-2" /> Confirmar e Enviar
             </button>

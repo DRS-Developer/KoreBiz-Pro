@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { AlertTriangle, Info, CheckCircle, X, Trash2 } from 'lucide-react';
+import { AlertTriangle, Info, CheckCircle, Trash2 } from 'lucide-react';
 
 export type ConfirmationModalVariant = 'danger' | 'warning' | 'info' | 'success';
 
@@ -67,13 +67,13 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         return 'bg-green-600 hover:bg-green-700 text-white';
       case 'info':
       default:
-        return 'bg-blue-600 hover:bg-blue-700 text-white';
+        return 'bg-blue-600 text-white';
     }
   };
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-lg shadow-xl max-w-md w-full overflow-hidden">
         <div className="p-6">
           <div className="flex items-start gap-4 mb-4">
             <div className={`p-3 rounded-full flex-shrink-0 ${getHeaderColor()}`}>
@@ -90,7 +90,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
               type="button"
               onClick={onCancel}
               disabled={loading}
-              className="px-4 py-2 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-colors"
+              className="px-4 py-2 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-200"
             >
               {cancelText}
             </button>
@@ -98,10 +98,10 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
               type="button"
               onClick={onConfirm}
               disabled={loading}
-              className={`px-4 py-2 font-medium rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors flex items-center gap-2 ${getConfirmButtonClass()} ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+              className={`px-4 py-2 font-medium rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center gap-2 ${getConfirmButtonClass()} ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
               {loading ? (
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
               ) : (
                 variant === 'danger' && <Trash2 size={16} />
               )}

@@ -2,42 +2,39 @@
 import React from 'react';
 import { useSiteSettings } from '../hooks/useSiteSettings';
 import SEO from '../components/SEO';
-import { Loader2, FileText } from 'lucide-react';
+import HtmlContent from '../components/HtmlContent';
+import PageHeader from '../components/PageHeader';
 
 const TermsOfUse: React.FC = () => {
-  const { settings, loading } = useSiteSettings();
+  const { settings } = useSiteSettings();
 
-  const content = settings?.terms_of_use || '<p>Em construção...</p>';
+  const content = settings?.terms_of_use || '';
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
-      <SEO title="Termos de Uso" description="Termos e Condições de Uso dos serviços da ArsInstalações." />
+      <SEO title="Termos de Uso" description="Termos e Condições de Uso dos serviços da KoreBiz." />
       
       {/* Header */}
-      <div className="bg-blue-900 text-white py-16">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center gap-4 mb-4">
-            <FileText className="w-10 h-10 text-blue-300" />
-            <h1 className="text-4xl font-bold">Termos de Uso</h1>
-          </div>
-          <p className="text-xl text-blue-100 max-w-2xl">
-            Regras e diretrizes para utilização dos nossos serviços e plataforma.
-          </p>
-        </div>
-      </div>
+      <PageHeader 
+        title="Termos de Uso" 
+        description="Regras e diretrizes para utilização dos nossos serviços e plataforma."
+      />
 
       <div className="container mx-auto px-4 -mt-8">
         <div className="bg-white p-8 md:p-12 rounded-xl shadow-md border border-gray-100 min-h-[400px]">
-          {loading ? (
-            <div className="flex flex-col items-center justify-center h-64 text-gray-400">
-               <Loader2 className="w-8 h-8 animate-spin mb-2" />
-               <p>Carregando termos...</p>
-            </div>
-          ) : (
-            <div 
-              className="prose prose-lg max-w-none text-gray-700"
-              dangerouslySetInnerHTML={{ __html: content }} 
+          {content ? (
+            <HtmlContent 
+              className="prose prose-lg max-w-none text-gray-700 animate-fade-in"
+              content={content} 
             />
+          ) : (
+             <div className="space-y-4 opacity-0">
+               {/* Invisible content to hold layout space preventing layout shift */}
+               <div className="h-10 bg-gray-100 w-1/3 mb-4 rounded"></div>
+               <div className="h-4 bg-gray-100 w-full rounded"></div>
+               <div className="h-4 bg-gray-100 w-full rounded"></div>
+               <div className="h-4 bg-gray-100 w-3/4 rounded"></div>
+             </div>
           )}
         </div>
       </div>

@@ -1,0 +1,92 @@
+[
+  {
+    "id": "843875ed-5bcd-4335-92e4-86e7d6c6e619",
+    "title": "Instalação Elétrica Residencial",
+    "description": "<p>A&nbsp;ArsInstalações&nbsp;oferece&nbsp;soluções&nbsp;completas&nbsp;em&nbsp;Instalações&nbsp;Elétricas,&nbsp;garantindo&nbsp;qualidade&nbsp;técnica&nbsp;e&nbsp;conformidade&nbsp;com&nbsp;todas&nbsp;as&nbsp;normas&nbsp;de&nbsp;segurança&nbsp;vigentes&nbsp;(NBR&nbsp;5410).&nbsp;Nossa&nbsp;equipe&nbsp;é&nbsp;altamente&nbsp;qualificada&nbsp;para&nbsp;atender&nbsp;demandas&nbsp;de&nbsp;qualquer&nbsp;complexidade.</p>",
+    "image_url": "",
+    "link": "/areas-de-atuacao/instalacoes-eletricas",
+    "order_index": 1,
+    "is_active": true
+  },
+  {
+    "id": "8c4c1b50-b3e2-4b0f-9d33-585e7c9e84fd",
+    "title": "Instalações Hidráulicas",
+    "description": "<p>Realizamos&nbsp;projetos&nbsp;completos&nbsp;e&nbsp;execução&nbsp;de&nbsp;infraestrutura&nbsp;hidráulica,&nbsp;incluindo&nbsp;redes&nbsp;de&nbsp;água&nbsp;fria,&nbsp;água&nbsp;quente,&nbsp;esgoto&nbsp;sanitário&nbsp;e&nbsp;águas&nbsp;pluviais.&nbsp;Garantimos&nbsp;qualidade&nbsp;e&nbsp;conformidade&nbsp;com&nbsp;as&nbsp;normas&nbsp;técnicas&nbsp;vigentes.</p>",
+    "image_url": "",
+    "link": "/areas-de-atuacao/instalacoes-hidraulicas",
+    "order_index": 2,
+    "is_active": true
+  },
+  {
+    "id": "142b5ea2-d212-4bb2-9007-b86b2dc4eeb7",
+    "title": "Combate a Incêndio",
+    "description": "<p>Especialistas&nbsp;em&nbsp;segurança&nbsp;contra&nbsp;incêndio.&nbsp;Oferecemos&nbsp;instalação&nbsp;e&nbsp;manutenção&nbsp;de&nbsp;sistemas&nbsp;preventivos,&nbsp;garantindo&nbsp;a&nbsp;proteção&nbsp;do&nbsp;seu&nbsp;patrimônio&nbsp;e&nbsp;a&nbsp;segurança&nbsp;das&nbsp;pessoas.</p>",
+    "image_url": "",
+    "link": "/areas-de-atuacao/combate-a-incendio",
+    "order_index": 3,
+    "is_active": true
+  },
+  {
+    "id": "d7950fb3-bc91-45e3-9f17-959235f25052",
+    "title": "Automação Residencial",
+    "description": "<p>Transforme&nbsp;sua&nbsp;casa&nbsp;em&nbsp;um&nbsp;ambiente&nbsp;inteligente,&nbsp;confortável&nbsp;e&nbsp;eficiente.&nbsp;Oferecemos&nbsp;soluções&nbsp;completas&nbsp;de&nbsp;automação&nbsp;residencial&nbsp;para&nbsp;controle&nbsp;de&nbsp;iluminação,&nbsp;climatização,&nbsp;áudio&nbsp;e&nbsp;vídeo,&nbsp;cortinas&nbsp;e&nbsp;muito&nbsp;mais.</p>",
+    "image_url": "",
+    "link": "/areas-de-atuacao/automacao",
+    "order_index": 4,
+    "is_active": true
+  },
+  {
+    "id": "599228ce-7f64-47d0-a460-1057c2dfd43e",
+    "title": "Instalação de Ar Condicionado",
+    "description": "<p>Garanta&nbsp;o&nbsp;conforto&nbsp;térmico&nbsp;do&nbsp;seu&nbsp;ambiente&nbsp;com&nbsp;nossos&nbsp;serviços&nbsp;especializados&nbsp;em&nbsp;climatização.&nbsp;Realizamos&nbsp;instalação,&nbsp;manutenção&nbsp;e&nbsp;limpeza&nbsp;de&nbsp;ar&nbsp;condicionado&nbsp;para&nbsp;residências&nbsp;e&nbsp;empresas.</p>",
+    "image_url": "",
+    "link": "/areas-de-atuacao/climatizacao",
+    "order_index": 5,
+    "is_active": true
+  },
+  {
+    "id": "436d9046-e111-4ce0-b8c3-3f602b327c0e",
+    "title": "Manutenção Predial",
+    "description": "<p>Serviços&nbsp;completos&nbsp;de&nbsp;manutenção&nbsp;predial&nbsp;para&nbsp;condomínios&nbsp;e&nbsp;empresas.&nbsp;Atuamos&nbsp;na&nbsp;conservação&nbsp;preventiva&nbsp;e&nbsp;corretiva,&nbsp;garantindo&nbsp;a&nbsp;valorização&nbsp;do&nbsp;patrimônio&nbsp;e&nbsp;o&nbsp;bem-estar&nbsp;dos&nbsp;usuários.</p>",
+    "image_url": "",
+    "link": "/areas-de-atuacao/manutencao-predial",
+    "order_index": 6,
+    "is_active": true
+  },
+  {
+    "id": "7e30dc35-9e95-4b4d-a4ea-822a528bc119",
+    "title": "Projetos de Iluminação",
+    "description": "<p>Projetos&nbsp;luminotécnicos&nbsp;que&nbsp;aliam&nbsp;estética,&nbsp;funcionalidade&nbsp;e&nbsp;eficiência&nbsp;energética.&nbsp;Valorize&nbsp;seus&nbsp;ambientes&nbsp;com&nbsp;a&nbsp;iluminação&nbsp;correta&nbsp;para&nbsp;cada&nbsp;finalidade.</p>",
+    "image_url": "",
+    "link": "/areas-de-atuacao/projetos-iluminacao",
+    "order_index": 7,
+    "is_active": true
+  },
+  {
+    "id": "e2d05645-5819-4d9f-97a4-b8ecaecd69e2",
+    "title": "Sistemas de Segurança",
+    "description": "<p>Proteja&nbsp;seu&nbsp;patrimônio&nbsp;com&nbsp;as&nbsp;mais&nbsp;modernas&nbsp;tecnologias&nbsp;de&nbsp;segurança&nbsp;eletrônica.&nbsp;Oferecemos&nbsp;soluções&nbsp;integradas&nbsp;de&nbsp;monitoramento&nbsp;e&nbsp;controle&nbsp;de&nbsp;acesso.</p>",
+    "image_url": "",
+    "link": "/areas-de-atuacao/sistemas-seguranca",
+    "order_index": 8,
+    "is_active": true
+  },
+  {
+    "id": "40c38c59-2aa6-4f6b-95d0-7d3023376475",
+    "title": "Energia Solar Fotovoltaica",
+    "description": "<p>Gere&nbsp;sua&nbsp;própria&nbsp;energia&nbsp;limpa&nbsp;e&nbsp;economize&nbsp;até&nbsp;95%&nbsp;na&nbsp;conta&nbsp;de&nbsp;luz.&nbsp;Soluções&nbsp;completas&nbsp;em&nbsp;energia&nbsp;solar&nbsp;fotovoltaica,&nbsp;do&nbsp;projeto&nbsp;à&nbsp;homologação.</p>",
+    "image_url": "",
+    "link": "/areas-de-atuacao/energia-solar",
+    "order_index": 9,
+    "is_active": true
+  },
+  {
+    "id": "00b0a012-d9ac-4c64-9d2d-c1a5eafd73e6",
+    "title": "Laudos Técnicos e ART",
+    "description": "<p>Emissão&nbsp;de&nbsp;laudos&nbsp;técnicos,&nbsp;vistorias&nbsp;e&nbsp;Anotação&nbsp;de&nbsp;Responsabilidade&nbsp;Técnica&nbsp;(ART)&nbsp;para&nbsp;regularização&nbsp;de&nbsp;obras&nbsp;e&nbsp;reformas.</p>",
+    "image_url": "",
+    "link": "/areas-de-atuacao/laudos-tecnicos",
+    "order_index": 10,
+    "is_active": true
+  }
+]

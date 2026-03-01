@@ -2,13 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Save, Globe, Mail, Phone, MapPin, Share2, Image as ImageIcon, RotateCcw, Database, FileText, Search, Layout, FileCode, ExternalLink, BarChart3, Wrench } from 'lucide-react';
+import { Mail, Share2, Image as ImageIcon, RotateCcw, FileText, Search, Layout, FileCode, BarChart3, Wrench } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '../../../lib/supabase';
 import ImageUpload from '../../../components/Admin/ImageUpload';
 import { useFormGuard } from '../../../hooks/useFormGuard';
 import UnsavedChangesModal from '../../../components/Admin/UnsavedChangesModal';
-import UnsavedChangesBar from '../../../components/Admin/UnsavedChangesBar';
 import EmailSettingsTab from './EmailSettingsTab';
 import AnalyticsSettingsTab from './AnalyticsSettingsTab';
 import SettingsCard from './components/SettingsCard';
@@ -37,6 +36,7 @@ const schema = yup.object({
   not_found_title: yup.string().nullable(),
   not_found_message: yup.string().nullable(),
   indexing_enabled: yup.boolean(),
+  topbar_enabled: yup.boolean(),
   
   // Email Settings
   email_settings: yup.object().nullable(),
@@ -140,6 +140,7 @@ const Settings: React.FC = () => {
         setSettingsId(data.id);
         const socialLinks = data.social_links as Record<string, string>;
         const imageSettings = data.image_settings as any;
+        const layoutSettings = data.layout_settings as any;
 
         reset({
           site_name: data.site_name,
@@ -161,6 +162,7 @@ const Settings: React.FC = () => {
           not_found_title: data.not_found_title || '',
           not_found_message: data.not_found_message || '',
           indexing_enabled: data.indexing_enabled !== false,
+          topbar_enabled: layoutSettings?.topbar_enabled ?? true,
           
           email_settings: data.email_settings || {
             provider: 'emailjs',
@@ -257,6 +259,10 @@ const Settings: React.FC = () => {
           keep_exif: data.keep_exif
         }
       };
+      
+      const layout_settings = {
+        topbar_enabled: data.topbar_enabled
+      };
 
       const settingsData = {
         site_name: data.site_name,
@@ -267,6 +273,7 @@ const Settings: React.FC = () => {
         logo_url: data.logo_url,
         social_links,
         image_settings,
+        layout_settings,
         privacy_policy: data.privacy_policy,
         terms_of_use: data.terms_of_use,
         seo_keywords: data.seo_keywords,
@@ -379,15 +386,15 @@ const Settings: React.FC = () => {
   const tools = [
     {
       id: 'general',
-      title: 'Geral & Imagens',
-      description: 'Nome do site, logo, contato, redes sociais e configurações de compressão de imagem.',
-      icon: Globe,
+      title: 'Configurações de Imagens',
+      description: 'Configurações de compressão, redimensionamento e formatos de imagem.',
+      icon: ImageIcon,
       color: 'text-blue-600'
     },
     {
       id: 'appearance',
-      title: 'Aparência & 404',
-      description: 'Personalize a página de erro 404 e mensagens do sistema.',
+      title: 'Layout & Aparência',
+      description: 'Personalize o cabeçalho, rodapé e página de erro 404.',
       icon: Layout,
       color: 'text-purple-600'
     },
@@ -422,8 +429,8 @@ const Settings: React.FC = () => {
   ];
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="mb-8">
+    <div className="w-full">
+      <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
           <Wrench className="text-gray-400" />
           Ferramentas do Sistema
@@ -436,13 +443,6 @@ const Settings: React.FC = () => {
         onSave={handleSaveFromModal}
         onDiscard={handleDiscard}
         onCancel={() => blocker.reset?.()}
-      />
-
-      <UnsavedChangesBar
-        visible={isDirty && !activeTool}
-        onSave={() => handleSubmit(onSubmit, onError)()}
-        onReset={() => reset()}
-        loading={loading}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -473,67 +473,6 @@ const Settings: React.FC = () => {
             
             {activeTool === 'general' && (
               <>
-                 {/* General Info */}
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-6">
-                  <div className="flex items-center gap-2 border-b pb-4">
-                    <Globe className="w-5 h-5 text-gray-500" />
-                    <h2 className="text-lg font-medium text-gray-900">Informações Gerais</h2>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Nome do Site</label>
-                      <input type="text" {...register('site_name')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" />
-                      {errors.site_name && <p className="mt-1 text-sm text-red-600">{errors.site_name.message}</p>}
-                    </div>
-
-                    <div className="col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Descrição do Site</label>
-                      <textarea {...register('site_description')} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" />
-                    </div>
-
-                    <div className="col-span-2"><ImageUpload label="Logo do Site" value={watch('logo_url')} onChange={(url) => setValue('logo_url', url, { shouldValidate: true, shouldDirty: true })} folder="settings" error={errors.logo_url?.message} aspectRatio={1} minWidth={100} minHeight={100} description="Logo quadrado recomendado." /></div>
-                    <div className="col-span-2"><ImageUpload label="Banner da Home" value={watch('banner_url')} onChange={(url) => setValue('banner_url', url, { shouldValidate: true, shouldDirty: true })} folder="settings" error={errors.banner_url?.message} aspectRatio={16 / 5} minWidth={1920} minHeight={600} description="Formato recomendado: 1920x600px (Proporção 16:5)" /></div>
-                  </div>
-                </div>
-
-                {/* Contact Info */}
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-6">
-                  <div className="flex items-center gap-2 border-b pb-4">
-                    <Mail className="w-5 h-5 text-gray-500" />
-                    <h2 className="text-lg font-medium text-gray-900">Informações de Contato</h2>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Email de Contato</label>
-                      <input type="email" {...register('contact_email')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Telefone</label>
-                      <input type="text" {...register('contact_phone')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" />
-                    </div>
-                    <div className="col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Endereço</label>
-                      <input type="text" {...register('address')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Social Media */}
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-6">
-                  <div className="flex items-center gap-2 border-b pb-4">
-                    <Share2 className="w-5 h-5 text-gray-500" />
-                    <h2 className="text-lg font-medium text-gray-900">Redes Sociais</h2>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div><label className="block text-sm font-medium text-gray-700 mb-1">Facebook URL</label><input type="text" {...register('facebook')} className="w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
-                    <div><label className="block text-sm font-medium text-gray-700 mb-1">Instagram URL</label><input type="text" {...register('instagram')} className="w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
-                    <div><label className="block text-sm font-medium text-gray-700 mb-1">LinkedIn URL</label><input type="text" {...register('linkedin')} className="w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
-                    <div><label className="block text-sm font-medium text-gray-700 mb-1">WhatsApp</label><input type="text" {...register('whatsapp')} className="w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
-                  </div>
-                </div>
-
                 {/* Image Settings */}
                 <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-6">
                   <div className="flex items-center justify-between border-b pb-4">
@@ -541,7 +480,7 @@ const Settings: React.FC = () => {
                       <ImageIcon className="w-5 h-5 text-gray-500" />
                       <h2 className="text-lg font-medium text-gray-900">Configurações de Imagens</h2>
                     </div>
-                    <button type="button" onClick={handleRestoreDefaults} className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"><RotateCcw size={14} /> Restaurar Padrões</button>
+                    <button type="button" onClick={handleRestoreDefaults} className="flex items-center gap-1 text-sm text-blue-600"><RotateCcw size={14} /> Restaurar Padrões</button>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -614,9 +553,32 @@ const Settings: React.FC = () => {
               <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-6">
                 <div className="flex items-center gap-2 border-b pb-4">
                   <Layout className="w-5 h-5 text-gray-500" />
-                  <h2 className="text-lg font-medium text-gray-900">Aparência & Página 404</h2>
+                  <h2 className="text-lg font-medium text-gray-900">Layout & Aparência</h2>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="col-span-2">
+                     <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <label className="flex items-start gap-3 cursor-pointer">
+                           <div className="mt-1"><input type="checkbox" {...register('topbar_enabled')} className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500" /></div>
+                           <div><span className="font-bold text-gray-900 block">Exibir Barra Superior (Top Bar)</span><span className="text-sm text-gray-600 block mt-1">Habilita a barra azul escura no topo com telefone e email.</span></div>
+                        </label>
+                     </div>
+                  </div>
+
+                  <div className="col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Logotipo do Site</label>
+                    <ImageUpload 
+                        value={watch('logo_url')} 
+                        onChange={(url) => setValue('logo_url', url, { shouldValidate: true, shouldDirty: true })} 
+                        folder="settings" 
+                        error={errors.logo_url?.message} 
+                        aspectRatio={16/9} 
+                        description="Logo principal do site. Recomendado fundo transparente (PNG/WebP)."
+                        pageKey="home"
+                        role="logo" 
+                    />
+                  </div>
+
                   <div className="col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">Título da Página 404</label>
                     <input type="text" {...register('not_found_title')} placeholder="Ex: Página não encontrada" className="w-full px-3 py-2 border border-gray-300 rounded-md" />
@@ -636,15 +598,46 @@ const Settings: React.FC = () => {
                   <Search className="w-5 h-5 text-gray-500" />
                   <h2 className="text-lg font-medium text-gray-900">SEO & Metadados</h2>
                 </div>
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Nome do Site (Título Principal)</label>
+                    <input type="text" {...register('site_name')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" />
+                    {errors.site_name && <p className="mt-1 text-sm text-red-600">{errors.site_name.message}</p>}
+                    <p className="text-xs text-gray-500 mt-1">Aparece na aba do navegador e nos resultados de busca.</p>
+                  </div>
+
+                  <div className="col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Descrição do Site</label>
+                    <textarea {...register('site_description')} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" />
+                    <p className="text-xs text-gray-500 mt-1">Resumo curto para motores de busca (Google).</p>
+                  </div>
+
+                  <div className="col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Imagem de Compartilhamento (OG Image)</label>
+                    <ImageUpload 
+                        value={watch('banner_url')} 
+                        onChange={(url) => setValue('banner_url', url, { shouldValidate: true, shouldDirty: true })} 
+                        folder="settings" 
+                        error={errors.banner_url?.message} 
+                        aspectRatio={1200/630} 
+                        minWidth={1200} 
+                        minHeight={630} 
+                        description="Imagem que aparece ao compartilhar o link do site (WhatsApp, Facebook, etc). Formato recomendado: 1200x630px."
+                        pageKey="home"
+                        role="hero" 
+                    />
+                  </div>
+
+                  <div className="col-span-2 md:col-span-1"><label className="block text-sm font-medium text-gray-700 mb-1">Sufixo do Título do Site</label><input type="text" {...register('seo_title_suffix')} className="w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
+                  <div className="col-span-2 md:col-span-1"><label className="block text-sm font-medium text-gray-700 mb-1">Palavras-chave Globais</label><textarea {...register('seo_keywords')} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
+                </div>
+
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
                    <label className="flex items-start gap-3 cursor-pointer">
                       <div className="mt-1"><input type="checkbox" {...register('indexing_enabled')} className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500" /></div>
                       <div><span className="font-bold text-gray-900 block">Permitir Indexação nos Buscadores</span><span className="text-sm text-gray-600 block mt-1">Se desmarcado, adiciona <code>noindex</code>.</span></div>
                    </label>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="col-span-2"><label className="block text-sm font-medium text-gray-700 mb-1">Sufixo do Título do Site</label><input type="text" {...register('seo_title_suffix')} className="w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
-                  <div className="col-span-2"><label className="block text-sm font-medium text-gray-700 mb-1">Palavras-chave Globais</label><textarea {...register('seo_keywords')} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
                 </div>
               </div>
               <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-6">
@@ -662,7 +655,7 @@ const Settings: React.FC = () => {
                 <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-6">
                   <h2 className="text-lg font-medium text-gray-900">Política de Privacidade</h2>
                   <div className="prose max-w-none">
-                    <React.Suspense fallback={<div className="h-64 bg-gray-50 animate-pulse rounded-lg border border-gray-200" />}>
+                    <React.Suspense fallback={<div className="h-64 bg-gray-50 rounded-lg border border-gray-200" />}>
                       <TiptapEditor value={watch('privacy_policy') || ''} onChange={(content) => { if (content !== watch('privacy_policy')) setValue('privacy_policy', content, { shouldDirty: true }); }} placeholder="Digite a política de privacidade..." />
                     </React.Suspense>
                   </div>
@@ -670,7 +663,7 @@ const Settings: React.FC = () => {
                 <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-6">
                   <h2 className="text-lg font-medium text-gray-900">Termos de Uso</h2>
                   <div className="prose max-w-none">
-                    <React.Suspense fallback={<div className="h-64 bg-gray-50 animate-pulse rounded-lg border border-gray-200" />}>
+                    <React.Suspense fallback={<div className="h-64 bg-gray-50 rounded-lg border border-gray-200" />}>
                       <TiptapEditor value={watch('terms_of_use') || ''} onChange={(content) => { if (content !== watch('terms_of_use')) setValue('terms_of_use', content, { shouldDirty: true }); }} placeholder="Digite os termos de uso..." />
                     </React.Suspense>
                   </div>

@@ -25,6 +25,35 @@ if (!SUPABASE_URL || !SUPABASE_KEY) {
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+function isSupabasePublicUrl(url) {
+  if (!url) return false;
+  return /https:\/\/.*\.supabase\.co\/storage\/v1\/(object|render)\/(image\/)?public\//i.test(url);
+}
+
+function sanitizeData(data) {
+  if (!data) return data;
+  if (Array.isArray(data)) {
+    return data.map(item => sanitizeData(item));
+  }
+  if (typeof data === 'object') {
+    const newData = { ...data };
+    for (const key in newData) {
+      if (typeof newData[key] === 'string' && (key.includes('url') || key.includes('image') || key.includes('icon') || key.includes('logo'))) {
+        const url = newData[key];
+        // If it's a URL (starts with http) and NOT a Supabase URL, clear it.
+        if (url && url.startsWith('http') && !isSupabasePublicUrl(url)) {
+          console.warn(`   ⚠️ Removendo URL externa: ${key} = ${url}`);
+          newData[key] = ''; // Clear it so local default takes over
+        }
+      } else if (typeof newData[key] === 'object') {
+        newData[key] = sanitizeData(newData[key]);
+      }
+    }
+    return newData;
+  }
+  return data;
+}
+
 console.log('📦 Iniciando geração de dados estáticos (Static DB)...');
 
 async function fetchAndSave(key, table, select = '*', order = null, filters = {}) {
@@ -46,8 +75,10 @@ async function fetchAndSave(key, table, select = '*', order = null, filters = {}
 
     if (error) throw error;
 
+    const sanitizedData = sanitizeData(data);
+
     const filePath = path.join(PUBLIC_DIR, `${key}.json`);
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+    fs.writeFileSync(filePath, JSON.stringify(sanitizedData, null, 2));
     console.log(`   ✅ Salvo: ${filePath} (${data.length} itens)`);
   } catch (err) {
     console.error(`   ❌ Falha ao buscar ${table}:`, err.message);
@@ -86,8 +117,23 @@ async function generate() {
     { published: true }
   );
 
-  // 5. Parceiros (Se houver tabela, assumindo estrutura genérica ou omitindo por enquanto)
-  // await fetchAndSave('partners_list', 'partners', ...); 
+  // 5. Parceiros
+  await fetchAndSave(
+    'partners_list', 
+    'partners', 
+    'id, name, logo_url, website_url, order_index, is_active',
+    { column: 'order_index', ascending: true },
+    { is_active: true }
+  ); 
+
+  // 6. Áreas de Atuação
+  await fetchAndSave(
+    'practice_areas_list', 
+    'practice_areas', 
+    'id, title, description, image_url, link, order_index, is_active',
+    { column: 'order_index', ascending: true },
+    { is_active: true }
+  );
 
   console.log('🏁 Geração de Static DB concluída.');
 }

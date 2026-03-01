@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '../../../lib/supabase';
 
@@ -75,13 +75,13 @@ const UserForm: React.FC = () => {
   };
 
   return (
-    <div className="p-6 max-w-2xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
+    <div className="max-w-2xl mx-auto">
+      <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
           <button
-            onClick={() => navigate('/admin/usuarios')}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-          >
+          onClick={() => navigate('/admin/usuarios')}
+          className="p-2 rounded-full"
+        >
             <ArrowLeft className="w-6 h-6 text-gray-600" />
           </button>
           <h1 className="text-2xl font-bold text-gray-900">Novo Usuário</h1>
@@ -171,18 +171,16 @@ const UserForm: React.FC = () => {
           <button
             type="button"
             onClick={() => navigate('/admin/usuarios')}
-            className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+            className="px-4 py-2 text-gray-700 rounded-md"
           >
             Cancelar
           </button>
           <button
             type="submit"
             disabled={loading}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-800 text-white rounded-md hover:bg-blue-900 transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 bg-blue-800 text-white rounded-md disabled:opacity-50"
           >
-            {loading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
+            {loading ? null : (
               <Save className="w-4 h-4" />
             )}
             Criar Usuário

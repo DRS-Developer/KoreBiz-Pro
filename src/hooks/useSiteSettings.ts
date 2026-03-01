@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useGlobalStore } from '../stores/useGlobalStore';
 import { Database } from '../types/database.types';
 import { formatPhoneDisplay, formatWhatsAppLink } from '../utils/formatters';
@@ -14,6 +15,7 @@ export interface UseSiteSettingsResult {
   // Formatted Values
   displayAddress: string;
   displayPhone: string;
+  displayEmail: string; // Added displayEmail to interface
   whatsappLink: string;
 }
 
@@ -35,6 +37,24 @@ export function useSiteSettings(): UseSiteSettingsResult {
     }
   };
 
+  // Subscribe to realtime changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('settings_changes')
+      .on('postgres_changes', { 
+        event: 'UPDATE', 
+        schema: 'public', 
+        table: 'site_settings'
+      }, (payload) => {
+        setSettings(payload.new as SiteSettings);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [setSettings]);
+
   // Extract WhatsApp from social_links JSONB safely
   const getWhatsappNumber = (): string | null => {
     if (!settings?.social_links || typeof settings.social_links !== 'object') return null;
@@ -53,6 +73,7 @@ export function useSiteSettings(): UseSiteSettingsResult {
   const address = isHydrated ? (settings.address || 'Endereço não configurado') : 'Carregando...';
   // If we have settings, use them. If not, return empty string (or skeleton placeholder) instead of formatted "undefined"
   const phone = isHydrated ? formatPhoneDisplay(settings.contact_phone) : ''; 
+  const email = isHydrated ? (settings.contact_email || '') : '';
 
   return {
     settings,
@@ -61,6 +82,7 @@ export function useSiteSettings(): UseSiteSettingsResult {
     refetch,
     displayAddress: address,
     displayPhone: phone,
+    displayEmail: email,
     whatsappLink
   };
 }

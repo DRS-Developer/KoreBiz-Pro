@@ -1,4 +1,30 @@
 import { supabase } from '../lib/supabase';
+import type { Database } from '../types/database.types';
+
+type ServiceUsageRow = Pick<
+  Database['public']['Tables']['services']['Row'],
+  'id' | 'title' | 'image_url' | 'full_description'
+>;
+
+type PortfolioUsageRow = Pick<
+  Database['public']['Tables']['portfolios']['Row'],
+  'id' | 'title' | 'image_url' | 'gallery_images' | 'description'
+>;
+
+type PageUsageRow = Pick<
+  Database['public']['Tables']['pages']['Row'],
+  'id' | 'title' | 'featured_image' | 'content'
+>;
+
+type SettingsUsageRow = Pick<
+  Database['public']['Tables']['site_settings']['Row'],
+  'id' | 'logo_url' | 'image_settings'
+>;
+
+type PartnerUsageRow = Pick<
+  Database['public']['Tables']['partners']['Row'],
+  'id' | 'name' | 'logo_url'
+>;
 
 export interface MediaUsage {
   id: string;
@@ -14,7 +40,7 @@ export const normalizeUrl = (url: string): string => {
   try {
     // Handle relative URLs or full URLs
     const urlToParse = url.startsWith('http') ? url : `https://example.com${url.startsWith('/') ? '' : '/'}${url}`;
-    const urlObj = new URL(urlToParse);
+    new URL(urlToParse);
     
     // We only care about the path, decoded
     // If it was a full URL, we might want to keep origin, but for media files hosted on same bucket, path is usually enough unique identifier
@@ -58,25 +84,27 @@ export const checkMediaUsage = async (): Promise<Record<string, MediaUsage[]>> =
     const { data: services, error: sErr } = await supabase.from('services').select('id, title, image_url, full_description');
     if (sErr) console.error('Error fetching services:', sErr);
     
-    services?.forEach(svc => {
+    const servicesList = ((services as unknown as ServiceUsageRow[] | null) || []);
+    servicesList.forEach(svc => {
       if (svc.image_url) {
           addUsage(svc.image_url, { id: svc.id, type: 'service', title: svc.title, field: 'image_url' });
       }
       
       // Extract images from rich text (full_description)
       const richTextImages = svc.full_description?.match(/src="([^"]+)"/g);
-      richTextImages?.forEach(img => {
+      richTextImages?.forEach((img: string) => {
         const url = img.match(/src="([^"]+)"/)?.[1];
         if (url) addUsage(url, { id: svc.id, type: 'service', title: svc.title, field: 'full_description' });
       });
     });
-    console.log(`[MediaUsage] Checked ${services?.length || 0} services`);
+    console.log(`[MediaUsage] Checked ${servicesList.length || 0} services`);
 
     // 2. Check Portfolio
     const { data: portfolios, error: pErr } = await supabase.from('portfolios').select('id, title, image_url, gallery_images, description');
     if (pErr) console.error('Error fetching portfolios:', pErr);
 
-    portfolios?.forEach(item => {
+    const portfolioList = ((portfolios as unknown as PortfolioUsageRow[] | null) || []);
+    portfolioList.forEach(item => {
       if (item.image_url) {
         addUsage(item.image_url, { id: item.id, type: 'portfolio', title: item.title, field: 'image_url' });
       }
@@ -89,12 +117,12 @@ export const checkMediaUsage = async (): Promise<Record<string, MediaUsage[]>> =
       }
       // Rich Text
       const richTextImages = item.description?.match(/src="([^"]+)"/g);
-      richTextImages?.forEach(img => {
+      richTextImages?.forEach((img: string) => {
         const url = img.match(/src="([^"]+)"/)?.[1];
         if (url) addUsage(url, { id: item.id, type: 'portfolio', title: item.title, field: 'description' });
       });
     });
-    console.log(`[MediaUsage] Checked ${portfolios?.length || 0} portfolios`);
+    console.log(`[MediaUsage] Checked ${portfolioList.length || 0} portfolios`);
 
     // 3. Check Pages
     const { data: pages, error: pgErr } = await supabase.from('pages').select('id, title, featured_image, content');
@@ -103,7 +131,8 @@ export const checkMediaUsage = async (): Promise<Record<string, MediaUsage[]>> =
         if (!isAbort) console.error('Error fetching pages:', pgErr);
     }
 
-    pages?.forEach(page => {
+    const pageList = ((pages as unknown as PageUsageRow[] | null) || []);
+    pageList.forEach(page => {
       if (page.featured_image) {
         addUsage(page.featured_image, { id: page.id, type: 'page', title: page.title, field: 'featured_image' });
       }
@@ -112,12 +141,12 @@ export const checkMediaUsage = async (): Promise<Record<string, MediaUsage[]>> =
         ? page.content.match(/src="([^"]+)"/g)
         : JSON.stringify(page.content).match(/src="([^"]+)"/g);
         
-      richTextImages?.forEach(img => {
+      richTextImages?.forEach((img: string) => {
         const url = img.match(/src="([^"]+)"/)?.[1];
         if (url) addUsage(url, { id: page.id, type: 'page', title: page.title, field: 'content' });
       });
     });
-    console.log(`[MediaUsage] Checked ${pages?.length || 0} pages`);
+    console.log(`[MediaUsage] Checked ${pageList.length || 0} pages`);
 
     // 4. Check Site Settings
     try {
@@ -129,13 +158,14 @@ export const checkMediaUsage = async (): Promise<Record<string, MediaUsage[]>> =
         }
 
         if (settings) {
-            if (settings.logo_url) {
-                addUsage(settings.logo_url, { id: settings.id, type: 'setting', title: 'Configurações Gerais', field: 'logo_url' });
+            const s = settings as unknown as SettingsUsageRow;
+            if (s.logo_url) {
+                addUsage(s.logo_url, { id: s.id, type: 'setting', title: 'Configurações Gerais', field: 'logo_url' });
             }
             
-            const imgSettings = settings.image_settings as any;
+            const imgSettings = (s.image_settings as any) || {};
             if (imgSettings?.banner_url) {
-                addUsage(imgSettings.banner_url, { id: settings.id, type: 'setting', title: 'Configurações Gerais', field: 'banner_url' });
+                addUsage(imgSettings.banner_url, { id: s.id, type: 'setting', title: 'Configurações Gerais', field: 'banner_url' });
             }
         }
         console.log(`[MediaUsage] Checked settings`);
@@ -150,12 +180,13 @@ export const checkMediaUsage = async (): Promise<Record<string, MediaUsage[]>> =
         if (!isAbort) console.error('Error fetching partners:', ptErr);
     }
 
-    partners?.forEach(p => {
+    const partnerList = ((partners as unknown as PartnerUsageRow[] | null) || []);
+    partnerList.forEach(p => {
         if (p.logo_url) {
             addUsage(p.logo_url, { id: p.id, type: 'partner', title: p.name, field: 'logo_url' });
         }
     });
-    console.log(`[MediaUsage] Checked ${partners?.length || 0} partners`);
+    console.log(`[MediaUsage] Checked ${partnerList.length || 0} partners`);
 
   } catch (error) {
     console.error('Error checking media usage:', error);

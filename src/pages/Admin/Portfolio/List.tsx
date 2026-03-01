@@ -55,7 +55,7 @@ const PortfolioList: React.FC = () => {
   ];
 
   return (
-    <div className="p-6">
+    <div>
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Gerenciar Portfólio</h1>
         <p className="text-gray-600">Adicione, edite ou remova projetos do portfólio.</p>

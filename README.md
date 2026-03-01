@@ -1,6 +1,14 @@
-# React + TypeScript + Vite
+# KoreBiz Platform (React + TypeScript + Vite)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Este repositório contém o código fonte da plataforma KoreBiz (anteriormente ArsInstalacoes).
+
+## Visão Geral
+
+KoreBiz é uma solução completa para gestão de serviços de instalação e manutenção, incluindo:
+- Site Institucional (Landing Page, Serviços, Portfólio)
+- Painel Administrativo (CMS)
+- Gestão de Mídia e Parceiros
+
 
 Currently, two official plugins are available:
 

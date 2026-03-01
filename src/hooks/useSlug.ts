@@ -1,9 +1,10 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { toast } from 'sonner';
+import { Database } from '../types/database.types';
 
 interface UseSlugOptions {
-  table: string;
+  table: keyof Database['public']['Tables'];
   field?: string;
 }
 

@@ -19,13 +19,27 @@ const SEO: React.FC<SEOProps> = ({
 }) => {
   const { settings } = useSiteSettings();
   
-  const siteName = settings?.site_name || 'ArsInstalações';
-  const defaultDescription = settings?.site_description || 'Soluções completas em instalações elétricas, manutenção predial e automação.';
-  const defaultImage = 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?q=80&w=2069&auto=format&fit=crop'; // Fallback image
+  const siteName = settings?.site_name || 'KoreBiz';
+  const defaultDescription = settings?.site_description || 'Soluções Inteligentes em Instalações e Manutenção.';
+  const defaultImage =
+    ((settings?.image_settings as any)?.banner_url as string | undefined) ||
+    `${window.location.origin}/defaults/hero.svg`;
   
   // Dynamic suffix from settings or default
-  const titleSuffix = settings?.seo_title_suffix || ` | ${siteName}`;
-  const finalTitle = title ? `${title}${titleSuffix}` : siteName;
+  let suffix = settings?.seo_title_suffix || ` | ${siteName}`;
+
+  // Ensure pipe has spaces around it if present
+  if (suffix.includes('|')) {
+    suffix = suffix.replace(/\s*\|\s*/g, ' | ');
+  }
+
+  // Ensure space between title and suffix if needed
+  const titleSuffix = suffix;
+  // If suffix doesn't start with space, we'll add one in the template string
+  // If it does start with space (which it will if it was " | ..."), we don't add another
+  const separator = titleSuffix.startsWith(' ') ? '' : ' ';
+  
+  const finalTitle = title ? `${title}${separator}${titleSuffix}` : siteName;
   const finalDescription = description || defaultDescription;
   const finalImage = image || defaultImage;
   const finalUrl = url || window.location.href;
@@ -40,7 +54,7 @@ const SEO: React.FC<SEOProps> = ({
     "@type": "LocalBusiness",
     "name": siteName,
     "image": finalImage,
-    "url": "https://arsinstalacoes.com.br",
+    "url": "https://korebiz.com.br",
     "telephone": settings?.contact_phone || "",
     "email": settings?.contact_email || "",
     "address": {

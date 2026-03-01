@@ -17,7 +17,7 @@ if (!supabaseUrl || !supabaseKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-const BASE_URL = 'https://arsinstalacoes.com.br'; // Change this to your production domain
+const BASE_URL = 'https://korebiz.com.br'; // Change this to your production domain
 
 const staticPages = [
   '',

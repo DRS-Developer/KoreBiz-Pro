@@ -1,27 +1,23 @@
-import React, { useState } from 'react';
+import { useState, type FC } from 'react';
 import { Link } from 'react-router-dom';
-import { Settings, FileText, PenTool, Search, AlertCircle } from 'lucide-react';
-import { Database } from '../../types/database.types';
+import { Settings, FileText, PenTool, Search } from 'lucide-react';
 import SEO from '../../components/SEO';
 import OptimizedImage from '../../components/OptimizedImage';
 import PageHeader from '../../components/PageHeader';
-import { getOptimizedImageUrl } from '../../utils/imageOptimizer';
 import { useGlobalStore } from '../../stores/useGlobalStore';
-
-type ServiceItem = Database['public']['Tables']['services']['Row'];
+import CardSkeleton from '../../components/Skeletons/CardSkeleton';
 
 const categories = ['Todos', 'Projetos', 'Manutenção', 'Instalação', 'Laudos', 'Consultoria'];
 
-const Servicos: React.FC = () => {
+const Servicos: FC = () => {
   const [activeCategory, setActiveCategory] = useState('Todos');
   const [searchTerm, setSearchTerm] = useState('');
 
   // Consume directly from Zustand (Memory)
   // AppLoader guarantees hydration, so we treat it as synchronous data
   const { services: servicesData } = useGlobalStore();
-  const loading = false; // Always false after AppLoader
-  const error = null;
-
+  // We assume loading is false because AppLoader handles initial data fetching
+  const loading = false;
   // Filter only published services for public view
   const services = servicesData?.filter(s => s.published) || [];
 
@@ -64,10 +60,10 @@ const Servicos: React.FC = () => {
                 <button
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                  className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap ${
                     activeCategory === cat 
                       ? 'bg-blue-600 text-white' 
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      : 'bg-gray-100 text-gray-700'
                   }`}
                 >
                   {cat}
@@ -92,22 +88,26 @@ const Servicos: React.FC = () => {
 
       {/* Content */}
       <div className="container mx-auto px-4 py-12">
-        {filteredServices.length > 0 ? (
+        {loading && services.length === 0 ? (
+          <CardSkeleton count={6} imageHeight="h-40" />
+        ) : filteredServices.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredServices.map((service) => (
+            {filteredServices.map((service, index) => (
               <Link 
                 key={service.id} 
                 to={`/servicos/${service.slug}`}
-                className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-100 flex flex-col h-full group"
+                className="bg-white rounded-lg shadow-sm p-6 border border-gray-100 flex flex-col h-full group"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="bg-blue-50 w-full h-40 rounded-lg text-blue-600 flex items-center justify-center overflow-hidden mb-2">
                     {service.image_url ? (
                       <OptimizedImage 
-                        src={getOptimizedImageUrl(service.image_url, { width: 400, height: 300 })} 
+                        src={service.image_url} 
                         alt={service.title} 
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        wrapperClassName="w-full h-full block"
+                        pageKey="servicos:list"
+                        role="card"
+                        className="w-full h-full object-cover"
+                        priority={index < 6}
                       />
                     ) : (
                       getIcon(service.icon)
@@ -125,7 +125,7 @@ const Servicos: React.FC = () => {
                 <p className="text-gray-600 text-sm mb-4 flex-grow line-clamp-3">
                   {service.short_description}
                 </p>
-                <div className="text-blue-600 text-sm font-medium hover:underline mt-auto">
+                <div className="text-blue-600 text-sm font-medium mt-auto">
                   Saiba mais &rarr;
                 </div>
               </Link>
@@ -136,7 +136,7 @@ const Servicos: React.FC = () => {
             <p className="text-lg">Nenhum serviço encontrado para sua busca.</p>
             <button 
               onClick={() => {setActiveCategory('Todos'); setSearchTerm('');}}
-              className="mt-4 text-blue-600 hover:underline"
+              className="mt-4 text-blue-600"
             >
               Limpar filtros
             </button>

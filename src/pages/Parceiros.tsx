@@ -1,20 +1,26 @@
 import React from 'react';
 import PageHeader from '../components/PageHeader';
+import OptimizedImage from '../components/OptimizedImage';
+import SEO from '../components/SEO';
 
 const partners = [
-  { id: 1, name: 'Empresa Parceira 1', logo: 'https://placehold.co/200x100?text=Parceiro+1' },
-  { id: 2, name: 'Empresa Parceira 2', logo: 'https://placehold.co/200x100?text=Parceiro+2' },
-  { id: 3, name: 'Empresa Parceira 3', logo: 'https://placehold.co/200x100?text=Parceiro+3' },
-  { id: 4, name: 'Empresa Parceira 4', logo: 'https://placehold.co/200x100?text=Parceiro+4' },
-  { id: 5, name: 'Empresa Parceira 5', logo: 'https://placehold.co/200x100?text=Parceiro+5' },
-  { id: 6, name: 'Empresa Parceira 6', logo: 'https://placehold.co/200x100?text=Parceiro+6' },
-  { id: 7, name: 'Empresa Parceira 7', logo: 'https://placehold.co/200x100?text=Parceiro+7' },
-  { id: 8, name: 'Empresa Parceira 8', logo: 'https://placehold.co/200x100?text=Parceiro+8' },
+  { id: 1, name: 'Empresa Parceira 1', logo: '' },
+  { id: 2, name: 'Empresa Parceira 2', logo: '' },
+  { id: 3, name: 'Empresa Parceira 3', logo: '' },
+  { id: 4, name: 'Empresa Parceira 4', logo: '' },
+  { id: 5, name: 'Empresa Parceira 5', logo: '' },
+  { id: 6, name: 'Empresa Parceira 6', logo: '' },
+  { id: 7, name: 'Empresa Parceira 7', logo: '' },
+  { id: 8, name: 'Empresa Parceira 8', logo: '' },
 ];
 
 const Parceiros: React.FC = () => {
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
+      <SEO 
+        title="Nossos Parceiros" 
+        description="Empresas e fornecedores que confiam no nosso trabalho e nos ajudam a entregar excelência." 
+      />
       {/* Header */}
       <PageHeader 
         title="Nossos Parceiros" 
@@ -24,15 +30,18 @@ const Parceiros: React.FC = () => {
       {/* Partners Grid */}
       <div className="container mx-auto px-4 py-16">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          {partners.map((partner) => (
+          {partners.map((partner, index) => (
             <div 
               key={partner.id} 
-              className="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow flex items-center justify-center border border-gray-100 h-40"
+              className="bg-white p-8 rounded-xl shadow-sm flex items-center justify-center border border-gray-100 h-40"
             >
-              <img 
+              <OptimizedImage 
                 src={partner.logo} 
                 alt={partner.name} 
-                className="max-w-full max-h-full opacity-70 hover:opacity-100 transition-opacity filter grayscale hover:grayscale-0"
+                pageKey="parceiros"
+                role="card"
+                className="max-w-full max-h-full object-contain"
+                priority={index < 8}
               />
             </div>
           ))}
@@ -46,7 +55,7 @@ const Parceiros: React.FC = () => {
           </p>
           <a 
             href="/contato" 
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-colors inline-block"
+            className="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg inline-block"
           >
             Entre em Contato
           </a>

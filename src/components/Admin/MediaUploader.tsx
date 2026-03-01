@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import imageCompression from 'browser-image-compression';
-import { Upload, X, Loader2, Image as ImageIcon, FileText } from 'lucide-react';
+import { Upload, X, Loader2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -39,7 +39,7 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
         const settings = data.image_settings as any;
         options = {
           maxSizeMB: (settings.target_size_kb || 500) / 1024,
-          maxWidthOrHeight: settings.resize?.enabled ? Math.max(settings.resize.max_width, settings.resize.max_height) : undefined,
+          maxWidthOrHeight: settings.resize?.enabled ? Math.max(settings.resize.max_width, settings.resize.max_height) : 1920,
           useWebWorker: true,
           fileType: settings.output_formats?.[0] ? `image/${settings.output_formats[0]}` : 'image/webp'
         };
@@ -112,15 +112,15 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
     <div className={className}>
       <div 
         {...getRootProps()} 
-        className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
-          isDragActive ? 'border-primary bg-blue-50' : 'border-gray-300 hover:border-primary'
+        className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer ${
+          isDragActive ? 'border-primary bg-blue-50' : 'border-gray-300'
         } ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         <input {...getInputProps()} />
         
         {uploading ? (
           <div className="flex flex-col items-center justify-center py-4">
-            <Loader2 className="w-8 h-8 text-primary animate-spin mb-2" />
+            <Loader2 className="w-8 h-8 text-primary mb-2" />
             <p className="text-sm text-gray-500">Otimizando e enviando...</p>
           </div>
         ) : (
