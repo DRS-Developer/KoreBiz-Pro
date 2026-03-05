@@ -58,7 +58,7 @@ const Contato: React.FC = () => {
     <div className="flex flex-col min-h-screen">
       <SEO 
         title="Fale Conosco" 
-        description="Entre em contato com a ArsInstalações para solicitar um orçamento ou tirar dúvidas sobre nossos serviços de elétrica e manutenção."
+        description="Entre em contato com a KoreBiz-Pro para solicitar um orçamento ou tirar dúvidas sobre nossos serviços de elétrica e manutenção."
       />
 
       {/* Header */}
@@ -111,7 +111,7 @@ const Contato: React.FC = () => {
                   <div>
                     <h4 className="font-bold text-gray-900">Email</h4>
                     <p className="text-gray-600">
-                      {settingsLoading ? <Skeleton width={180} /> : (settings?.contact_email || 'contato@arsinstalacoes.com.br')}
+                      {settingsLoading ? <Skeleton width={180} /> : (settings?.contact_email || 'contato@korebiz-pro.com.br')}
                     </p>
                   </div>
                 </div>

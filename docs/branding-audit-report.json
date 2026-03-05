@@ -1,0 +1,13 @@
+{
+  "scanned_files": 277,
+  "modified_files_detected_by_git_diff": 59,
+  "residual_reference_files": {},
+  "residual_reference_count": 0,
+  "branch_hits": [],
+  "commit_message_hits": [
+    {
+      "commit": "64e10f6a341c36893031b9ac37bcaf927e43cd89",
+      "status": "legacy-branding-reference-detected"
+    }
+  ]
+}

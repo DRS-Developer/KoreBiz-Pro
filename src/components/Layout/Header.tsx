@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Phone, Mail } from 'lucide-react';
 import { clsx } from 'clsx';
@@ -10,17 +10,51 @@ const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
   const { settings, loading, displayPhone, displayEmail } = useSiteSettings();
-  const { getModuleStatus } = useSystemModules();
+  const { modules } = useSystemModules();
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
+  const moduleRouteMap: Record<string, { name: string; href: string }> = {
+    areas_atuacao: { name: 'Áreas de Atuação', href: '/areas-de-atuacao' },
+    parceiros: { name: 'Parceiros', href: '/parceiros' },
+    servicos: { name: 'Serviços', href: '/servicos' },
+    portfolio: { name: 'Portfólio', href: '/portfolio' },
+    paginas: { name: 'Empresa', href: '/empresa' },
+  };
+
+  const configurableNavigation = useMemo(() => {
+    const fallbackOrder = ['areas_atuacao', 'parceiros', 'servicos', 'portfolio', 'paginas'];
+    const source = modules.length > 0
+      ? modules
+      : fallbackOrder.map((key, index) => ({
+          id: key,
+          key,
+          name: moduleRouteMap[key].name,
+          is_active: true,
+          is_sort_enabled: true,
+          order_position: index + 1,
+          updated_at: '',
+          updated_by: null,
+        }));
+
+    return source
+      .map((module) => {
+        const route = moduleRouteMap[module.key];
+        if (!route) {
+          return null;
+        }
+        return {
+          name: route.name,
+          href: route.href,
+          visible: module.is_active,
+        };
+      })
+      .filter((item): item is { name: string; href: string; visible: boolean } => item !== null);
+  }, [modules]);
+
   const navigation = [
     { name: 'Home', href: '/', visible: true },
-    { name: 'Áreas de Atuação', href: '/areas-de-atuacao', visible: getModuleStatus('areas_atuacao') },
-    { name: 'Serviços', href: '/servicos', visible: getModuleStatus('servicos') },
-    { name: 'Portfólio', href: '/portfolio', visible: getModuleStatus('portfolio') },
-    { name: 'Parceiros', href: '/parceiros', visible: getModuleStatus('parceiros') },
-    { name: 'Empresa', href: '/empresa', visible: getModuleStatus('paginas') },
+    ...configurableNavigation,
     { name: 'Contato', href: '/contato', visible: true },
   ];
 
@@ -47,7 +81,7 @@ const Header: React.FC = () => {
               </div>
               <div className="flex items-center space-x-2">
                 <Mail size={16} />
-                <span>{displayEmail || (loading ? 'Carregando...' : 'contato@korebiz.com.br')}</span>
+                <span>{displayEmail || (loading ? 'Carregando...' : 'contato@korebiz-pro.com.br')}</span>
               </div>
             </div>
             <div className="flex space-x-4">
@@ -74,7 +108,7 @@ const Header: React.FC = () => {
                  />
               </div>
             ) : (
-              <span className="text-2xl font-bold text-blue-900">{settings?.site_name || 'KoreBiz'}</span>
+              <span className="text-2xl font-bold text-blue-900">{settings?.site_name || 'KoreBiz-Pro'}</span>
             )}
           </Link>
 

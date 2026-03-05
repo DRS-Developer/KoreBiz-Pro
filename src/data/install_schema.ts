@@ -257,7 +257,7 @@ GRANT ALL ON ALL FUNCTIONS IN SCHEMA public TO anon, authenticated;
 -- MIGRATION: 20250125000003_create_site_settings.sql --
 create table IF NOT EXISTS public.site_settings (
   id uuid not null default extensions.uuid_generate_v4(),
-  site_name text not null default 'KoreBiz',
+  site_name text not null default 'KoreBiz-Pro',
   site_description text,
   contact_email text,
   contact_phone text,
@@ -281,7 +281,7 @@ DROP POLICY IF EXISTS "Allow authenticated insert access" ON public.site_setting
 create policy "Allow authenticated insert access" on public.site_settings for insert to authenticated with check (true);
 
 insert into public.site_settings (site_name, site_description, contact_email)
-select 'KoreBiz', 'Soluções Inteligentes em Instalações e Manutenção.', 'contato@korebiz.com.br'
+select 'KoreBiz-Pro', 'Soluções Inteligentes em Instalações e Manutenção.', 'contato@korebiz-pro.com.br'
 WHERE NOT EXISTS (SELECT 1 FROM public.site_settings);
 
 
@@ -338,7 +338,7 @@ ALTER TABLE public.site_settings
 ADD COLUMN IF NOT EXISTS privacy_policy text DEFAULT '<h2>Política de Privacidade</h2><p>Em construção...</p>',
 ADD COLUMN IF NOT EXISTS terms_of_use text DEFAULT '<h2>Termos de Uso</h2><p>Em construção...</p>',
 ADD COLUMN IF NOT EXISTS seo_keywords text DEFAULT 'instalações, elétrica, manutenção, residencial, industrial',
-ADD COLUMN IF NOT EXISTS seo_title_suffix text DEFAULT '| KoreBiz',
+ADD COLUMN IF NOT EXISTS seo_title_suffix text DEFAULT '| KoreBiz-Pro',
 ADD COLUMN IF NOT EXISTS not_found_title text DEFAULT 'Página não encontrada',
 ADD COLUMN IF NOT EXISTS not_found_message text DEFAULT 'Desculpe, a página que você está procurando não existe ou foi movida.';
 

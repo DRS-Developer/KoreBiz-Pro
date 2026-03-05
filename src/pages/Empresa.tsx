@@ -91,13 +91,13 @@ const Empresa: React.FC = () => {
       <div className="flex flex-col min-h-screen">
         <SEO 
           title="Sobre a Empresa" 
-          description="Conheça a KoreBiz: nossa história, missão, visão e valores. Referência em qualidade e segurança em instalações e manutenção."
+          description="Conheça a KoreBiz-Pro: nossa história, missão, visão e valores. Referência em qualidade e segurança em instalações e manutenção."
         />
 
         {/* Page Header */}
         <PageHeader 
           title="Sobre a Empresa" 
-          description="Conheça a KoreBiz: nossa história, missão, visão e valores. Referência em qualidade e segurança em instalações e manutenção."
+          description="Conheça a KoreBiz-Pro: nossa história, missão, visão e valores. Referência em qualidade e segurança em instalações e manutenção."
         />
 
         {/* Introduction */}
@@ -108,7 +108,7 @@ const Empresa: React.FC = () => {
                 <h2 className="text-3xl font-bold text-blue-900 mb-6">Nossa História</h2>
                 <div className="prose text-gray-700">
                   <p className="mb-4">
-                    Fundada em 2010, a KoreBiz surgiu da necessidade de oferecer serviços técnicos especializados com um nível superior de qualidade e profissionalismo no mercado de São Paulo.
+                    Fundada em 2010, a KoreBiz-Pro surgiu da necessidade de oferecer serviços técnicos especializados com um nível superior de qualidade e profissionalismo no mercado de São Paulo.
                   </p>
                   <p className="mb-4">
                     Iniciamos nossas atividades focados em instalações elétricas residenciais, mas rapidamente expandimos nossa atuação para atender demandas corporativas e industriais, sempre mantendo o compromisso com a excelência técnica e a segurança.
@@ -121,7 +121,7 @@ const Empresa: React.FC = () => {
               <div className="md:w-1/2">
                 <OptimizedImage
                   src={undefined}
-                  alt="Equipe KoreBiz" 
+                  alt="Equipe KoreBiz-Pro" 
                   pageKey="empresa"
                   role="card"
                   className="rounded-lg shadow-xl"
@@ -177,7 +177,7 @@ const Empresa: React.FC = () => {
       <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-blue-900 mb-4">Por que escolher a KoreBiz?</h2>
+            <h2 className="text-3xl font-bold text-blue-900 mb-4">Por que escolher a KoreBiz-Pro?</h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               Diferenciais que fazem a nossa empresa ser a parceira ideal para o seu projeto.
             </p>
@@ -227,7 +227,7 @@ const Empresa: React.FC = () => {
     <div className="flex flex-col min-h-screen">
       <SEO 
         title={page.meta_title || page.title} 
-        description={page.meta_description || 'Saiba mais sobre a KoreBiz.'}
+        description={page.meta_description || 'Saiba mais sobre a KoreBiz-Pro.'}
         image={page.featured_image || undefined}
       />
 
@@ -311,7 +311,7 @@ const Empresa: React.FC = () => {
       <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-blue-900 mb-4">Por que escolher a KoreBiz?</h2>
+            <h2 className="text-3xl font-bold text-blue-900 mb-4">Por que escolher a KoreBiz-Pro?</h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               Diferenciais que fazem a nossa empresa ser a parceira ideal para o seu projeto.
             </p>

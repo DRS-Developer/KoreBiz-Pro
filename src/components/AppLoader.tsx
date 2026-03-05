@@ -68,7 +68,7 @@ const AppLoader: React.FC<AppLoaderProps> = ({ children }) => {
           </div>
         </div>
         
-        <h2 className="text-xl font-bold text-gray-800 mb-2">KoreBiz Admin</h2>
+        <h2 className="text-xl font-bold text-gray-800 mb-2">KoreBiz-Pro Admin</h2>
         <p className="text-gray-500 text-sm mb-6">{status}</p>
 
         <div className="w-full bg-gray-100 rounded-full h-2 mb-4 overflow-hidden">

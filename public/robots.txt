@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://korebiz.com.br/sitemap.xml
+Sitemap: https://korebiz-pro.com.br/sitemap.xml

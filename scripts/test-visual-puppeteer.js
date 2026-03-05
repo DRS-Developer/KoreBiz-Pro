@@ -57,11 +57,11 @@ async function runVisualTest() {
     console.log('🌐 Navegando para a Home...');
     await page.goto(serverUrl, { waitUntil: 'networkidle0' });
 
-    // Verificar se o título está correto (KoreBiz)
+    // Verificar se o título está correto (KoreBiz-Pro)
     const title = await page.title();
     console.log(`   Título da página: "${title}"`);
-    if (!title.includes('KoreBiz')) {
-      throw new Error('Título incorreto! Esperado conter "KoreBiz"');
+    if (!title.includes('KoreBiz-Pro')) {
+      throw new Error('Título incorreto! Esperado conter "KoreBiz-Pro"');
     }
 
     // Verificar Layout Shift no Mapa (Flicker check)

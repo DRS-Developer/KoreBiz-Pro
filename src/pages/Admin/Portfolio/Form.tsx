@@ -368,127 +368,148 @@ const PortfolioForm: React.FC = () => {
         onCancel={() => blocker.reset?.()}
       />
 
-      <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-6">
-          <h2 className="text-lg font-semibold text-gray-800 border-b pb-4">Informações Principais</h2>
+      <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-8">
+        <div className="flex flex-col gap-8">
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Título do Projeto *
-              </label>
-              <input
-                type="text"
-                {...register('title')}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              />
-              {errors.title && (
-                <span className="text-red-500 text-sm">{errors.title.message}</span>
-              )}
-            </div>
-
-            <div>
-              <div className="flex justify-between items-center mb-1">
-                <label className="block text-sm font-medium text-gray-700">
-                  Slug (URL) *
-                </label>
-                <button
-                  type="button"
-                  onClick={handleManualGenerateSlug}
-                  className="text-xs text-blue-600 flex items-center gap-1"
-                  title="Gerar slug baseado no título"
-                >
-                  <RefreshCw size={12} /> Gerar Automático
-                </button>
-              </div>
-              <div className="relative">
-                <input
-                  type="text"
-                  {...register('slug', {
-                    onChange: () => {
-                      setIsSlugAvailable(null);
-                      setSlugError(null);
-                    }
-                  })}
-                  onBlur={handleSlugBlur}
-                  className={`w-full pl-4 pr-10 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50 ${
-                    errors.slug || slugError ? 'border-red-500' : isSlugAvailable ? 'border-green-500' : 'border-gray-300'
-                  }`}
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-6">
+            <h2 className="text-lg font-semibold text-gray-800 border-b pb-4">Imagem de Capa</h2>
+            <div className="w-full md:max-w-[50%] mx-auto transition-all duration-300 ease-in-out">
+                <ImageUpload
+                label="Imagem de Capa"
+                value={watch('image_url')}
+                onChange={(url) => setValue('image_url', url, { shouldDirty: true })}
+                folder="portfolio"
+                error={errors.image_url?.message}
+                aspectRatio={840 / 500} 
+                minWidth={840}
+                minHeight={500}
+                pageKey="portfolio:detail"
+                role="hero"
                 />
-                <div className="absolute right-3 top-2.5 flex items-center pointer-events-none">
-                    {isChecking ? (
-                        <Loader2 className="text-blue-500" size={16} />
-                    ) : isSlugAvailable === true ? (
-                        <CheckCircle className="text-green-500" size={16} />
-                    ) : isSlugAvailable === false || slugError ? (
-                        <AlertCircle className="text-red-500" size={16} />
-                    ) : null}
-                </div>
-              </div>
-              {(errors.slug || slugError) && (
-                <span className="text-red-500 text-sm block mt-1">
-                  {slugError || errors.slug?.message}
-                </span>
-              )}
-              <p className="text-xs text-gray-500 mt-1">
-                 URL final: /portfolio/{watch('slug') || '...'}
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Categoria *
-              </label>
-              <select
-                {...register('category')}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              >
-                <option value="">Selecione...</option>
-                <option value="Comercial">Comercial</option>
-                <option value="Residencial">Residencial</option>
-                <option value="Industrial">Industrial</option>
-              </select>
-              {errors.category && (
-                <span className="text-red-500 text-sm">{errors.category.message}</span>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Cliente
-              </label>
-              <input
-                type="text"
-                {...register('client')}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Localização
-              </label>
-              <input
-                type="text"
-                {...register('location')}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Data de Conclusão
-              </label>
-              <input
-                type="date"
-                {...register('completion_date')}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              />
             </div>
           </div>
 
-          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-            <h3 className="text-sm font-medium text-gray-700 mb-2">Resumo e SEO</h3>
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-6">
+            <h2 className="text-lg font-semibold text-gray-800 border-b pb-4">Informações Principais</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Título do Projeto *
+                </label>
+                <input
+                  type="text"
+                  {...register('title')}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+                {errors.title && (
+                  <span className="text-red-500 text-sm">{errors.title.message}</span>
+                )}
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Slug (URL) *
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleManualGenerateSlug}
+                    className="text-xs text-blue-600 flex items-center gap-1"
+                    title="Gerar slug baseado no título"
+                  >
+                    <RefreshCw size={12} /> Gerar Automático
+                  </button>
+                </div>
+                <div className="relative">
+                  <input
+                    type="text"
+                    {...register('slug', {
+                      onChange: () => {
+                        setIsSlugAvailable(null);
+                        setSlugError(null);
+                      }
+                    })}
+                    onBlur={handleSlugBlur}
+                    className={`w-full pl-4 pr-10 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50 ${
+                      errors.slug || slugError ? 'border-red-500' : isSlugAvailable ? 'border-green-500' : 'border-gray-300'
+                    }`}
+                  />
+                  <div className="absolute right-3 top-2.5 flex items-center pointer-events-none">
+                      {isChecking ? (
+                          <Loader2 className="text-blue-500" size={16} />
+                      ) : isSlugAvailable === true ? (
+                          <CheckCircle className="text-green-500" size={16} />
+                      ) : isSlugAvailable === false || slugError ? (
+                          <AlertCircle className="text-red-500" size={16} />
+                      ) : null}
+                  </div>
+                </div>
+                {(errors.slug || slugError) && (
+                  <span className="text-red-500 text-sm block mt-1">
+                    {slugError || errors.slug?.message}
+                  </span>
+                )}
+                <p className="text-xs text-gray-500 mt-1">
+                   URL final: /portfolio/{watch('slug') || '...'}
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Categoria *
+                </label>
+                <select
+                  {...register('category')}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                >
+                  <option value="">Selecione...</option>
+                  <option value="Comercial">Comercial</option>
+                  <option value="Residencial">Residencial</option>
+                  <option value="Industrial">Industrial</option>
+                </select>
+                {errors.category && (
+                  <span className="text-red-500 text-sm">{errors.category.message}</span>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Cliente
+                </label>
+                <input
+                  type="text"
+                  {...register('client')}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Localização
+                </label>
+                <input
+                  type="text"
+                  {...register('location')}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Data de Conclusão
+                </label>
+                <input
+                  type="date"
+                  {...register('completion_date')}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-6">
+            <h2 className="text-lg font-semibold text-gray-800 border-b pb-4">Resumo e SEO</h2>
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Breve Descrição (Exibida na listagem e SEO)
@@ -518,23 +539,8 @@ const PortfolioForm: React.FC = () => {
             </div>
           </div>
 
-          <div>
-            <ImageUpload
-              label="Imagem de Capa"
-              value={watch('image_url')}
-              onChange={(url) => setValue('image_url', url, { shouldDirty: true })}
-              folder="portfolio"
-              error={errors.image_url?.message}
-              aspectRatio={840 / 500} 
-              minWidth={840}
-              minHeight={500}
-              description="Formato recomendado: 840x500px (Proporção 1.68:1)"
-              pageKey="portfolio:detail"
-              role="hero"
-            />
-          </div>
-
-          <div>
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-6">
+            <h2 className="text-lg font-semibold text-gray-800 border-b pb-4">Conteúdo Detalhado</h2>
             <Suspense fallback={<div className="h-64 bg-gray-50 rounded-lg border border-gray-200" />}>
               <TiptapEditor
                 label="Descrição Detalhada"
@@ -546,7 +552,41 @@ const PortfolioForm: React.FC = () => {
             </Suspense>
           </div>
 
-          <div className="flex items-center">
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-6">
+             <h2 className="text-lg font-semibold text-gray-800 border-b pb-4">Galeria</h2>
+             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+               {watch('gallery_images')?.map((image, index) => (
+                 <div key={index} className="relative group aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                   <img src={image.url} alt={image.caption || ''} className="w-full h-full object-cover" />
+                   <button
+                     type="button"
+                     onClick={() => {
+                       const newGallery = [...(watch('gallery_images') || [])];
+                       newGallery.splice(index, 1);
+                       setValue('gallery_images', newGallery, { shouldDirty: true });
+                     }}
+                     className="absolute top-2 right-2 bg-red-500 text-white w-6 h-6 flex items-center justify-center rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                   >
+                     ×
+                   </button>
+                 </div>
+               ))}
+               <div className="aspect-square">
+                 <ImageUpload
+                   label="Adicionar"
+                   value=""
+                   onChange={(url) => {
+                     if (url) {
+                       setValue('gallery_images', [...(watch('gallery_images') || []), { url, caption: '' }], { shouldDirty: true });
+                     }
+                   }}
+                   folder="portfolio"
+                 />
+               </div>
+             </div>
+           </div>
+
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex items-center">
             <input
               type="checkbox"
               id="published"
@@ -557,6 +597,7 @@ const PortfolioForm: React.FC = () => {
               Publicar projeto imediatamente
             </label>
           </div>
+
         </div>
 
         <div className="flex justify-end gap-4">
@@ -572,7 +613,7 @@ const PortfolioForm: React.FC = () => {
             className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg font-medium disabled:opacity-50"
           >
             {loading ? null : <Save size={20} />}
-            {loading ? 'Salvando...' : 'Salvar Projeto'}
+            {loading ? 'Salvando...' : (isEditing ? 'Salvar Alterações' : 'Criar Projeto')}
           </button>
         </div>
       </form>

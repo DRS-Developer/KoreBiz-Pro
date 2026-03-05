@@ -1,6 +1,6 @@
-# Guia de Instalação - ArsInstalações
+# Guia de Instalação - KoreBiz-Pro
 
-Este documento descreve como instalar e configurar o sistema ArsInstalações em um novo ambiente.
+Este documento descreve como instalar e configurar o sistema KoreBiz-Pro em um novo ambiente.
 
 ## Pré-requisitos
 

@@ -566,17 +566,21 @@ const Settings: React.FC = () => {
                   </div>
 
                   <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Logotipo do Site</label>
-                    <ImageUpload 
-                        value={watch('logo_url')} 
-                        onChange={(url) => setValue('logo_url', url, { shouldValidate: true, shouldDirty: true })} 
-                        folder="settings" 
-                        error={errors.logo_url?.message} 
-                        aspectRatio={16/9} 
-                        description="Logo principal do site. Recomendado fundo transparente (PNG/WebP)."
-                        pageKey="home"
-                        role="logo" 
-                    />
+                    <div className="w-full md:max-w-[50%] mx-auto transition-all duration-300 ease-in-out">
+                        <ImageUpload 
+                            label="Logotipo do Site"
+                            value={watch('logo_url')} 
+                            onChange={(url) => setValue('logo_url', url, { shouldValidate: true, shouldDirty: true })} 
+                            folder="settings" 
+                            error={errors.logo_url?.message} 
+                            aspectRatio={16/9} 
+                            minWidth={320}
+                            minHeight={180}
+                            description="Recomendado fundo transparente (PNG/WebP)."
+                            pageKey="home"
+                            role="logo" 
+                        />
+                    </div>
                   </div>
 
                   <div className="col-span-2">
@@ -614,19 +618,20 @@ const Settings: React.FC = () => {
                   </div>
 
                   <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Imagem de Compartilhamento (OG Image)</label>
-                    <ImageUpload 
-                        value={watch('banner_url')} 
-                        onChange={(url) => setValue('banner_url', url, { shouldValidate: true, shouldDirty: true })} 
-                        folder="settings" 
-                        error={errors.banner_url?.message} 
-                        aspectRatio={1200/630} 
-                        minWidth={1200} 
-                        minHeight={630} 
-                        description="Imagem que aparece ao compartilhar o link do site (WhatsApp, Facebook, etc). Formato recomendado: 1200x630px."
-                        pageKey="home"
-                        role="hero" 
-                    />
+                    <div className="w-full md:max-w-[50%] mx-auto transition-all duration-300 ease-in-out">
+                        <ImageUpload 
+                            label="Imagem de Compartilhamento (OG Image)"
+                            value={watch('banner_url')} 
+                            onChange={(url) => setValue('banner_url', url, { shouldValidate: true, shouldDirty: true })} 
+                            folder="settings" 
+                            error={errors.banner_url?.message} 
+                            aspectRatio={1200/630} 
+                            minWidth={1200} 
+                            minHeight={630} 
+                            pageKey="home"
+                            role="hero" 
+                        />
+                    </div>
                   </div>
 
                   <div className="col-span-2 md:col-span-1"><label className="block text-sm font-medium text-gray-700 mb-1">Sufixo do Título do Site</label><input type="text" {...register('seo_title_suffix')} className="w-full px-3 py-2 border border-gray-300 rounded-md" /></div>

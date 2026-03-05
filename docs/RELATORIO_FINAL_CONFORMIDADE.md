@@ -1,7 +1,7 @@
 # Relatório Final de Conformidade e Modernização
 
 **Data:** 14/02/2026
-**Projeto:** ArsInstalacoes (Site Institucional)
+**Projeto:** KoreBiz-Pro (Site Institucional)
 **Status:** ✅ Estável / Validado
 
 ## 1. Resumo Executivo

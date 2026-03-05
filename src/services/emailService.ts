@@ -42,7 +42,7 @@ export const sendContactEmail = async (data: EmailData, settings?: EmailSettings
         from_email: data.email,
         phone: data.phone,
         message: data.message,
-        to_name: data.to_name || 'ArsInstalações',
+        to_name: data.to_name || 'KoreBiz-Pro',
       };
 
       const response = await emailjs.send(

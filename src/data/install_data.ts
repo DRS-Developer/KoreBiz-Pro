@@ -165,7 +165,7 @@ VALUES (
       },
       {
         "type": "paragraph",
-        "content": [{ "type": "text", "text": "Fundada em 2010, a ArsInstalações surgiu da necessidade de oferecer serviços técnicos especializados com um nível superior de qualidade e profissionalismo no mercado de São Paulo." }]
+        "content": [{ "type": "text", "text": "Fundada em 2010, a KoreBiz-Pro surgiu da necessidade de oferecer serviços técnicos especializados com um nível superior de qualidade e profissionalismo no mercado de São Paulo." }]
       },
       {
         "type": "paragraph",
@@ -204,8 +204,8 @@ VALUES (
       }
     ]
   }'::jsonb,
-  'Sobre a ArsInstalações',
-  'Conheça a trajetória da ArsInstalações e os valores que guiam nosso trabalho.',
+  'Sobre a KoreBiz-Pro',
+  'Conheça a trajetória da KoreBiz-Pro e os valores que guiam nosso trabalho.',
   true
 )
 ON CONFLICT (slug) DO NOTHING;

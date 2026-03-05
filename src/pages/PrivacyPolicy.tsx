@@ -12,7 +12,7 @@ const PrivacyPolicy: FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
-      <SEO title="Política de Privacidade" description="Política de Privacidade e Proteção de Dados da ArsInstalações." />
+      <SEO title="Política de Privacidade" description="Política de Privacidade e Proteção de Dados da KoreBiz-Pro." />
       
       {/* Header */}
       <PageHeader 

@@ -12,7 +12,7 @@ const TermsOfUse: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
-      <SEO title="Termos de Uso" description="Termos e Condições de Uso dos serviços da KoreBiz." />
+      <SEO title="Termos de Uso" description="Termos e Condições de Uso dos serviços da KoreBiz-Pro." />
       
       {/* Header */}
       <PageHeader 

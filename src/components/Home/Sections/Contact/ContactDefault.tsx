@@ -112,7 +112,7 @@ const ContactDefault: React.FC<ContactDefaultProps> = ({ showMap = true }) => {
                   <div className="flex-1">
                     <h4 className="font-bold text-gray-900">Email</h4>
                     <div className="text-gray-600 min-h-[1.5em]">
-                      {settingsLoading ? <Skeleton width={200} /> : (settings?.contact_email || 'contato@arsinstalacoes.com.br')}
+                      {settingsLoading ? <Skeleton width={200} /> : (settings?.contact_email || 'contato@korebiz-pro.com.br')}
                     </div>
                   </div>
                 </div>

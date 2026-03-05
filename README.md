@@ -1,10 +1,10 @@
-# KoreBiz Platform (React + TypeScript + Vite)
+# KoreBiz-Pro Platform (React + TypeScript + Vite)
 
-Este repositório contém o código fonte da plataforma KoreBiz (anteriormente ArsInstalacoes).
+Este repositório contém o código fonte da plataforma KoreBiz-Pro.
 
 ## Visão Geral
 
-KoreBiz é uma solução completa para gestão de serviços de instalação e manutenção, incluindo:
+KoreBiz-Pro é uma solução completa para gestão de serviços de instalação e manutenção, incluindo:
 - Site Institucional (Landing Page, Serviços, Portfólio)
 - Painel Administrativo (CMS)
 - Gestão de Mídia e Parceiros

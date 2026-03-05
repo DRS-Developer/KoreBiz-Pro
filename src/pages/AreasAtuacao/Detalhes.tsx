@@ -47,7 +47,7 @@ const AreasAtuacaoDetalhes: React.FC = () => {
             description: `
                 <div class="space-y-8">
                     <p class="text-lg text-gray-700 leading-relaxed">
-                        A ArsInstalações oferece soluções completas em Instalações Elétricas, garantindo qualidade técnica e conformidade com todas as normas de segurança vigentes (NBR 5410). Nossa equipe é altamente qualificada para atender demandas de qualquer complexidade.
+                        A KoreBiz-Pro oferece soluções completas em Instalações Elétricas, garantindo qualidade técnica e conformidade com todas as normas de segurança vigentes (NBR 5410). Nossa equipe é altamente qualificada para atender demandas de qualquer complexidade.
                     </p>
                     
                     <div>

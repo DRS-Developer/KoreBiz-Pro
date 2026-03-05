@@ -4,7 +4,7 @@
 **Responsável:** Trae AI
 
 ## 1. Visão Geral
-Esta auditoria analisa a evolução da infraestrutura Supabase no projeto `ArsInstalacoes`, cobrindo arquivos de configuração, migrações de banco de dados e definições de segurança.
+Esta auditoria analisa a evolução da infraestrutura Supabase no projeto `KoreBiz-Pro`, cobrindo arquivos de configuração, migrações de banco de dados e definições de segurança.
 
 ## 2. Histórico de Alterações (Timeline)
 

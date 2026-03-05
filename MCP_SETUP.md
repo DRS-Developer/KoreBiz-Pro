@@ -1,6 +1,6 @@
-# Configuração de Servidores MCP - KoreBiz Platform
+# Configuração de Servidores MCP - KoreBiz-Pro Platform
 
-Este guia detalha como configurar os servidores MCP para turbinar o assistente Trae com acesso direto ao banco de dados e repositório da plataforma **KoreBiz**.
+Este guia detalha como configurar os servidores MCP para turbinar o assistente Trae com acesso direto ao banco de dados e repositório da plataforma **KoreBiz-Pro**.
 
 ## 1. Visão Geral
 
@@ -11,7 +11,7 @@ O sistema utiliza o Model Context Protocol (MCP) para integrar o assistente de I
 ## 2. Pré-requisitos
 
 - Node.js (v18+)
-- Acesso ao dashboard do Supabase do projeto KoreBiz.
+- Acesso ao dashboard do Supabase do projeto KoreBiz-Pro.
 - Token de Acesso Pessoal (PAT) do GitHub.
 
 ## 3. Instalação

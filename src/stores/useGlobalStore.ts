@@ -258,10 +258,9 @@ export const useGlobalStore = create<GlobalState>()(
     {
       name: 'ars-global-store',
       storage: createJSONStorage(() => localStorage),
-      version: 2, // Bumped to 2 to invalidate old caches with Unsplash URLs
+      version: 3,
       migrate: (persistedState: any, version: number) => {
-        if (version < 2) {
-          // Reset state to force fresh fetch from DB (which is clean)
+        if (version < 3) {
           return {
             services: [],
             portfolio: [],

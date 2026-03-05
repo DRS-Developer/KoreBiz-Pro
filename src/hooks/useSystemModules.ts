@@ -1,110 +1,262 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { toast } from 'sonner';
 import { useGlobalStore } from '../stores/useGlobalStore';
+import { sidebarConfigService, SidebarModule } from '../services/sidebarConfigService';
+import { supabase } from '../lib/supabase';
+
+const SIDEBAR_MODULES_LOCAL_KEY = 'ars-sidebar-modules-order';
 
 export interface SystemModule {
   id: string;
   key: string;
   name: string;
   is_active: boolean;
+  is_sort_enabled: boolean;
+  order_position: number;
   updated_at: string;
-  updated_by: string;
+  updated_by: string | null;
 }
 
 export const useSystemModules = () => {
-  const { systemModules, setSystemModules, updateSystemModule } = useGlobalStore();
+  const { systemModules, setSystemModules } = useGlobalStore();
   const [loading, setLoading] = useState(systemModules.length === 0);
 
-  const fetchModules = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('system_modules')
-        .select('*')
-        .order('name');
+  const normalizeModules = useCallback((modules: SidebarModule[]) => {
+    return [...modules].sort((a, b) => a.order_position - b.order_position);
+  }, []);
 
-      if (error) throw error;
-      setSystemModules(data || []);
+  const saveLocalModules = useCallback((modules: SidebarModule[]) => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    window.localStorage.setItem(SIDEBAR_MODULES_LOCAL_KEY, JSON.stringify(normalizeModules(modules)));
+  }, [normalizeModules]);
+
+  const readLocalModules = useCallback((): SidebarModule[] => {
+    if (typeof window === 'undefined') {
+      return [];
+    }
+    const raw = window.localStorage.getItem(SIDEBAR_MODULES_LOCAL_KEY);
+    if (!raw) {
+      return [];
+    }
+    try {
+      const parsed = JSON.parse(raw) as SidebarModule[];
+      if (!Array.isArray(parsed)) {
+        return [];
+      }
+      return normalizeModules(parsed);
+    } catch {
+      return [];
+    }
+  }, [normalizeModules]);
+
+  const applyLocalOrderToServerData = useCallback((serverModules: SidebarModule[]) => {
+    const localModules = readLocalModules();
+    if (!localModules.length) {
+      return normalizeModules(serverModules);
+    }
+
+    const positionByKey = new Map(localModules.map((module) => [module.key, module.order_position]));
+    const hasAllKeys = serverModules.every((module) => positionByKey.has(module.key));
+
+    if (!hasAllKeys) {
+      return normalizeModules(serverModules);
+    }
+
+    return [...serverModules].sort((a, b) => {
+      const aPosition = positionByKey.get(a.key) ?? a.order_position;
+      const bPosition = positionByKey.get(b.key) ?? b.order_position;
+      return aPosition - bPosition;
+    });
+  }, [normalizeModules, readLocalModules]);
+
+  const fetchModules = useCallback(async () => {
+    try {
+      const data = await sidebarConfigService.fetchModules();
+      const merged = applyLocalOrderToServerData(data);
+      setSystemModules(merged);
+      saveLocalModules(merged);
     } catch (error) {
-      console.error('Error fetching system modules:', error);
-      // Only show toast if we have no cached data, otherwise it might be just a temporary connection issue
+      console.error('Erro ao carregar módulos do sistema:', error);
       if (systemModules.length === 0) {
         toast.error('Erro ao carregar módulos do sistema');
       }
     } finally {
       setLoading(false);
     }
-  };
+  }, [applyLocalOrderToServerData, saveLocalModules, setSystemModules, systemModules.length]);
 
-  const toggleModuleVisibility = async (key: string, isActive: boolean) => {
+  const updateModuleConfig = useCallback(async (key: string, isActive: boolean, isSortEnabled: boolean) => {
     try {
-      // Optimistic update
-      const module = systemModules.find(m => m.key === key);
-      if (module) {
-        updateSystemModule({ ...module, is_active: isActive });
-      }
-
-      const { error } = await supabase
-        .from('system_modules')
-        .update({ is_active: isActive })
-        .eq('key', key);
-
-      if (error) throw error;
-
-      // Log audit
-      await supabase.from('audit_logs').insert({
-        action: 'toggle_module_visibility',
-        details: { module: key, new_status: isActive },
+      await sidebarConfigService.updateModuleConfig({
+        key,
+        isActive,
+        isSortEnabled,
       });
 
-      toast.success(`Módulo ${isActive ? 'habilitado' : 'desabilitado'} com sucesso`);
+      await fetchModules();
+      toast.success('Configuração do botão atualizada com sucesso');
     } catch (error) {
-      console.error('Error updating module visibility:', error);
-      toast.error('Erro ao atualizar visibilidade do módulo');
-      // Revert optimistic update by refetching
-      fetchModules();
+      console.error('Erro ao atualizar configuração de módulo:', error);
+      toast.error(error instanceof Error ? error.message : 'Erro ao atualizar configuração do botão');
+      await fetchModules();
     }
-  };
+  }, [fetchModules]);
+
+  const toggleModuleVisibility = useCallback(async (key: string, isActive: boolean) => {
+    const current = systemModules.find((module) => module.key === key);
+    if (!current) {
+      toast.error('Módulo não encontrado para atualização');
+      return;
+    }
+
+    await updateModuleConfig(key, isActive, current.is_sort_enabled);
+  }, [systemModules, updateModuleConfig]);
+
+  const reorderModules = useCallback(async (orderedKeys: string[]) => {
+    const moduleByKey = new Map(systemModules.map((module) => [module.key, module]));
+    const optimistic = orderedKeys
+      .map((key, index) => {
+        const module = moduleByKey.get(key);
+        if (!module) {
+          return null;
+        }
+        return { ...module, order_position: index + 1 };
+      })
+      .filter((module): module is SidebarModule => module !== null);
+
+    if (optimistic.length === systemModules.length) {
+      setSystemModules(normalizeModules(optimistic));
+      saveLocalModules(optimistic);
+    }
+
+    try {
+      const data = await sidebarConfigService.reorderModules(orderedKeys);
+      const normalized = normalizeModules(data);
+      setSystemModules(normalized);
+      saveLocalModules(normalized);
+      toast.success('Ordem dos botões atualizada com sucesso');
+    } catch (error) {
+      console.error('Erro ao reordenar módulos:', error);
+      const message = error instanceof Error
+        ? error.message
+        : (typeof error === 'object' && error !== null && 'message' in error
+          ? String((error as { message: unknown }).message)
+          : 'Erro ao reordenar módulos');
+      toast.error(message);
+      await fetchModules();
+    }
+  }, [fetchModules, normalizeModules, saveLocalModules, setSystemModules, systemModules]);
+
+  const updateAllSortEnabled = useCallback(async (enabled: boolean) => {
+    try {
+      for (const module of systemModules) {
+        if (module.is_sort_enabled === enabled) {
+          continue;
+        }
+        await sidebarConfigService.updateModuleConfig({
+          key: module.key,
+          isActive: module.is_active,
+          isSortEnabled: enabled,
+        });
+      }
+      await fetchModules();
+      toast.success(enabled ? 'Ordenação habilitada para todos os botões' : 'Ordenação desabilitada para todos os botões');
+    } catch (error) {
+      console.error('Erro ao atualizar ordenação em lote:', error);
+      toast.error(error instanceof Error ? error.message : 'Erro ao atualizar ordenação em lote');
+      await fetchModules();
+    }
+  }, [fetchModules, systemModules]);
 
   useEffect(() => {
+    if (systemModules.length === 0) {
+      const localModules = readLocalModules();
+      if (localModules.length) {
+        setSystemModules(localModules);
+      }
+    }
+
     fetchModules();
 
-    // Subscribe to changes
     const subscription = supabase
       .channel('system_modules_changes')
-      .on('postgres_changes', { 
-        event: '*', 
-        schema: 'public', 
-        table: 'system_modules' 
-      }, (payload) => {
-        if (payload.eventType === 'UPDATE') {
-          updateSystemModule(payload.new as SystemModule);
-        } else if (payload.eventType === 'INSERT') {
-          setSystemModules([...systemModules, payload.new as SystemModule]);
-        }
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'system_modules'
+      }, (_payload: RealtimePostgresChangesPayload<SystemModule>) => {
+        fetchModules();
       })
       .subscribe();
 
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [fetchModules, readLocalModules, setSystemModules, systemModules.length]);
+
+  const orderedModules = useMemo(() => {
+    return [...systemModules].sort((a, b) => a.order_position - b.order_position);
+  }, [systemModules]);
 
   return {
-    modules: systemModules,
+    modules: orderedModules,
     loading,
     toggleModuleVisibility,
+    updateModuleConfig,
+    reorderModules,
+    updateAllSortEnabled,
     getModuleStatus: (key: string) => {
-      // If loading and no data, assume true to prevent flash of hidden content? 
-      // Or false to be safe? 
-      // The user complained about "showing disabled page for 1-2 seconds".
-      // This implies that during loading, we default to TRUE, then it switches to FALSE.
-      // If we have cached data, we use it.
-      if (systemModules.length === 0 && loading) return false; // Fail safe: hide if unknown? Or show?
-      // Better: if we persist data, use it. If no data, wait for load.
-      
-      const module = systemModules.find(m => m.key === key);
+      if (orderedModules.length === 0 && loading) return false;
+
+      const module = orderedModules.find(m => m.key === key);
       return module?.is_active ?? true;
+    },
+    getModuleByKey: (key: string) => {
+      const module = orderedModules.find(m => m.key === key);
+      return module ?? null;
+    },
+    hasAtLeastOneActiveModule: () => {
+      return orderedModules.some((module) => module.is_active);
+    },
+    getOrderedModuleKeys: () => {
+      return orderedModules.map((module) => module.key);
+    },
+    canDisableModule: (key: string) => {
+      const module = orderedModules.find((item) => item.key === key);
+      if (!module || !module.is_active) {
+        return true;
+      }
+
+      const activeModules = orderedModules.filter((item) => item.is_active);
+      return activeModules.length > 1;
+    },
+    getModuleSortingState: (key: string) => {
+      const module = orderedModules.find((item) => item.key === key);
+      return module?.is_sort_enabled ?? false;
+    },
+    getSortedConfigurableModules: () => {
+      return orderedModules;
+    },
+    getOrderedActiveModules: () => {
+      return orderedModules.filter((module) => module.is_active);
+    },
+    getOrderedInactiveModules: () => {
+      return orderedModules.filter((module) => !module.is_active);
+    },
+    getModuleOrderPosition: (key: string) => {
+      const module = orderedModules.find((item) => item.key === key);
+      return module?.order_position ?? null;
+    },
+    getModuleVisibilityState: (key: string) => {
+      const module = systemModules.find(m => m.key === key);
+      return {
+        isActive: module?.is_active ?? true,
+        isSortEnabled: module?.is_sort_enabled ?? false,
+        orderPosition: module?.order_position ?? null
+      };
     }
   };
 };

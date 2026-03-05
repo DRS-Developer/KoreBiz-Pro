@@ -36,12 +36,12 @@ const AreasAtuacao: React.FC = () => {
     <div className="flex flex-col min-h-screen bg-gray-50">
       <SEO 
         title="Áreas de Atuação" 
-        description="Conheça as especialidades técnicas onde a ArsInstalações se destaca." 
+        description="Conheça as especialidades técnicas onde a KoreBiz-Pro se destaca." 
       />
       {/* Header */}
       <PageHeader 
         title="Áreas de Atuação" 
-        description="Conheça as especialidades técnicas onde a ArsInstalações se destaca." 
+        description="Conheça as especialidades técnicas onde a KoreBiz-Pro se destaca." 
       />
 
       {/* Grid */}

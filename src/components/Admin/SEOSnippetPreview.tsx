@@ -8,7 +8,7 @@ interface SEOSnippetPreviewProps {
 }
 
 const SEOSnippetPreview: React.FC<SEOSnippetPreviewProps> = ({ title, description, slug }) => {
-  const baseUrl = 'https://korebiz.com.br';
+  const baseUrl = 'https://korebiz-pro.com.br';
   // Clean slug to remove leading slash if present
   const cleanSlug = slug?.replace(/^\//, '') || 'pagina';
   const displayUrl = `${baseUrl} › ${cleanSlug}`;
@@ -37,7 +37,7 @@ const SEOSnippetPreview: React.FC<SEOSnippetPreviewProps> = ({ title, descriptio
             />
           </div>
           <div className="leading-tight">
-            <div className="text-sm text-gray-800">KoreBiz</div>
+            <div className="text-sm text-gray-800">KoreBiz-Pro</div>
             <div className="text-xs text-gray-500">{displayUrl}</div>
           </div>
         </div>

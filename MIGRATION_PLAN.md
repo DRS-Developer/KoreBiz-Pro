@@ -1,7 +1,7 @@
 # Plano de Migração de Dependências Principais (Major Updates)
 
 **Data de Criação:** 12 de Fevereiro de 2026
-**Projeto:** ArsInstalacoes
+**Projeto:** KoreBiz-Pro
 **Responsável:** Equipe de Desenvolvimento (Trae AI Pair Programmer)
 
 ## 1. Análise do Ambiente Atual e Escopo

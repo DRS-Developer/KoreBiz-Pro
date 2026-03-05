@@ -458,24 +458,60 @@ export interface Database {
           key: string
           name: string
           is_active: boolean
+          is_sort_enabled: boolean
+          order_position: number
           updated_at: string
-          updated_by: string
+          updated_by: string | null
         }
         Insert: {
           id?: string
           key: string
           name: string
           is_active?: boolean
+          is_sort_enabled?: boolean
+          order_position?: number
           updated_at?: string
-          updated_by?: string
+          updated_by?: string | null
         }
         Update: {
           id?: string
           key?: string
           name?: string
           is_active?: boolean
+          is_sort_enabled?: boolean
+          order_position?: number
           updated_at?: string
-          updated_by?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      system_module_audit_logs: {
+        Row: {
+          id: string
+          action: string
+          module_key: string | null
+          previous_state: Json
+          next_state: Json
+          changed_by: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          action: string
+          module_key?: string | null
+          previous_state?: Json
+          next_state?: Json
+          changed_by?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          action?: string
+          module_key?: string | null
+          previous_state?: Json
+          next_state?: Json
+          changed_by?: string | null
+          created_at?: string
         }
         Relationships: []
       }
@@ -547,7 +583,53 @@ export interface Database {
       }
     }
     Views: { [_ in never]: never }
-    Functions: { [_ in never]: never }
+    Functions: {
+      get_system_modules_config: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          key: string
+          name: string
+          is_active: boolean
+          is_sort_enabled: boolean
+          order_position: number
+          updated_at: string
+          updated_by: string | null
+        }[]
+      }
+      update_system_module_config: {
+        Args: {
+          p_key: string
+          p_is_active: boolean
+          p_is_sort_enabled: boolean
+        }
+        Returns: {
+          id: string
+          key: string
+          name: string
+          is_active: boolean
+          is_sort_enabled: boolean
+          order_position: number
+          updated_at: string
+          updated_by: string | null
+        }
+      }
+      reorder_system_modules: {
+        Args: {
+          p_keys: string[]
+        }
+        Returns: {
+          id: string
+          key: string
+          name: string
+          is_active: boolean
+          is_sort_enabled: boolean
+          order_position: number
+          updated_at: string
+          updated_by: string | null
+        }[]
+      }
+    }
     Enums: { [_ in never]: never }
     CompositeTypes: { [_ in never]: never }
   }

@@ -32,8 +32,8 @@ export default defineConfig({
       registerType: 'autoUpdate', // Updates silently in background
       includeAssets: ['favicon.svg', 'robots.txt'],
       manifest: {
-        name: 'KoreBiz',
-        short_name: 'KoreBiz',
+        name: 'KoreBiz-Pro',
+        short_name: 'KoreBiz-Pro',
         description: 'Soluções Inteligentes em Instalações e Manutenção',
         theme_color: '#1e3a8a',
         background_color: '#ffffff',

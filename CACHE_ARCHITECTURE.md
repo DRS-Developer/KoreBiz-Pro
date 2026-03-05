@@ -1,4 +1,4 @@
-# Arquitetura de Cache e PWA - ArsInstalações
+# Arquitetura de Cache e PWA - KoreBiz-Pro
 
 Este documento descreve a nova arquitetura de cache e PWA implementada para garantir alta performance, funcionamento offline e atualizações silenciosas.
 

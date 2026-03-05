@@ -1,6 +1,6 @@
 create table public.site_settings (
   id uuid not null default extensions.uuid_generate_v4(),
-  site_name text not null default 'ArsInstalações',
+  site_name text not null default 'KoreBiz-Pro',
   site_description text,
   contact_email text,
   contact_phone text,
@@ -37,4 +37,4 @@ create policy "Allow authenticated insert access"
 
 -- Insert default row
 insert into public.site_settings (site_name, site_description, contact_email)
-values ('ArsInstalações', 'Especialistas em instalações elétricas e hidráulicas.', 'contato@arsinstalacoes.com.br');
+values ('KoreBiz-Pro', 'Especialistas em instalações elétricas e hidráulicas.', 'contato@korebiz-pro.com.br');

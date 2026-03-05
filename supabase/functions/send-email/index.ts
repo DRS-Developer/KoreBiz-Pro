@@ -31,13 +31,13 @@ serve(async (req) => {
 
     // Send the email
     const { data, error } = await resend.emails.send({
-      from: 'KoreBiz <onboarding@resend.dev>', // Update this if you have a verified domain
+      from: 'KoreBiz-Pro <onboarding@resend.dev>', // Update this if you have a verified domain
       to: ['devdrsoares@gmail.com'], // Default admin email - change this or use env var
       reply_to: email,
       subject: subject || `Novo contato de ${name}`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2>Novo Contato via Site KoreBiz</h2>
+          <h2>Novo Contato via Site KoreBiz-Pro</h2>
           <p>Olá <strong>${to_name || 'Admin'}</strong>,</p>
           <p>Você recebeu uma nova mensagem através do formulário de contato.</p>
           
@@ -50,7 +50,7 @@ serve(async (req) => {
           </div>
 
           <hr style="border: 0; border-top: 1px solid ${STYLES.borderColor}; margin: 20px 0;" />
-          <p style="font-size: 12px; color: ${STYLES.footerText};">Mensagem enviada automaticamente pelo sistema KoreBiz.</p>
+          <p style="font-size: 12px; color: ${STYLES.footerText};">Mensagem enviada automaticamente pelo sistema KoreBiz-Pro.</p>
         </div>
       `,
     })

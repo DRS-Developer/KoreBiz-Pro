@@ -60,7 +60,34 @@ const HeroTab: React.FC = () => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="flex flex-col gap-8">
+        <div className="space-y-6">
+          <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Imagem de Fundo</h3>
+          
+          <div className="w-full md:max-w-[50%] mx-auto transition-all duration-300 ease-in-out">
+            <ImageUpload
+              label="Banner Principal"
+              value={bannerUrl}
+              onChange={(url) => setValue('background_image', url, { shouldDirty: true })}
+              folder="general"
+              aspectRatio={16/9}
+              minWidth={1920}
+              minHeight={1080}
+              description="Alta resolução recomendada"
+              pageKey="home"
+              role="hero"
+            />
+          </div>
+
+          <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+            <h4 className="text-sm font-bold text-blue-800 mb-2">Dica Visual</h4>
+            <p className="text-sm text-blue-700">
+              A imagem selecionada terá automaticamente uma sobreposição escura (overlay) para garantir que o texto fique legível.
+              Escolha imagens com boa iluminação e que representem bem os serviços da empresa.
+            </p>
+          </div>
+        </div>
+
         <div className="space-y-6">
           <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Conteúdo Textual</h3>
           
@@ -84,7 +111,7 @@ const HeroTab: React.FC = () => {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Texto Botão Primário</label>
               <input
@@ -103,7 +130,7 @@ const HeroTab: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Texto Botão Secundário</label>
               <input
@@ -120,29 +147,6 @@ const HeroTab: React.FC = () => {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
-          </div>
-        </div>
-
-        <div className="space-y-6">
-          <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Imagem de Fundo</h3>
-          
-          <ImageUpload
-            label="Banner Principal"
-            value={bannerUrl}
-            onChange={(url) => setValue('background_image', url, { shouldDirty: true })}
-            folder="general"
-            aspectRatio={16/9}
-            description="Recomendado: 1920x1080px (Alta resolução)"
-            pageKey="home"
-            role="hero"
-          />
-
-          <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-            <h4 className="text-sm font-bold text-blue-800 mb-2">Dica Visual</h4>
-            <p className="text-sm text-blue-700">
-              A imagem selecionada terá automaticamente uma sobreposição escura (overlay) para garantir que o texto fique legível.
-              Escolha imagens com boa iluminação e que representem bem os serviços da empresa.
-            </p>
           </div>
         </div>
       </div>

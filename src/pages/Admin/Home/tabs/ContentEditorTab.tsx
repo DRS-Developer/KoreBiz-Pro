@@ -105,8 +105,26 @@ const ContentEditorTab: React.FC = () => {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="flex flex-col gap-8">
           <div className="space-y-4">
+            <h4 className="text-lg font-semibold text-gray-800 border-b pb-2">Imagem Ilustrativa</h4>
+            <div className="w-full md:max-w-[50%] mx-auto transition-all duration-300 ease-in-out">
+                <ImageUpload
+                label="Imagem Ilustrativa"
+                value={aboutImageUrl}
+                onChange={(url) => setValueAbout('image_url', url, { shouldDirty: true })}
+                folder="general"
+                aspectRatio={4/3}
+                minWidth={800}
+                minHeight={600}
+                pageKey="home"
+                role="card"
+                />
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <h4 className="text-lg font-semibold text-gray-800 border-b pb-2">Conteúdo Textual</h4>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Subtítulo (Pequeno)</label>
               <input type="text" {...registerAbout('subtitle')} className="w-full px-3 py-2 border rounded-md" />
@@ -150,20 +168,8 @@ const ContentEditorTab: React.FC = () => {
                 </button>
               </div>
             </div>
-          </div>
 
-          <div className="space-y-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Imagem Ilustrativa</label>
-            <ImageUpload
-              value={aboutImageUrl}
-              onChange={(url) => setValueAbout('image_url', url, { shouldDirty: true })}
-              folder="general"
-              aspectRatio={4/3}
-              pageKey="home"
-              role="card"
-            />
-            
-            <div className="grid grid-cols-2 gap-4 mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Texto Botão</label>
                 <input type="text" {...registerAbout('button_text')} className="w-full px-3 py-2 border rounded-md" />

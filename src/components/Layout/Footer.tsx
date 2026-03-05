@@ -16,7 +16,7 @@ const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           {/* Company Info */}
           <div>
-            <h3 className="text-xl font-bold mb-4">{settings?.site_name || 'KoreBiz'}</h3>
+            <h3 className="text-xl font-bold mb-4">{settings?.site_name || 'KoreBiz-Pro'}</h3>
             <p className="text-gray-400 mb-4">
               {settings?.site_description || 'Soluções inteligentes em instalações e manutenção.'}
             </p>
@@ -99,7 +99,7 @@ const Footer: React.FC = () => {
                   onClick={() => trackEvent('Contact', 'Click Email', 'Footer')}
                   className="text-gray-400"
                 >
-                  {settings?.contact_email || 'contato@arsinstalacoes.com.br'}
+                  {settings?.contact_email || 'contato@korebiz-pro.com.br'}
                 </a>
               </li>
             </ul>
@@ -107,7 +107,7 @@ const Footer: React.FC = () => {
         </div>
 
         <div className="border-t border-gray-800 pt-6 text-center text-gray-500 text-sm">
-          <p>&copy; {currentYear} {settings?.site_name || 'ArsInstalações'}. Todos os direitos reservados.</p>
+          <p>&copy; {currentYear} {settings?.site_name || 'KoreBiz-Pro'}. Todos os direitos reservados.</p>
         </div>
       </div>
     </footer>

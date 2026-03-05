@@ -345,11 +345,30 @@ const ServicesForm: React.FC = () => {
         onCancel={() => blocker.reset?.()}
       />
 
-      <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-6">
-          <h2 className="text-lg font-semibold text-gray-800 border-b pb-4">Informações Principais</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-8">
+        <div className="flex flex-col gap-8">
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-6">
+            <h2 className="text-lg font-semibold text-gray-800 border-b pb-4">Imagem Destacada</h2>
+            <div className="w-full md:max-w-[50%] mx-auto transition-all duration-300 ease-in-out">
+                <ImageUpload
+                label="Imagem Destacada"
+                value={watch('image_url')}
+                onChange={(url) => setValue('image_url', url, { shouldDirty: true })}
+                folder="services"
+                error={errors.image_url?.message}
+                aspectRatio={4}
+                minWidth={200}
+                minHeight={50}
+                pageKey="servicos:list"
+                role="card"
+                />
+            </div>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-6">
+            <h2 className="text-lg font-semibold text-gray-800 border-b pb-4">Informações Principais</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Título do Serviço *
@@ -465,9 +484,10 @@ const ServicesForm: React.FC = () => {
               />
             </div>
           </div>
+        </div>
 
-          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-            <h3 className="text-sm font-medium text-gray-700 mb-2">Resumo e SEO</h3>
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-6">
+            <h2 className="text-lg font-semibold text-gray-800 border-b pb-4">Resumo e SEO</h2>
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Breve Descrição (Exibida na listagem e SEO)
@@ -497,23 +517,8 @@ const ServicesForm: React.FC = () => {
             </div>
           </div>
 
-          <div>
-            <ImageUpload
-              label="Imagem Destacada"
-              value={watch('image_url')}
-              onChange={(url) => setValue('image_url', url, { shouldDirty: true })}
-              folder="services"
-              error={errors.image_url?.message}
-              aspectRatio={4}
-              minWidth={200}
-              minHeight={50}
-              description="Formato recomendado: 200x50px (Proporção 4:1)"
-              pageKey="servicos:list"
-              role="card"
-            />
-          </div>
-
-          <div>
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-6">
+            <h2 className="text-lg font-semibold text-gray-800 border-b pb-4">Descrição Completa</h2>
             <Suspense fallback={<div className="h-64 bg-gray-50 rounded-lg border border-gray-200" />}>
               <TiptapEditor
                 label="Descrição Completa"
@@ -525,7 +530,7 @@ const ServicesForm: React.FC = () => {
             </Suspense>
           </div>
 
-          <div className="flex items-center">
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex items-center">
             <input
               type="checkbox"
               id="published"

@@ -86,9 +86,30 @@ const PartnersForm: React.FC = () => {
         </h1>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+        <div className="flex flex-col gap-8">
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-6">
+            <h2 className="text-lg font-semibold text-gray-800 border-b pb-4">Logotipo</h2>
+            <div className="w-full md:max-w-[50%] mx-auto transition-all duration-300 ease-in-out">
+                <ImageUpload
+                label="Logo"
+                value={logoUrl}
+                onChange={(url) => setValue('logo_url', url, { shouldDirty: true })}
+                folder="partners"
+                aspectRatio={16/9}
+                minWidth={320}
+                minHeight={180}
+                description="Fundo transparente recomendado"
+                pageKey="parceiros"
+                role="logo"
+                />
+            </div>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-6">
+            <h2 className="text-lg font-semibold text-gray-800 border-b pb-4">Informações do Parceiro</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Nome *</label>
               <input
@@ -100,6 +121,16 @@ const PartnersForm: React.FC = () => {
             </div>
 
             <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Site (URL)</label>
+              <input
+                type="text"
+                {...register('website_url')}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                placeholder="https://..."
+              />
+            </div>
+
+            <div className="col-span-1 md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
               <textarea
                 {...register('description')}
@@ -109,27 +140,16 @@ const PartnersForm: React.FC = () => {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Site (URL)</label>
-                <input
-                  type="text"
-                  {...register('website_url')}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  placeholder="https://..."
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Ordem</label>
-                <input
-                  type="number"
-                  {...register('order_index')}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Ordem</label>
+              <input
+                type="number"
+                {...register('order_index')}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
             </div>
 
-            <div className="flex items-center gap-2 pt-2">
+            <div className="flex items-center gap-2 pt-8">
               <input
                 type="checkbox"
                 id="is_active"
@@ -140,19 +160,7 @@ const PartnersForm: React.FC = () => {
                 Ativo (Exibir no site)
               </label>
             </div>
-          </div>
-
-          <div className="space-y-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Logo</label>
-            <ImageUpload
-              value={logoUrl}
-              onChange={(url) => setValue('logo_url', url, { shouldDirty: true })}
-              folder="partners"
-              aspectRatio={16/9}
-              description="Logo do parceiro (fundo transparente recomendado)"
-              pageKey="parceiros"
-              role="logo"
-            />
+            </div>
           </div>
         </div>
 

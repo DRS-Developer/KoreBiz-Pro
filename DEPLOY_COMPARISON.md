@@ -123,7 +123,7 @@ const supabaseAnonKey = getEnvVar('VITE_SUPABASE_ANON_KEY', 'NEXT_PUBLIC_SUPABAS
 
 ## 5. Recomendação Técnica
 
-Para o projeto **ArsInstalações**, considerando que:
+Para o projeto **KoreBiz-Pro**, considerando que:
 1.  É um projeto **Vite** (SPA), não Next.js.
 2.  Já possui uma convenção estabelecida de `VITE_...`.
 3.  A infraestrutura atual já está estável.

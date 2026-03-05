@@ -16,7 +16,7 @@ const AboutDefault: React.FC = () => {
           <div className="md:w-1/2">
             <OptimizedImage
               src={about?.image_url || undefined}
-              alt="Sobre a ArsInstalações" 
+              alt="Sobre a KoreBiz-Pro" 
               pageKey="home"
               role="card"
               className="rounded-lg shadow-xl"
@@ -32,7 +32,7 @@ const AboutDefault: React.FC = () => {
               {about?.title || "Compromisso com a Qualidade e Segurança"}
             </h2>
             <HtmlContent 
-              content={about?.description || "A ArsInstalações nasceu com o propósito de oferecer serviços técnicos de alta qualidade, focando na segurança e satisfação total dos nossos clientes."}
+              content={about?.description || "A KoreBiz-Pro nasceu com o propósito de oferecer serviços técnicos de alta qualidade, focando na segurança e satisfação total dos nossos clientes."}
               className="text-lg text-gray-600 mb-6"
             />
             

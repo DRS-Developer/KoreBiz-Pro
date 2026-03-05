@@ -101,7 +101,7 @@ VALUES (
     '{
         "title": "Compromisso com a Qualidade e Segurança",
         "subtitle": "Sobre Nós",
-        "description": "A ArsInstalações nasceu com o propósito de oferecer serviços técnicos de alta qualidade, focando na segurança e satisfação total dos nossos clientes.",
+        "description": "A KoreBiz-Pro nasceu com o propósito de oferecer serviços técnicos de alta qualidade, focando na segurança e satisfação total dos nossos clientes.",
         "image_url": "",
         "button_text": "Conheça Nossa História",
         "button_link": "/empresa",

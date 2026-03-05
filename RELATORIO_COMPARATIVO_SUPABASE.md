@@ -1,7 +1,7 @@
 # Análise Comparativa: Supabase vs Alternativas
 
 **Data:** 05/02/2026
-**Contexto:** Avaliação para migração ou manutenção do Supabase como backend do projeto ArsInstalacoes.
+**Contexto:** Avaliação para migração ou manutenção do Supabase como backend do projeto KoreBiz-Pro.
 
 ## 1. Matriz de Decisão Comparativa
 

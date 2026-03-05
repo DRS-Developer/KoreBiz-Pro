@@ -19,7 +19,7 @@ const SEO: React.FC<SEOProps> = ({
 }) => {
   const { settings } = useSiteSettings();
   
-  const siteName = settings?.site_name || 'KoreBiz';
+  const siteName = settings?.site_name || 'KoreBiz-Pro';
   const defaultDescription = settings?.site_description || 'Soluções Inteligentes em Instalações e Manutenção.';
   const defaultImage =
     ((settings?.image_settings as any)?.banner_url as string | undefined) ||
@@ -54,7 +54,7 @@ const SEO: React.FC<SEOProps> = ({
     "@type": "LocalBusiness",
     "name": siteName,
     "image": finalImage,
-    "url": "https://korebiz.com.br",
+    "url": "https://korebiz-pro.com.br",
     "telephone": settings?.contact_phone || "",
     "email": settings?.contact_email || "",
     "address": {

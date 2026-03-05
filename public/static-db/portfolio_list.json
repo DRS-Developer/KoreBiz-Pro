@@ -1,17 +1,5 @@
 [
   {
-    "id": "8eaf27ac-5946-4eab-9f2d-923119a836c9",
-    "slug": "instalacao-gerador-condominio",
-    "title": "Instalação de Gerador Condomínio",
-    "short_description": null,
-    "description": "<p>Instalação de grupo gerador de 500kVA para atendimento às áreas comuns e elevadores. O sistema garante autonomia de 12 horas em caso de falha da concessionária.</p>",
-    "image_url": null,
-    "category": "Residencial",
-    "location": "Barueri, SP",
-    "published": true,
-    "created_at": "2026-01-25T06:58:12.76901+00:00"
-  },
-  {
     "id": "82e1c858-088b-4a00-85ee-404cac45fb58",
     "slug": "automacao-residencial",
     "title": "Automação Residencial Alto Padrão",
@@ -24,14 +12,14 @@
     "created_at": "2026-01-25T06:58:12.76901+00:00"
   },
   {
-    "id": "26f9ba4f-2fcb-4051-8944-3e64b03be732",
-    "slug": "adequacao-cabine-primaria",
-    "title": "Adequação de Cabine Primária",
+    "id": "8eaf27ac-5946-4eab-9f2d-923119a836c9",
+    "slug": "instalacao-gerador-condominio",
+    "title": "Instalação de Gerador Condomínio",
     "short_description": null,
-    "description": "<p>Manutenção e adequação de cabine primária 13.8kV conforme normas da concessionária, incluindo troca de disjuntores e óleo isolante.</p>",
+    "description": "<p>Instalação de grupo gerador de 500kVA para atendimento às áreas comuns e elevadores. O sistema garante autonomia de 12 horas em caso de falha da concessionária.</p>",
     "image_url": null,
-    "category": "Industrial",
-    "location": "Jundiaí, SP",
+    "category": "Residencial",
+    "location": "Barueri, SP",
     "published": true,
     "created_at": "2026-01-25T06:58:12.76901+00:00"
   },
@@ -44,6 +32,18 @@
     "image_url": null,
     "category": "Industrial",
     "location": "Guarulhos, SP",
+    "published": true,
+    "created_at": "2026-01-25T06:58:12.76901+00:00"
+  },
+  {
+    "id": "26f9ba4f-2fcb-4051-8944-3e64b03be732",
+    "slug": "adequacao-cabine-primaria",
+    "title": "Adequação de Cabine Primária",
+    "short_description": null,
+    "description": "<p>Manutenção e adequação de cabine primária 13.8kV conforme normas da concessionária, incluindo troca de disjuntores e óleo isolante.</p>",
+    "image_url": null,
+    "category": "Industrial",
+    "location": "Jundiaí, SP",
     "published": true,
     "created_at": "2026-01-25T06:58:12.76901+00:00"
   },

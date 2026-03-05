@@ -60,7 +60,7 @@ serve(async (req) => {
 
     // 5. Send Email
     const { error: emailError } = await resend.emails.send({
-      from: 'KoreBiz <onboarding@resend.dev>',
+      from: 'KoreBiz-Pro <onboarding@resend.dev>',
       to: ['devdrsoares@gmail.com'],
       reply_to: email,
       subject: `[Site] ${cleanSubject}`,

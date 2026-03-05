@@ -147,7 +147,7 @@ export default function InstallWizard() {
       case 0: // Welcome
         return (
           <div className="space-y-4">
-            <h2 className="text-xl font-bold text-gray-900">Bem-vindo ao Instalador ArsInstalações</h2>
+            <h2 className="text-xl font-bold text-gray-900">Bem-vindo ao Instalador KoreBiz-Pro</h2>
             <p className="text-gray-600">Este assistente irá guiá-lo na configuração inicial do sistema.</p>
             <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
               <h3 className="font-semibold text-blue-800 mb-2">Pré-requisitos:</h3>
@@ -352,7 +352,7 @@ export default function InstallWizard() {
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          ArsInstalações Setup
+          KoreBiz-Pro Setup
         </h2>
       </div>
 

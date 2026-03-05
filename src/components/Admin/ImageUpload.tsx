@@ -1,6 +1,5 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { Upload, X, Loader2, Edit2, FolderOpen, ImageIcon } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
 import { toast } from 'sonner';
 import imageCompression from 'browser-image-compression';
 import MediaLibraryModal from './Media/MediaLibraryModal';
@@ -8,6 +7,8 @@ import { MediaFolder } from '../../types/media';
 import { useSiteSettings } from '../../hooks/useSiteSettings';
 import { resolveManagedImage } from '../../utils/imageManager';
 import type { PageKey, ImageRole } from '../../config/imageProfiles';
+import { uploadImage, deleteImage } from '../../services/storage/storageService';
+import { StorageFolder } from '../../services/storage/folderStructure';
 
 interface ImageUploadProps {
   label?: string;
@@ -73,6 +74,18 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     if (folderName.includes('pages')) return 'pages';
     if (folderName.includes('partners')) return 'partners';
     return 'general';
+  };
+
+  // Helper to map string folder to StorageFolder enum
+  const mapStringToStorageFolder = (folderName: string): StorageFolder => {
+    const lower = folderName.toLowerCase();
+    if (lower.includes('servicos') || lower.includes('services')) return StorageFolder.SERVICOS;
+    if (lower.includes('portfolio')) return StorageFolder.PORTFOLIO;
+    if (lower.includes('parceiros') || lower.includes('partners')) return StorageFolder.PARCEIROS;
+    if (lower.includes('posts') || lower.includes('blog')) return StorageFolder.POSTS;
+    if (lower.includes('equipe') || lower.includes('team')) return StorageFolder.EQUIPE;
+    if (lower.includes('sistema') || lower.includes('settings') || lower.includes('config')) return StorageFolder.SISTEMA;
+    return StorageFolder.GERAL;
   };
 
   // Calculate active resize config based on settings and folder context
@@ -202,11 +215,11 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     try {
       setUploading(true);
       
+      let optimizedFile: File;
+      let isOptimizationSkipped = false;
       const timestamp = Date.now();
       const randomId = Math.random().toString(36).substring(2, 10);
       const fileName = `${timestamp}_${randomId}`;
-      let optimizedFile: File;
-      let isOptimizationSkipped = false;
 
       // Determine optimization parameters
       const quality = (activeResizeConfig?.quality || 80) / 100;
@@ -261,72 +274,18 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
           }
       }
 
-      const cleanFolder = folder.replace(/\/+$/, '').replace(/^\/+/, '');
-      const extension = optimizedFile!.type.split('/')[1] || 'webp';
-      const optimizedPath = `${cleanFolder}/${fileName}_opt.${extension}`;
-      const highResPath = `${cleanFolder}/${fileName}_original.${imageBlob.type.split('/')[1] || 'jpg'}`;
+      // --- NEW STORAGE SERVICE IMPLEMENTATION ---
+      const targetFolder = mapStringToStorageFolder(folder);
+      
+      // Use the new storage service to upload (and handle old image deletion/backup)
+      const result = await uploadImage(optimizedFile!, targetFolder, value || undefined);
 
-      // Upload Optimized
-      const { error: uploadErrorOpt } = await supabase.storage
-        .from('media') 
-        .upload(optimizedPath, optimizedFile!, {
-          contentType: optimizedFile!.type,
-          upsert: true
-        }); 
-
-      if (uploadErrorOpt) {
-        console.error('Supabase upload error (optimized):', uploadErrorOpt);
-        throw new Error(`Falha no upload da imagem otimizada: ${uploadErrorOpt.message}`);
+      if (result.error) {
+        throw new Error(result.error);
       }
 
-      // Upload High Res (Original Blob) - Always backup original
-      const { error: uploadErrorHigh } = await supabase.storage
-        .from('media') 
-        .upload(highResPath, imageBlob, {
-          contentType: imageBlob.type,
-          upsert: true
-        }); 
-
-      if (uploadErrorHigh) {
-        console.warn('Failed to upload high-res version', uploadErrorHigh);
-      }
-
-      // Get Public URL
-      const { data } = supabase.storage
-        .from('media') 
-        .getPublicUrl(optimizedPath); 
-
-      const publicUrl = data.publicUrl;
-
-      // Register in Media Library
-      try {
-        const dimensions = await new Promise<{width: number, height: number}>((resolve) => {
-           const img = new Image();
-           const objectUrl = URL.createObjectURL(optimizedFile!);
-           img.onload = () => {
-             URL.revokeObjectURL(objectUrl);
-             resolve({ width: img.width, height: img.height });
-           };
-           img.src = objectUrl;
-        });
-
-        const mediaData = {
-          filename: optimizedFile!.name,
-          url: publicUrl,
-          size: optimizedFile!.size,
-          width: dimensions.width,
-          height: dimensions.height,
-          mime_type: optimizedFile!.type,
-          folder: getMediaFolder(folder)
-        };
-
-        const { error: dbError } = await supabase.from('media_files').insert(mediaData as any);
-
-        if (dbError) throw dbError;
-      } catch (err) {
-        console.error('Failed to register in media library:', err);
-        // We don't throw here to not block the main flow if only the library registration fails
-      }
+      const publicUrl = result.url;
+      // ------------------------------------------
 
       onChange(publicUrl);
       toast.success(isOptimizationSkipped ? 'Imagem enviada!' : 'Imagem processada e enviada com sucesso!');
@@ -339,33 +298,48 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     }
   };
 
-  const handleRemove = () => {
+  const handleRemove = async () => {
+    if (value) {
+      // Opcional: Perguntar confirmação? 
+      // Como é uma ação de UI rápida, melhor não bloquear, mas podemos deletar.
+      // O usuário pediu "Delete: Quando uma imagem for excluída do sistema, ela deve ser automaticamente removida"
+      
+      try {
+        setUploading(true);
+        const success = await deleteImage(value);
+        if (success) {
+          toast.success('Imagem removida do armazenamento.');
+        } else {
+          // Se falhar (ex: já deletada), apenas loga e segue
+          console.warn('Não foi possível remover o arquivo físico, ou ele não existia.');
+        }
+      } catch (e) {
+        console.error('Erro ao tentar deletar imagem:', e);
+      } finally {
+        setUploading(false);
+      }
+    }
     onChange('');
   };
 
   return (
-    <div className="mb-4">
-      <div className="flex justify-between items-end mb-1">
+    <div className="w-full">
+      <div className="flex justify-between items-center mb-2">
         {label && (
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="block text-sm font-semibold text-gray-700">
             {label}
           </label>
         )}
-        <div className="flex gap-2 items-center flex-wrap justify-end">
-            {activeResizeConfig && (
-                 <span className="text-[10px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 whitespace-nowrap" title={`Configuração ativa: ${activeResizeConfig.source}`}>
-                    Redim: {activeResizeConfig.width}x{activeResizeConfig.height}px (Q{activeResizeConfig.quality})
+        <div className="flex gap-2 items-center">
+             {activeResizeConfig && (
+                 <span className="hidden sm:inline-flex text-[10px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 whitespace-nowrap" title={`Configuração ativa: ${activeResizeConfig.source}`}>
+                    {activeResizeConfig.width}x{activeResizeConfig.height}px (Q{activeResizeConfig.quality})
                 </span>
-            )}
-            {description && (
-            <span className="text-[10px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded whitespace-nowrap">
-                {description}
-            </span>
             )}
             <button
                 type="button"
                 onClick={() => setMediaModalOpen(true)}
-                className="text-xs text-blue-600 flex items-center gap-1 bg-blue-50 px-2 py-1 rounded"
+                className="text-xs text-indigo-600 hover:text-indigo-800 flex items-center gap-1.5 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-md transition-colors font-medium"
             >
                 <FolderOpen size={14} />
                 Biblioteca
@@ -373,137 +347,176 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         </div>
       </div>
       
-      <div className={`border-2 border-dashed rounded-lg p-4 ${
-        error ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-gray-50'
-      }`}>
+      <div 
+        className={`relative border-2 border-dashed rounded-xl transition-all duration-200 overflow-hidden group ${
+            error 
+            ? 'border-red-300 bg-red-50' 
+            : value 
+                ? 'border-indigo-200 bg-gray-50' 
+                : 'border-gray-300 hover:border-indigo-400 hover:bg-gray-50'
+        }`}
+      >
         {value ? (
-          <div className="relative group max-w-md mx-auto">
-            <img 
-              src={value} 
-              alt="Preview" 
-              className="w-full max-h-64 object-contain rounded-md bg-white shadow-sm"
-            />
-            <div className="absolute inset-0 bg-black bg-opacity-40 rounded-md flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button
-                type="button"
-                onClick={handleEditExisting}
-                className="bg-blue-600 text-white p-2 rounded-full shadow-lg hover:bg-blue-700 transition-colors"
-                title="Editar imagem"
-              >
-                <Edit2 size={20} />
-              </button>
-              <button
-                type="button"
-                onClick={() => setMediaModalOpen(true)}
-                className="bg-indigo-600 text-white p-2 rounded-full shadow-lg hover:bg-indigo-700 transition-colors"
-                title="Trocar pela Biblioteca"
-              >
-                <FolderOpen size={20} />
-              </button>
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="bg-gray-600 text-white p-2 rounded-full shadow-lg hover:bg-gray-700 transition-colors"
-                title="Fazer Upload de Nova"
-              >
-                <Upload size={20} />
-              </button>
-              <button
-                type="button"
-                onClick={handleRemove}
-                className="bg-red-600 text-white p-2 rounded-full shadow-lg hover:bg-red-700 transition-colors"
-                title="Remover imagem"
-              >
-                <X size={20} />
-              </button>
-            </div>
-          </div>
-        ) : defaultImageSrc ? (
-          <div className="relative group max-w-md mx-auto">
-             <div className="absolute top-2 right-2 bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full font-bold shadow-sm z-10 border border-yellow-200 flex items-center gap-1">
-               <ImageIcon size={12} />
-               Padrão do Sistema
-             </div>
-             
-             <img 
-               src={defaultImageSrc} 
-               alt="Preview Padrão" 
-               className="w-full max-h-64 object-contain rounded-md bg-white shadow-sm opacity-80 grayscale-[30%]"
-             />
-             
-             <div className="absolute inset-0 bg-black/5 hover:bg-black/10 transition-colors rounded-md flex flex-col items-center justify-center gap-4">
-                 <div className="flex gap-3">
+          <div className="relative flex flex-col">
+            <div className="relative w-full aspect-video bg-gray-100 flex items-center justify-center overflow-hidden">
+                <img 
+                  src={value} 
+                  alt="Preview" 
+                  className="w-full h-full object-contain"
+                />
+                
+                {/* Actions Overlay - Always visible on mobile, hover on desktop */}
+                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-4 backdrop-blur-sm">
                     <button
                         type="button"
-                        onClick={() => setMediaModalOpen(true)}
-                        className="flex items-center gap-2 bg-white text-gray-700 px-4 py-2 rounded-full shadow-md hover:bg-gray-50 transition-colors font-medium text-sm"
-                        title="Selecionar da Biblioteca"
+                        onClick={handleEditExisting}
+                        className="flex flex-col items-center gap-2 text-white hover:scale-110 transition-transform focus:outline-none focus:ring-2 focus:ring-white/50 rounded-lg p-2"
+                        title="Editar Recorte e Filtros"
+                        aria-label="Editar imagem atual"
                     >
-                        <FolderOpen size={18} className="text-indigo-600" />
-                        Biblioteca
+                        <div className="bg-white/20 p-3 rounded-full hover:bg-blue-600 transition-colors shadow-lg">
+                            <Edit2 size={20} />
+                        </div>
+                        <span className="text-xs font-semibold shadow-black/50 drop-shadow-md">Editar</span>
                     </button>
+                    
                     <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-full shadow-md hover:bg-blue-700 transition-colors font-medium text-sm"
-                        title="Fazer Upload"
+                        className="flex flex-col items-center gap-2 text-white hover:scale-110 transition-transform focus:outline-none focus:ring-2 focus:ring-white/50 rounded-lg p-2"
+                        title="Trocar Imagem por Upload"
+                        aria-label="Fazer upload de nova imagem"
                     >
-                        <Upload size={18} />
-                        Upload
+                        <div className="bg-white/20 p-3 rounded-full hover:bg-indigo-600 transition-colors shadow-lg">
+                            <Upload size={20} />
+                        </div>
+                        <span className="text-xs font-semibold shadow-black/50 drop-shadow-md">Trocar</span>
                     </button>
-                 </div>
-                 <p className="text-xs text-gray-500 bg-white/80 px-2 py-1 rounded backdrop-blur-sm">
-                    {minWidth}x{minHeight}px (Proporção {aspectRatio}:1)
-                 </p>
-             </div>
-             
-             {uploading && (
-                <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-20 rounded-md">
-                     <div className="flex flex-col items-center">
-                        <Loader2 className="text-blue-500 mb-2 animate-spin" size={32} />
-                        <p className="text-sm text-gray-500 font-medium">Processando...</p>
-                     </div>
+                    
+                    <button
+                        type="button"
+                        onClick={handleRemove}
+                        className="flex flex-col items-center gap-2 text-white hover:scale-110 transition-transform focus:outline-none focus:ring-2 focus:ring-white/50 rounded-lg p-2"
+                        title="Remover Imagem"
+                        aria-label="Remover imagem atual"
+                    >
+                        <div className="bg-white/20 p-3 rounded-full hover:bg-red-600 transition-colors shadow-lg">
+                            <X size={20} />
+                        </div>
+                        <span className="text-xs font-semibold shadow-black/50 drop-shadow-md">Remover</span>
+                    </button>
                 </div>
-            )}
-          </div>
-        ) : (
-          <div 
-            className="flex flex-col items-center justify-center h-48 cursor-pointer relative"
-          >
-            <div className="flex gap-4 mb-4 z-10">
-                <button
-                    type="button"
-                    onClick={() => setMediaModalOpen(true)}
-                    className="flex flex-col items-center gap-2 p-3 rounded-lg text-gray-500"
-                >
-                    <FolderOpen size={24} />
-                    <span className="text-xs font-medium">Biblioteca</span>
-                </button>
-                <div className="w-px bg-gray-300 h-12 self-center"></div>
-                <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="flex flex-col items-center gap-2 p-3 rounded-lg text-gray-500"
-                >
-                    <Upload size={24} />
-                    <span className="text-xs font-medium">Upload</span>
-                </button>
             </div>
             
-            {uploading && (
-                <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-20">
-                     <div className="flex flex-col items-center">
-                        <Loader2 className="text-blue-500 mb-2" size={32} />
-                        <p className="text-sm text-gray-500 font-medium">Processando...</p>
-                     </div>
-                </div>
-            )}
+            {/* Mobile Actions Bar (Visible only on small screens if needed, otherwise overlay works) */}
+            {/* We can keep the overlay for consistency, but maybe add a permanent remove button on top right */}
+            <button 
+                onClick={handleRemove}
+                className="absolute top-2 right-2 p-1.5 bg-white/90 text-gray-500 rounded-full shadow-sm hover:text-red-500 hover:bg-white md:hidden z-10"
+            >
+                <X size={16} />
+            </button>
+          </div>
+        ) : defaultImageSrc ? (
+           <div className="relative flex flex-col">
+             <div className="absolute top-2 right-2 bg-amber-100 text-amber-800 text-[10px] px-2 py-1 rounded-full font-bold shadow-sm z-10 border border-amber-200 flex items-center gap-1">
+               <ImageIcon size={12} />
+               Padrão
+             </div>
+             
+             <div className="relative w-full aspect-video bg-gray-100 flex items-center justify-center overflow-hidden opacity-75 grayscale-[30%]">
+                 <img 
+                   src={defaultImageSrc} 
+                   alt="Preview Padrão" 
+                   className="w-full h-full object-contain"
+                 />
+                 
+             <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/40 backdrop-blur-[2px] p-4 transition-all duration-300">
+                 <div className="bg-white p-2 rounded-full shadow-md mb-3 ring-4 ring-white/50">
+                    <ImageIcon size={24} className="text-gray-400" aria-hidden="true" />
+                 </div>
+                 <div className="flex gap-3 justify-center w-full max-w-[90%]">
+                    <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg hover:bg-blue-700 hover:shadow-xl hover:scale-105 transition-all font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 flex-1 sm:flex-none"
+                        title="Fazer upload de uma nova imagem"
+                        aria-label="Fazer upload de imagem"
+                    >
+                        <Upload size={18} />
+                        <span className="whitespace-nowrap">Upload</span>
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setMediaModalOpen(true)}
+                        className="flex items-center justify-center gap-2 bg-white text-gray-700 px-4 py-2 rounded-full shadow-lg hover:bg-gray-50 hover:shadow-xl hover:scale-105 transition-all font-semibold text-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 flex-1 sm:flex-none"
+                        title="Selecionar imagem da biblioteca existente"
+                        aria-label="Selecionar da biblioteca"
+                    >
+                        <FolderOpen size={18} className="text-indigo-600" />
+                        <span className="whitespace-nowrap">Biblioteca</span>
+                    </button>
+                 </div>
+             </div>
+             </div>
+           </div>
+        ) : (
+          <div 
+            onClick={() => fileInputRef.current?.click()}
+            className="flex flex-col items-center justify-center py-10 px-4 cursor-pointer hover:bg-gray-50 transition-colors"
+          >
+            <div className="bg-indigo-50 p-4 rounded-full mb-3 group-hover:scale-110 transition-transform duration-200">
+                <Upload size={28} className="text-indigo-500" />
+            </div>
             
-            <p className="text-xs text-gray-400 mt-2">
-               {minWidth}x{minHeight}px (Proporção {aspectRatio}:1)
+            <p className="text-sm font-medium text-gray-700 mb-1 text-center">
+                Clique para fazer upload ou arraste
             </p>
+            <p className="text-xs text-gray-500 mb-4 text-center">
+                SVG, PNG, JPG ou WebP (máx. 10MB)
+            </p>
+            
+            <div className="flex items-center gap-3 w-full max-w-xs">
+                <div className="h-px bg-gray-200 flex-1"></div>
+                <span className="text-[10px] text-gray-400 uppercase font-semibold">ou</span>
+                <div className="h-px bg-gray-200 flex-1"></div>
+            </div>
+            
+            <button
+                type="button"
+                onClick={(e) => {
+                    e.stopPropagation();
+                    setMediaModalOpen(true);
+                }}
+                className="mt-4 text-xs text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1 hover:underline"
+            >
+                <FolderOpen size={14} />
+                Selecionar da biblioteca
+            </button>
           </div>
         )}
+
+        {/* Loading Overlay */}
+        {uploading && (
+            <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center z-30 transition-opacity duration-300">
+                <Loader2 className="text-indigo-600 mb-3 animate-spin" size={40} />
+                <p className="text-sm font-medium text-gray-700">Processando imagem...</p>
+                <p className="text-xs text-gray-500 mt-1">Otimizando e enviando</p>
+            </div>
+        )}
+        
+        {/* Footer Info */}
+        <div className="bg-gray-50 border-t border-gray-100 px-3 py-2 flex justify-between items-center text-xs text-gray-500">
+            <span className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
+                Recomendado: {minWidth}x{minHeight}px ({aspectRatio}:1)
+            </span>
+            {description && (
+                <span className="hidden sm:block text-gray-400 truncate max-w-[50%]" title={description}>
+                    {description}
+                </span>
+            )}
+        </div>
       </div>
 
       <input
@@ -515,7 +528,10 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
       />
 
       {error && (
-        <span className="text-red-500 text-sm mt-1">{error}</span>
+        <div className="flex items-center gap-2 mt-2 text-red-600 bg-red-50 px-3 py-2 rounded-md text-sm animate-in fade-in slide-in-from-top-1">
+            <div className="min-w-[4px] h-4 bg-red-500 rounded-full"></div>
+            {error}
+        </div>
       )}
 
       {editorOpen && selectedImageSrc && isComponentLoaded && EditorComponent && (
