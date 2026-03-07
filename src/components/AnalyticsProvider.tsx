@@ -92,7 +92,7 @@ const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }) => {
       // Ignora erros comuns de desenvolvimento/extensões
       if (event?.filename?.includes('chrome-extension')) return;
       
-      const _msg = event?.message || 'Erro desconhecido';
+      // const _msg = event?.message || 'Erro desconhecido';
       console.error('[Monitor] window.onerror', event);
       // toast.error(msg); // Desativado para evitar spam visual em produção
     };

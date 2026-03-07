@@ -49,7 +49,7 @@ Escopos necessários: `repo` (para ler e escrever no repositório).
       "args": [
         "-y",
         "@modelcontextprotocol/server-postgres",
-        "postgresql://postgres:SENHA_REAL@db.ID_DO_PROJETO.supabase.co:6543/postgres"
+        "postgresql://postgres:[SUA-SENHA]@[PROJETO].supabase.co:5432/postgres"
       ]
     },
     "github": {
@@ -59,7 +59,7 @@ Escopos necessários: `repo` (para ler e escrever no repositório).
         "@modelcontextprotocol/server-github"
       ],
       "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "ghp_SEU_TOKEN_REAL_AQUI"
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "[SEU-TOKEN-GITHUB]"
       }
     }
   }

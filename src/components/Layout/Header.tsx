@@ -35,6 +35,7 @@ const Header: React.FC = () => {
           order_position: index + 1,
           updated_at: '',
           updated_by: null,
+          visibilidade_personalizada: true,
         }));
 
     return source
@@ -43,10 +44,11 @@ const Header: React.FC = () => {
         if (!route) {
           return null;
         }
+        const isSidebarVisible = module.visibilidade_personalizada ?? true;
         return {
-          name: route.name,
+          name: module.name || route.name,
           href: route.href,
-          visible: module.is_active,
+          visible: module.is_active && isSidebarVisible,
         };
       })
       .filter((item): item is { name: string; href: string; visible: boolean } => item !== null);
@@ -116,7 +118,7 @@ const Header: React.FC = () => {
           <nav className="hidden md:flex space-x-8">
             {visibleNavigation.map((item) => (
               <Link
-                key={item.name}
+                key={item.href}
                 to={item.href}
                 className={clsx(
                   'text-sm font-medium',
@@ -145,7 +147,7 @@ const Header: React.FC = () => {
           <div className="container mx-auto px-4 py-4 flex flex-col space-y-4">
             {visibleNavigation.map((item) => (
               <Link
-                key={item.name}
+                key={item.href}
                 to={item.href}
                 className={clsx(
                   'text-base font-medium py-2 border-b border-gray-100 last:border-0',

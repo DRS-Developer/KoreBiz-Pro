@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { useGlobalStore } from '../stores/useGlobalStore';
 import { sidebarConfigService, SidebarModule } from '../services/sidebarConfigService';
 import { supabase } from '../lib/supabase';
+import { notifySystemModulesSync, SYSTEM_MODULES_SYNC_EVENT, SYSTEM_MODULES_SYNC_KEY } from './systemModulesSync';
 
 const SIDEBAR_MODULES_LOCAL_KEY = 'ars-sidebar-modules-order';
 
@@ -16,6 +17,7 @@ export interface SystemModule {
   order_position: number;
   updated_at: string;
   updated_by: string | null;
+  visibilidade_personalizada?: boolean;
 }
 
 export const useSystemModules = () => {
@@ -53,29 +55,27 @@ export const useSystemModules = () => {
   }, [normalizeModules]);
 
   const applyLocalOrderToServerData = useCallback((serverModules: SidebarModule[]) => {
-    const localModules = readLocalModules();
-    if (!localModules.length) {
-      return normalizeModules(serverModules);
-    }
-
-    const positionByKey = new Map(localModules.map((module) => [module.key, module.order_position]));
-    const hasAllKeys = serverModules.every((module) => positionByKey.has(module.key));
-
-    if (!hasAllKeys) {
-      return normalizeModules(serverModules);
-    }
-
-    return [...serverModules].sort((a, b) => {
-      const aPosition = positionByKey.get(a.key) ?? a.order_position;
-      const bPosition = positionByKey.get(b.key) ?? b.order_position;
-      return aPosition - bPosition;
-    });
-  }, [normalizeModules, readLocalModules]);
+    return normalizeModules(serverModules);
+  }, [normalizeModules]);
 
   const fetchModules = useCallback(async () => {
     try {
-      const data = await sidebarConfigService.fetchModules();
-      const merged = applyLocalOrderToServerData(data);
+      const { data, error } = await supabase.rpc('get_system_modules_config');
+      if (error) throw error;
+      
+      const mappedModules: SidebarModule[] = (data || []).map((m: any) => ({
+        id: m.id,
+        key: m.key,
+        name: m.name,
+        is_active: m.is_active,
+        is_sort_enabled: m.is_sort_enabled,
+        order_position: m.order_position,
+        updated_at: new Date().toISOString(),
+        updated_by: null,
+        visibilidade_personalizada: m.visibilidade_personalizada ?? true
+      }));
+
+      const merged = applyLocalOrderToServerData(mappedModules);
       setSystemModules(merged);
       saveLocalModules(merged);
     } catch (error) {
@@ -97,6 +97,7 @@ export const useSystemModules = () => {
       });
 
       await fetchModules();
+      notifySystemModulesSync();
       toast.success('Configuração do botão atualizada com sucesso');
     } catch (error) {
       console.error('Erro ao atualizar configuração de módulo:', error);
@@ -137,6 +138,7 @@ export const useSystemModules = () => {
       const normalized = normalizeModules(data);
       setSystemModules(normalized);
       saveLocalModules(normalized);
+      notifySystemModulesSync();
       toast.success('Ordem dos botões atualizada com sucesso');
     } catch (error) {
       console.error('Erro ao reordenar módulos:', error);
@@ -163,6 +165,7 @@ export const useSystemModules = () => {
         });
       }
       await fetchModules();
+      notifySystemModulesSync();
       toast.success(enabled ? 'Ordenação habilitada para todos os botões' : 'Ordenação desabilitada para todos os botões');
     } catch (error) {
       console.error('Erro ao atualizar ordenação em lote:', error);
@@ -181,6 +184,19 @@ export const useSystemModules = () => {
 
     fetchModules();
 
+    const handleSyncEvent = () => {
+      fetchModules();
+    };
+
+    const handleStorageEvent = (event: StorageEvent) => {
+      if (event.key === SYSTEM_MODULES_SYNC_KEY) {
+        fetchModules();
+      }
+    };
+
+    window.addEventListener(SYSTEM_MODULES_SYNC_EVENT, handleSyncEvent);
+    window.addEventListener('storage', handleStorageEvent);
+
     const subscription = supabase
       .channel('system_modules_changes')
       .on('postgres_changes', {
@@ -190,9 +206,19 @@ export const useSystemModules = () => {
       }, (_payload: RealtimePostgresChangesPayload<SystemModule>) => {
         fetchModules();
       })
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'menu_sidebar_config'
+      }, () => {
+        console.log('Detectada alteração nas configurações do menu sidebar. Atualizando...');
+        fetchModules();
+      })
       .subscribe();
 
     return () => {
+      window.removeEventListener(SYSTEM_MODULES_SYNC_EVENT, handleSyncEvent);
+      window.removeEventListener('storage', handleStorageEvent);
       subscription.unsubscribe();
     };
   }, [fetchModules, readLocalModules, setSystemModules, systemModules.length]);
@@ -252,11 +278,14 @@ export const useSystemModules = () => {
     },
     getModuleVisibilityState: (key: string) => {
       const module = systemModules.find(m => m.key === key);
+      const isSidebarVisible = module?.visibilidade_personalizada ?? true;
       return {
         isActive: module?.is_active ?? true,
+        isSidebarVisible,
         isSortEnabled: module?.is_sort_enabled ?? false,
         orderPosition: module?.order_position ?? null
       };
-    }
+    },
+    refreshModules: fetchModules
   };
 };

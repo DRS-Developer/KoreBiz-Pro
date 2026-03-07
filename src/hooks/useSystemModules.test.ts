@@ -15,7 +15,7 @@ vi.mock('../services/sidebarConfigService', () => ({
 vi.mock('../lib/supabase', () => ({
   supabase: {
     channel: vi.fn(() => ({
-      on: vi.fn(function on() {
+      on: vi.fn(function on(this: any) {
         return this;
       }),
       subscribe: vi.fn(() => ({

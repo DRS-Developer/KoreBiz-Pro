@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Mail, Share2, Image as ImageIcon, RotateCcw, FileText, Search, Layout, FileCode, BarChart3, Wrench } from 'lucide-react';
+import { Mail, Share2, Image as ImageIcon, RotateCcw, FileText, Search, Layout, FileCode, BarChart3, Wrench, Menu } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '../../../lib/supabase';
 import ImageUpload from '../../../components/Admin/ImageUpload';
@@ -10,6 +10,7 @@ import { useFormGuard } from '../../../hooks/useFormGuard';
 import UnsavedChangesModal from '../../../components/Admin/UnsavedChangesModal';
 import EmailSettingsTab from './EmailSettingsTab';
 import AnalyticsSettingsTab from './AnalyticsSettingsTab';
+import MenuSidebarTab from './MenuSidebarTab';
 import SettingsCard from './components/SettingsCard';
 import SettingsModal from './components/SettingsModal';
 
@@ -78,6 +79,7 @@ const Settings: React.FC = () => {
   const [settingsId, setSettingsId] = useState<string | null>(null);
 
   const [activeTool, setActiveTool] = useState<string | null>(null);
+  const menuSaveFnRef = React.useRef<(() => Promise<boolean>) | null>(null);
 
   const methods = useForm<FormData>({
     resolver: yupResolver(schema) as any,
@@ -336,6 +338,16 @@ const Settings: React.FC = () => {
     isSubmittingRef.current = false;
   };
 
+  const handleMenuSave = async () => {
+    if (menuSaveFnRef.current) {
+      try {
+        await menuSaveFnRef.current();
+      } catch (error) {
+        console.error('Erro ao executar função de salvar:', error);
+      }
+    }
+  };
+
   const onSubmit = async (data: FormData) => {
     isSubmittingRef.current = true;
     const success = await saveSettings(data);
@@ -426,7 +438,18 @@ const Settings: React.FC = () => {
       icon: BarChart3,
       color: 'text-indigo-600'
     },
+    {
+      id: 'menu',
+      title: 'Menu Sidebar',
+      description: 'Personalize a ordem, nomes e visibilidade dos itens do menu.',
+      icon: Menu,
+      color: 'text-teal-600'
+    },
   ];
+
+  const handleMenuSaveReady = React.useCallback((fn: () => Promise<boolean>) => {
+    menuSaveFnRef.current = fn;
+  }, []);
 
   return (
     <div className="w-full">
@@ -463,7 +486,7 @@ const Settings: React.FC = () => {
         isOpen={!!activeTool}
         onClose={() => setActiveTool(null)}
         title={tools.find(t => t.id === activeTool)?.title || 'Configurações'}
-        onSave={() => handleSubmit(onSubmit, onError)()}
+        onSave={activeTool === 'menu' ? handleMenuSave : () => handleSubmit(onSubmit, onError)()}
         loading={loading}
       >
         <FormProvider {...methods}>
@@ -678,6 +701,12 @@ const Settings: React.FC = () => {
 
             {activeTool === 'email' && <EmailSettingsTab />}
             {activeTool === 'analytics' && <AnalyticsSettingsTab />}
+            {activeTool === 'menu' && (
+              <MenuSidebarTab 
+                onSaveReady={handleMenuSaveReady}
+                onSavingChange={setLoading} 
+              />
+            )}
 
           </form>
         </FormProvider>

@@ -1,7 +1,9 @@
 import { supabase } from '../lib/supabase';
 import { Database } from '../types/database.types';
 
-export type SidebarModule = Database['public']['Tables']['system_modules']['Row'];
+export type SidebarModule = Database['public']['Tables']['system_modules']['Row'] & {
+  visibilidade_personalizada?: boolean;
+};
 
 export interface UpdateModuleConfigPayload {
   key: string;

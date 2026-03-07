@@ -78,7 +78,7 @@ export const uploadImage = async (
     console.log('Novo caminho gerado:', path);
 
     // 4. Upload para o Supabase
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from(BUCKET)
       .upload(path, file, {
         cacheControl: '3600',

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { uploadImage, deleteImage, updateImage } from './storageService';
+import { uploadImage, deleteImage } from './storageService';
 import { StorageFolder } from './folderStructure';
 
 // Mock do Supabase

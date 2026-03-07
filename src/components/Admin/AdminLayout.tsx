@@ -60,7 +60,8 @@ type NavItem = {
 
 type ConfigurableNavItem = NavItem & {
   moduleKey: string;
-  isVisible: boolean;
+  isSiteActive: boolean;
+  isSidebarVisible: boolean;
   isSortEnabled: boolean;
 };
 
@@ -129,16 +130,16 @@ const SortableSidebarItem: React.FC<SortableSidebarItemProps> = ({
           isActive
             ? "bg-blue-800 text-white"
             : "text-blue-200 hover:bg-blue-800/50",
-          !item.isVisible && "bg-gray-700/50 text-gray-400 opacity-80"
+          !item.isSiteActive && "bg-gray-700/50 text-gray-400 opacity-80"
         )}
         onClick={onNavigate}
-        title={!item.isVisible ? "Página desabilitada no frontend" : ""}
+        title={!item.isSiteActive ? "Página desabilitada no frontend" : ""}
       >
         {item.icon}
-        <span className={clsx(!item.isVisible && "line-through decoration-gray-500")}>
+        <span className={clsx(!item.isSiteActive && "line-through decoration-gray-500")}>
           {item.name}
         </span>
-        {!item.isVisible && (
+        {!item.isSiteActive && (
           <div className="absolute right-10 top-1/2 -translate-y-1/2">
             <EyeOff size={14} className="text-gray-400" />
           </div>
@@ -206,14 +207,17 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         if (!navItem) {
           return null;
         }
+        const visibility = (module as { visibilidade_personalizada?: boolean }).visibilidade_personalizada;
         return {
           ...navItem,
+          name: module.name || navItem.name,
           moduleKey: module.key,
-          isVisible: module.is_active,
+          isSiteActive: module.is_active,
+          isSidebarVisible: visibility ?? true,
           isSortEnabled: module.is_sort_enabled,
         };
       })
-      .filter((item): item is ConfigurableNavItem => item !== null);
+      .filter((item): item is ConfigurableNavItem => item !== null && item.isSidebarVisible);
   }, [modules]);
 
   const configurableKeys = useMemo(

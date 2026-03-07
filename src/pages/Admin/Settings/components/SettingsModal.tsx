@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { X, Save } from 'lucide-react';
+import { X, Save, Loader2 } from 'lucide-react';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -21,11 +21,11 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   // Close on escape
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape' && !loading) onClose();
     };
     window.addEventListener('keydown', handleEsc);
     return () => window.removeEventListener('keydown', handleEsc);
-  }, [onClose]);
+  }, [loading, onClose]);
 
   if (!isOpen) return null;
 
@@ -33,7 +33,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     <>
       {/* Backdrop */}
       <div
-        onClick={onClose}
+        onClick={loading ? undefined : onClose}
         className="fixed inset-0 bg-black/50 z-50"
       />
       
@@ -46,8 +46,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
           <div className="flex items-center justify-between p-6 border-b border-gray-100">
             <h2 className="text-xl font-bold text-gray-900">{title}</h2>
             <button
+              disabled={loading}
               onClick={onClose}
-              className="p-2 text-gray-400 rounded-full"
+              className="p-2 text-gray-400 rounded-full disabled:opacity-50"
             >
               <X size={20} />
             </button>
@@ -63,7 +64,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 font-medium rounded-lg"
+              disabled={loading}
+              className="px-4 py-2 text-gray-700 font-medium rounded-lg disabled:opacity-50"
             >
               Cancelar
             </button>
@@ -72,10 +74,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 type="button"
                 onClick={onSave}
                 disabled={loading}
-                className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg font-medium disabled:opacity-50 shadow-sm"
+                className="flex items-center justify-center gap-2 min-w-[190px] px-6 py-2 bg-blue-600 text-white rounded-lg font-medium disabled:opacity-50 shadow-sm"
               >
-                <Save size={18} />
-                Salvar Alterações
+                {loading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+                {loading ? 'Salvando...' : 'Salvar Alterações'}
               </button>
             )}
           </div>
