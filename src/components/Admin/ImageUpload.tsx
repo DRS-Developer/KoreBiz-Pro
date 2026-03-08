@@ -8,7 +8,8 @@ import { useSiteSettings } from '../../hooks/useSiteSettings';
 import { resolveManagedImage } from '../../utils/imageManager';
 import type { PageKey, ImageRole } from '../../config/imageProfiles';
 import { uploadImage, deleteImage } from '../../services/storage/storageService';
-import { StorageFolder } from '../../services/storage/folderStructure';
+import { mapMediaFolderToStorageFolder, resolveMediaFolderFromOrigin } from '../../services/storage/mediaFolderMapping';
+import type { ImageValidationRules } from '../../services/storage/validations';
 
 interface ImageUploadProps {
   label?: string;
@@ -24,8 +25,14 @@ interface ImageUploadProps {
   role?: ImageRole;
 }
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif'];
+const DEFAULT_ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
+const FORMAT_TO_MIME: Record<string, string> = {
+  webp: 'image/webp',
+  jpeg: 'image/jpeg',
+  jpg: 'image/jpeg',
+  png: 'image/png',
+  avif: 'image/avif',
+};
 
 const ImageUpload: React.FC<ImageUploadProps> = ({
   label = 'Imagem',
@@ -67,26 +74,27 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     };
   }, [selectedImageSrc]);
 
-  // Helper to determine the media folder context
-  const getMediaFolder = (folderName: string): MediaFolder => {
-    if (folderName.includes('services')) return 'services';
-    if (folderName.includes('portfolio')) return 'portfolio';
-    if (folderName.includes('pages')) return 'pages';
-    if (folderName.includes('partners')) return 'partners';
-    return 'general';
-  };
+  const resolvedMediaFolder: MediaFolder = resolveMediaFolderFromOrigin(folder);
 
-  // Helper to map string folder to StorageFolder enum
-  const mapStringToStorageFolder = (folderName: string): StorageFolder => {
-    const lower = folderName.toLowerCase();
-    if (lower.includes('servicos') || lower.includes('services')) return StorageFolder.SERVICOS;
-    if (lower.includes('portfolio')) return StorageFolder.PORTFOLIO;
-    if (lower.includes('parceiros') || lower.includes('partners')) return StorageFolder.PARCEIROS;
-    if (lower.includes('posts') || lower.includes('blog')) return StorageFolder.POSTS;
-    if (lower.includes('equipe') || lower.includes('team')) return StorageFolder.EQUIPE;
-    if (lower.includes('sistema') || lower.includes('settings') || lower.includes('config')) return StorageFolder.SISTEMA;
-    return StorageFolder.GERAL;
-  };
+  const outputFormats = useMemo(() => {
+    const imageSettings = settings?.image_settings as any;
+    const formats = imageSettings?.output_formats;
+    if (!Array.isArray(formats) || !formats.length) return ['webp', 'jpeg'];
+    return formats.map((item: string) => String(item).toLowerCase());
+  }, [settings]);
+
+  const allowedImageTypes = useMemo(() => {
+    const mapped = outputFormats.map((format) => FORMAT_TO_MIME[format]).filter(Boolean);
+    if (!mapped.length) return DEFAULT_ALLOWED_IMAGE_TYPES;
+    return Array.from(new Set([...DEFAULT_ALLOWED_IMAGE_TYPES, ...mapped]));
+  }, [outputFormats]);
+
+  const maxUploadSizeMB = useMemo(() => {
+    const imageSettings = settings?.image_settings as any;
+    const configured = Number(imageSettings?.max_upload_size_mb);
+    if (!Number.isFinite(configured) || configured <= 0) return 10;
+    return configured;
+  }, [settings]);
 
   // Calculate active resize config based on settings and folder context
   const activeResizeConfig = useMemo(() => {
@@ -94,7 +102,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const imgSettings = settings.image_settings as any;
-    const context = getMediaFolder(folder);
+    const context = resolvedMediaFolder;
     
     // 1. Try context-specific config
     const contextConfig = imgSettings.contexts?.[context];
@@ -130,6 +138,17 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     return null;
   }, [settings, folder]);
 
+  const activeValidationRules = useMemo<ImageValidationRules>(() => ({
+    minWidth,
+    minHeight,
+    maxWidth: activeResizeConfig?.width,
+    maxHeight: activeResizeConfig?.height,
+    aspectRatio,
+    minSizeMB: 0.01,
+    maxSizeMB: maxUploadSizeMB,
+    allowedTypes: allowedImageTypes,
+  }), [activeResizeConfig, allowedImageTypes, aspectRatio, maxUploadSizeMB, minHeight, minWidth]);
+
   const handleEditExisting = async () => {
     if (!value) return;
     setSelectedImageSrc(value);
@@ -140,14 +159,14 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
-      toast.error('Por favor, selecione um arquivo de imagem válido (JPEG, PNG, WebP, GIF ou AVIF).');
+    if (!allowedImageTypes.includes(file.type)) {
+      toast.error(`Formato inválido. Formatos aceitos: ${allowedImageTypes.map((type) => type.replace('image/', '')).join(', ')}.`);
       event.target.value = '';
       return;
     }
 
-    if (file.size > MAX_FILE_SIZE) {
-      toast.error('A imagem é muito grande. O limite é de 10MB.');
+    if (file.size > maxUploadSizeMB * 1024 * 1024) {
+      toast.error(`A imagem excede o limite de ${maxUploadSizeMB}MB.`);
       event.target.value = '';
       return;
     }
@@ -211,6 +230,32 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     };
   }, []);
 
+  const getBlobDimensions = async (blob: Blob): Promise<{ width: number; height: number } | null> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      const objectUrl = URL.createObjectURL(blob);
+      img.onload = () => {
+        URL.revokeObjectURL(objectUrl);
+        resolve({ width: img.width, height: img.height });
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        resolve(null);
+      };
+      img.src = objectUrl;
+    });
+  };
+
+  const preferredOutputFormat = useMemo(() => {
+    if (outputFormats.includes('webp')) return 'webp';
+    if (outputFormats.includes('jpeg') || outputFormats.includes('jpg')) return 'jpeg';
+    if (outputFormats.includes('png')) return 'png';
+    if (outputFormats.includes('avif')) return 'avif';
+    return 'webp';
+  }, [outputFormats]);
+
+  const preferredOutputMime = FORMAT_TO_MIME[preferredOutputFormat] || 'image/webp';
+
   const uploadImages = async (imageBlob: Blob) => {
     try {
       setUploading(true);
@@ -224,26 +269,12 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
       // Determine optimization parameters
       const quality = (activeResizeConfig?.quality || 80) / 100;
       const maxWidthOrHeight = activeResizeConfig ? Math.max(activeResizeConfig.width, activeResizeConfig.height) : 1920;
+      const inputDimensions = await getBlobDimensions(imageBlob);
 
       // Check optimization criteria
       if (imageBlob.size <= 200 * 1024 && (imageBlob.type === 'image/webp' || imageBlob.type === 'image/jpeg')) {
-          // It's small enough, check dimensions
           try {
-              const dimensions = await new Promise<{width: number, height: number}>((resolve, reject) => {
-                  const img = new Image();
-                  const objectUrl = URL.createObjectURL(imageBlob);
-                  img.onload = () => {
-                    URL.revokeObjectURL(objectUrl);
-                    resolve({ width: img.width, height: img.height });
-                  };
-                  img.onerror = () => {
-                    URL.revokeObjectURL(objectUrl);
-                    reject(new Error('Failed to load image for dimension check'));
-                  };
-                  img.src = objectUrl;
-              });
-              
-              if (dimensions.width <= maxWidthOrHeight && dimensions.height <= maxWidthOrHeight) {
+              if (inputDimensions && inputDimensions.width <= maxWidthOrHeight && inputDimensions.height <= maxWidthOrHeight) {
                   console.log('Image is already optimized. Skipping compression.');
                   isOptimizationSkipped = true;
                   optimizedFile = new File([imageBlob], `${fileName}.${imageBlob.type.split('/')[1]}`, { type: imageBlob.type });
@@ -256,17 +287,17 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
       if (!isOptimizationSkipped) {
           // 1. Prepare Optimized Version (WebP)
           const options = {
-            maxSizeMB: 1,
+            maxSizeMB: Math.max(0.2, Math.min(2, maxUploadSizeMB)),
             maxWidthOrHeight: maxWidthOrHeight,
             useWebWorker: true,
-            fileType: 'image/webp' as any,
+            fileType: preferredOutputMime as any,
             initialQuality: quality,
             preserveExif: (settings?.image_settings as any)?.metadata?.keep_exif || false,
           };
           
           try {
             const compressedBlob = await imageCompression(imageBlob as File, options);
-            optimizedFile = new File([compressedBlob], `${fileName}.webp`, { type: 'image/webp' });
+            optimizedFile = new File([compressedBlob], `${fileName}.${preferredOutputFormat}`, { type: preferredOutputMime });
           } catch (error) {
             console.error('Optimization failed, falling back to original format', error);
             const extension = imageBlob.type.split('/')[1] || 'jpg';
@@ -275,10 +306,13 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
       }
 
       // --- NEW STORAGE SERVICE IMPLEMENTATION ---
-      const targetFolder = mapStringToStorageFolder(folder);
+      const targetFolder = mapMediaFolderToStorageFolder(resolvedMediaFolder);
       
       // Use the new storage service to upload (and handle old image deletion/backup)
-      const result = await uploadImage(optimizedFile!, targetFolder, value || undefined);
+      const result = await uploadImage(optimizedFile!, targetFolder, value || undefined, {
+        validationRules: activeValidationRules,
+        inputDimensions,
+      });
 
       if (result.error) {
         throw new Error(result.error);
@@ -473,7 +507,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                 Clique para fazer upload ou arraste
             </p>
             <p className="text-xs text-gray-500 mb-4 text-center">
-                SVG, PNG, JPG ou WebP (máx. 10MB)
+                {allowedImageTypes.map((type) => type.replace('image/', '').toUpperCase()).join(', ')} (máx. {maxUploadSizeMB}MB)
             </p>
             
             <div className="flex items-center gap-3 w-full max-w-xs">
@@ -509,7 +543,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         <div className="bg-gray-50 border-t border-gray-100 px-3 py-2 flex justify-between items-center text-xs text-gray-500">
             <span className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
-                Recomendado: {minWidth}x{minHeight}px ({aspectRatio}:1)
+                Recomendado: {minWidth}x{minHeight}px ({aspectRatio.toFixed(2)}:1)
             </span>
             {description && (
                 <span className="hidden sm:block text-gray-400 truncate max-w-[50%]" title={description}>
@@ -523,7 +557,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         type="file"
         ref={fileInputRef}
         onChange={handleFileSelect}
-        accept="image/*"
+        accept={allowedImageTypes.join(',')}
         className="hidden"
       />
 
@@ -552,7 +586,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
             onChange(url);
             setMediaModalOpen(false);
         }}
-        initialFolder={getMediaFolder(folder)}
+        initialFolder={resolvedMediaFolder}
       />
     </div>
   );

@@ -6,7 +6,7 @@
     "contact_email": "contato@korebiz.com.br",
     "contact_phone": "(11)96775-3400",
     "address": "Rua New York, 18\nVila São Pedro\nSão Bernardo do Campo.",
-    "logo_url": null,
+    "logo_url": "https://vymiwxuizkcvtgrobgro.supabase.co/storage/v1/object/public/media/sistema/1772940214417_1772940214402_x42v6x69.webp",
     "social_links": {
       "facebook": "",
       "linkedin": "",
@@ -14,11 +14,11 @@
       "instagram": ""
     },
     "created_at": "2026-01-25T15:03:35.4173+00:00",
-    "updated_at": "2026-03-01T03:52:12.326357+00:00",
+    "updated_at": "2026-03-08T03:23:45.291+00:00",
     "image_settings": {
       "global": {
         "enabled": true,
-        "quality": 80,
+        "quality": 100,
         "max_width": 1920,
         "max_height": 1920
       },
@@ -74,7 +74,13 @@
       }
     },
     "indexing_enabled": true,
-    "analytics_settings": {},
+    "analytics_settings": {
+      "facebook_pixel_id": "",
+      "custom_body_scripts": "",
+      "custom_head_scripts": "",
+      "google_analytics_id": "",
+      "google_tag_manager_id": ""
+    },
     "primary_color": "#540e5d",
     "secondary_color": "#29708e",
     "map_settings": {
@@ -84,6 +90,9 @@
     },
     "layout_settings": {
       "topbar_enabled": false
+    },
+    "features": {
+      "menu_sidebar_v2": true
     }
   }
 ]

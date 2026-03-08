@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "id": "eb1597bc-6000-4224-8ff5-f6986bef500a",
+    "name": "VoljsWagen",
+    "logo_url": "https://vymiwxuizkcvtgrobgro.supabase.co/storage/v1/object/public/media/parceiros/1772939973498_1772939973475_guy8uvys.webp",
+    "website_url": "",
+    "order_index": 1,
+    "is_active": true
+  }
+]

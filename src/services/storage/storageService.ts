@@ -1,6 +1,7 @@
 import { supabase } from '../../lib/supabase';
 import { StorageFolder, STORAGE_CONFIG, getStoragePath, getPathFromUrl } from './folderStructure';
-import { validateFile } from './validations';
+import { ImageDimensions, ImageValidationRules, validateFile } from './validations';
+import { mapStorageFolderToMediaFolder } from './mediaFolderMapping';
 
 const BUCKET = STORAGE_CONFIG.bucket;
 
@@ -9,6 +10,34 @@ export interface UploadResult {
   path: string;
   error?: string;
 }
+
+export interface UploadImageOptions {
+  validationRules?: ImageValidationRules;
+  inputDimensions?: ImageDimensions | null;
+}
+
+const getImageDimensions = async (file: File): Promise<{ width?: number; height?: number }> => {
+  if (typeof window === 'undefined' || typeof URL === 'undefined') {
+    return {};
+  }
+  if (typeof Blob !== 'undefined' && !(file instanceof Blob)) {
+    return {};
+  }
+
+  return new Promise((resolve) => {
+    const objectUrl = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve({ width: img.width, height: img.height });
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve({});
+    };
+    img.src = objectUrl;
+  });
+};
 
 /**
  * Move um arquivo para a pasta 'trash' (Backup temporário).
@@ -49,7 +78,8 @@ const moveImageToTrash = async (url: string): Promise<boolean> => {
 export const uploadImage = async (
   file: File, 
   folder: StorageFolder, 
-  oldUrl?: string
+  oldUrl?: string,
+  options?: UploadImageOptions
 ): Promise<UploadResult> => {
   console.group('Storage Service: Upload Image');
   console.log('File:', file.name, 'Size:', file.size, 'Type:', file.type);
@@ -57,7 +87,7 @@ export const uploadImage = async (
 
   try {
     // 1. Validação
-    const validation = validateFile(file);
+    const validation = await validateFile(file, options?.validationRules, options?.inputDimensions);
     if (!validation.isValid) {
       console.error('Validação falhou:', validation.error);
       console.groupEnd();
@@ -95,11 +125,39 @@ export const uploadImage = async (
       .from(BUCKET)
       .getPublicUrl(path);
 
+    const publicUrl = publicUrlData.publicUrl;
+    const mediaFolder = mapStorageFolderToMediaFolder(folder);
+    const dimensions = await getImageDimensions(file);
+
+    const { error: metadataError } = await supabase
+      .from('media_files')
+      .upsert(
+        {
+          filename: file.name,
+          url: publicUrl,
+          size: file.size,
+          width: dimensions.width ?? null,
+          height: dimensions.height ?? null,
+          mime_type: file.type,
+          folder: mediaFolder,
+        },
+        { onConflict: 'url' }
+      );
+
+    if (metadataError) {
+      await supabase.storage.from(BUCKET).remove([path]);
+      throw metadataError;
+    }
+
+    if (oldUrl) {
+      await supabase.from('media_files').delete().eq('url', oldUrl);
+    }
+
     console.log('Upload concluído com sucesso:', publicUrlData.publicUrl);
     console.groupEnd();
     
     return {
-      url: publicUrlData.publicUrl,
+      url: publicUrl,
       path: path
     };
 
@@ -120,6 +178,7 @@ export const deleteImage = async (url: string): Promise<boolean> => {
 
   try {
     const success = await moveImageToTrash(url);
+    await supabase.from('media_files').delete().eq('url', url);
     if (success) {
       console.log('Imagem movida para lixeira com sucesso.');
     } else {
@@ -140,7 +199,8 @@ export const deleteImage = async (url: string): Promise<boolean> => {
 export const updateImage = async (
   file: File, 
   oldUrl: string, 
-  folder: StorageFolder
+  folder: StorageFolder,
+  options?: UploadImageOptions
 ): Promise<UploadResult> => {
-  return uploadImage(file, folder, oldUrl);
+  return uploadImage(file, folder, oldUrl, options);
 };

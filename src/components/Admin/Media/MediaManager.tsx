@@ -21,6 +21,7 @@ const MediaManager: React.FC<MediaManagerProps> = ({
   initialFolder = 'all',
   className = ''
 }) => {
+  type UsageOriginFilter = 'all' | MediaUsage['type'];
   const [selectedFolder, setSelectedFolder] = useState<MediaFolder>(initialFolder);
   
   const [files, setFiles] = useState<MediaFile[]>([]);
@@ -30,6 +31,7 @@ const MediaManager: React.FC<MediaManagerProps> = ({
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterUnused, setFilterUnused] = useState(false);
+  const [usageOrigin, setUsageOrigin] = useState<UsageOriginFilter>('all');
   const [usageMap, setUsageMap] = useState<Record<string, MediaUsage[]>>({});
   const [usageLoading, setUsageLoading] = useState(false);
   const [previewFile, setPreviewFile] = useState<MediaFile | null>(null);
@@ -90,8 +92,7 @@ const MediaManager: React.FC<MediaManagerProps> = ({
         
         const fileExt = compressedFile.name.split('.').pop();
         const fileName = `${uuidv4()}.${fileExt}`;
-        const filePath = `${fileName}`; // In root or folder? Supabase storage folders are virtual.
-        // Let's keep it simple: root of 'media' bucket, or maybe 'media/folder'
+        const filePath = `${folderToUse}/${fileName}`;
         
         // 1. Upload to Storage
         const { error: uploadError } = await supabase.storage
@@ -135,7 +136,8 @@ const MediaManager: React.FC<MediaManagerProps> = ({
     } finally {
       setUploading(false);
     }
-  }, [selectedFolder, fetchFiles]);
+      await fetchUsage();
+  }, [selectedFolder, fetchFiles, fetchUsage]);
 
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
@@ -154,13 +156,16 @@ const MediaManager: React.FC<MediaManagerProps> = ({
 
       if (dbError) throw dbError;
 
-      // 2. Delete from Storage (extract path from URL)
-      const urlParts = file.url.split('/');
-      const fileName = urlParts[urlParts.length - 1];
+      const path = (() => {
+        const marker = '/storage/v1/object/public/media/';
+        const idx = file.url.indexOf(marker);
+        if (idx === -1) return `${file.folder}/${file.filename}`;
+        return decodeURIComponent(file.url.substring(idx + marker.length));
+      })();
       
       const { error: storageError } = await supabase.storage
         .from('media')
-        .remove([fileName]);
+        .remove([path]);
 
       if (storageError) console.warn('Storage delete error:', storageError); // Non-blocking
 
@@ -169,6 +174,7 @@ const MediaManager: React.FC<MediaManagerProps> = ({
       // Update local state immediately
       const newFiles = files.filter(f => f.id !== file.id);
       setFiles(newFiles);
+      await fetchUsage();
       
     } catch (error) {
       console.error('Delete error:', error);
@@ -178,10 +184,14 @@ const MediaManager: React.FC<MediaManagerProps> = ({
 
   // Filter logic (Client-side is fast enough for < 1000 items)
   const filteredFiles = files.filter(file => {
+    const usageEntries = usageMap[normalizeUrl(file.url)] || [];
     const matchesFolder = selectedFolder === 'all' || file.folder === selectedFolder;
     const matchesSearch = file.filename.toLowerCase().includes(searchTerm.toLowerCase());
-    const isUnused = filterUnused ? !usageMap[normalizeUrl(file.url)] : true;
-    return matchesFolder && matchesSearch && isUnused;
+    const matchesUnused = filterUnused ? usageEntries.length === 0 : true;
+    const matchesOrigin = usageOrigin === 'all'
+      ? true
+      : usageEntries.some((usage) => usage.type === usageOrigin);
+    return matchesFolder && matchesSearch && matchesUnused && matchesOrigin;
   });
 
   const folders: { id: MediaFolder; label: string; icon: any }[] = [
@@ -192,6 +202,19 @@ const MediaManager: React.FC<MediaManagerProps> = ({
     { id: 'pages', label: 'Páginas', icon: Folder },
     { id: 'settings', label: 'Configurações', icon: Folder },
     { id: 'partners', label: 'Parceiros', icon: Folder },
+  ];
+
+  const usageOriginOptions: { value: UsageOriginFilter; label: string }[] = [
+    { value: 'all', label: 'Todas as origens' },
+    { value: 'service', label: 'Serviços' },
+    { value: 'portfolio', label: 'Portfólio' },
+    { value: 'page', label: 'Páginas' },
+    { value: 'setting', label: 'Configurações' },
+    { value: 'partner', label: 'Parceiros' },
+    { value: 'profile', label: 'Usuários' },
+    { value: 'home', label: 'Home' },
+    { value: 'practice_area', label: 'Áreas de Atuação' },
+    { value: 'area', label: 'Áreas (legado)' },
   ];
 
   return (
@@ -251,6 +274,18 @@ const MediaManager: React.FC<MediaManagerProps> = ({
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
               />
             </div>
+
+            <select
+              value={usageOrigin}
+              onChange={(e) => setUsageOrigin(e.target.value as UsageOriginFilter)}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+            >
+              {usageOriginOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
             
             <div className="flex items-center bg-gray-100 rounded-lg p-1">
               <button
@@ -293,7 +328,8 @@ const MediaManager: React.FC<MediaManagerProps> = ({
           ) : viewMode === 'grid' ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
               {filteredFiles.map(file => {
-                const isUsed = !!usageMap[normalizeUrl(file.url)];
+                const usageCount = usageMap[normalizeUrl(file.url)]?.length || 0;
+                const isUsed = usageCount > 0;
                 return (
                   <div  
                     key={file.id} 
@@ -308,11 +344,9 @@ const MediaManager: React.FC<MediaManagerProps> = ({
                     
                     {/* Tags overlay */}
                     <div className="absolute top-2 left-2 flex flex-col gap-1">
-                      {isUsed && (
-                        <span className="bg-green-500/90 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm">
-                          EM USO
-                        </span>
-                      )}
+                      <span className={`${isUsed ? 'bg-green-500/90 text-white' : 'bg-black/60 text-white'} text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm`}>
+                        Usado: {usageCount}
+                      </span>
                     </div>
 
 
@@ -335,7 +369,8 @@ const MediaManager: React.FC<MediaManagerProps> = ({
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {filteredFiles.map(file => {
-                    const isUsed = !!usageMap[normalizeUrl(file.url)];
+                    const usageCount = usageMap[normalizeUrl(file.url)]?.length || 0;
+                    const isUsed = usageCount > 0;
                     return (
                       <tr key={file.id} className="hover:bg-gray-50 group">
                         <td className="px-4 py-3">
@@ -354,10 +389,10 @@ const MediaManager: React.FC<MediaManagerProps> = ({
                           {isUsed ? (
                             <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700 bg-green-100 px-2 py-1 rounded-full">
                               <Check size={12} />
-                              Em uso
+                              Em uso ({usageCount})
                             </span>
                           ) : (
-                            <span className="text-xs text-gray-400">Não usado</span>
+                            <span className="text-xs text-gray-400">Usado: 0</span>
                           )}
                         </td>
                         <td className="px-4 py-3 text-gray-600">

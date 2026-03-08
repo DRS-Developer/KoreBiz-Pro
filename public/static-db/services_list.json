@@ -1,5 +1,16 @@
 [
   {
+    "id": "b686e19c-310b-43dd-b2c0-9e1f4d287a9a",
+    "title": "Instalação de Ar Condicionado Split4",
+    "slug": "instalacao-ar-condicionado-split",
+    "short_description": "Instalação profissional de aparelhos de ar condicionado split com garantia.",
+    "image_url": "https://vymiwxuizkcvtgrobgro.supabase.co/storage/v1/object/public/media/servicos/1772939876150_1772939876126_h7vvql1m.webp",
+    "icon": "PenTool",
+    "category": "Instalação",
+    "order": 0,
+    "published": true
+  },
+  {
     "id": "80c4d7e1-4c8d-414e-a872-c199d7308eac",
     "title": "Adequação NR-10",
     "slug": "adequacao-nr10",
@@ -7,17 +18,6 @@
     "image_url": "",
     "icon": "FileText",
     "category": "Consultoria",
-    "order": 0,
-    "published": true
-  },
-  {
-    "id": "b686e19c-310b-43dd-b2c0-9e1f4d287a9a",
-    "title": "Instalação de Ar Condicionado Split4",
-    "slug": "instalacao-ar-condicionado-split",
-    "short_description": "Instalação profissional de aparelhos de ar condicionado split com garantia.",
-    "image_url": "",
-    "icon": "PenTool",
-    "category": "Instalação",
     "order": 0,
     "published": true
   },

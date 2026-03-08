@@ -94,12 +94,19 @@ const withTransformParams = (url: string, width: number, height: number, quality
     return `${url}?width=${width}&height=${height}&quality=${quality}&resize=${resize}&format=${format}`;
   }
   
+  // DISABLE IMAGE TRANSFORMATION (Temporary Fix for HTTP 403)
+  // The project does not seem to have Supabase Image Transformation enabled.
+  // We return the original URL to ensure the image loads.
+  return url;
+
+  /*
   // Convert standard URL to render URL if needed
   // Current URL: .../storage/v1/object/public/...
   // New URL: .../storage/v1/render/image/public/...
   
   const renderUrl = url.replace('/object/public/', '/render/image/public/');
   return `${renderUrl}?width=${width}&height=${height}&quality=${quality}&resize=${resize}&format=${format}`;
+  */
 };
 
 export const resolveManagedImage = (page: PageKey, role: ImageRole, src?: string | null): ManagedImageResult => {

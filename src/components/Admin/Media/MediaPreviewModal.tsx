@@ -167,6 +167,10 @@ const MediaPreviewModal: React.FC<MediaPreviewModalProps> = ({
                         {u.type === 'page' && 'Página'}
                         {u.type === 'setting' && 'Configuração'}
                         {u.type === 'partner' && 'Parceiro'}
+                        {u.type === 'profile' && 'Usuário'}
+                        {u.type === 'home' && 'Home'}
+                        {u.type === 'practice_area' && 'Área de Atuação'}
+                        {u.type === 'area' && 'Área (legado)'}
                          {' • '} Campo: {u.field}
                       </span>
                     </div>

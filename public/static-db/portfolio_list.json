@@ -1,17 +1,5 @@
 [
   {
-    "id": "82e1c858-088b-4a00-85ee-404cac45fb58",
-    "slug": "automacao-residencial",
-    "title": "Automação Residencial Alto Padrão",
-    "short_description": null,
-    "description": "<p>Projeto completo de automação de iluminação, persianas e climatização controlados por voz e aplicativo.</p>",
-    "image_url": null,
-    "category": "Residencial",
-    "location": "Morumbi, SP",
-    "published": true,
-    "created_at": "2026-01-25T06:58:12.76901+00:00"
-  },
-  {
     "id": "8eaf27ac-5946-4eab-9f2d-923119a836c9",
     "slug": "instalacao-gerador-condominio",
     "title": "Instalação de Gerador Condomínio",
@@ -32,6 +20,18 @@
     "image_url": null,
     "category": "Industrial",
     "location": "Guarulhos, SP",
+    "published": true,
+    "created_at": "2026-01-25T06:58:12.76901+00:00"
+  },
+  {
+    "id": "82e1c858-088b-4a00-85ee-404cac45fb58",
+    "slug": "automacao-residencial",
+    "title": "Automação Residencial Alto Padrão",
+    "short_description": null,
+    "description": "<p>Projeto completo de automação de iluminação, persianas e climatização controlados por voz e aplicativo.</p>",
+    "image_url": "https://vymiwxuizkcvtgrobgro.supabase.co/storage/v1/object/public/media/portfolio/1772939905166_1772939905158_edwz6k6a.webp",
+    "category": "Residencial",
+    "location": "Morumbi, SP",
     "published": true,
     "created_at": "2026-01-25T06:58:12.76901+00:00"
   },

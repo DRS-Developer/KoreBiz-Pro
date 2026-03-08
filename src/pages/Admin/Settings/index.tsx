@@ -68,6 +68,21 @@ const schema = yup.object({
   services_max_width: yup.number().when('services_resize_enabled', { is: true, then: (s) => s.required().min(100), otherwise: (s) => s.nullable() }),
   services_max_height: yup.number().when('services_resize_enabled', { is: true, then: (s) => s.required().min(100), otherwise: (s) => s.nullable() }),
 
+  // Partners
+  partners_resize_enabled: yup.boolean(),
+  partners_max_width: yup.number().when('partners_resize_enabled', { is: true, then: (s) => s.required().min(100), otherwise: (s) => s.nullable() }),
+  partners_max_height: yup.number().when('partners_resize_enabled', { is: true, then: (s) => s.required().min(100), otherwise: (s) => s.nullable() }),
+
+  // Settings
+  settings_resize_enabled: yup.boolean(),
+  settings_max_width: yup.number().when('settings_resize_enabled', { is: true, then: (s) => s.required().min(100), otherwise: (s) => s.nullable() }),
+  settings_max_height: yup.number().when('settings_resize_enabled', { is: true, then: (s) => s.required().min(100), otherwise: (s) => s.nullable() }),
+
+  // General
+  general_resize_enabled: yup.boolean(),
+  general_max_width: yup.number().when('general_resize_enabled', { is: true, then: (s) => s.required().min(100), otherwise: (s) => s.nullable() }),
+  general_max_height: yup.number().when('general_resize_enabled', { is: true, then: (s) => s.required().min(100), otherwise: (s) => s.nullable() }),
+
   keep_aspect_ratio: yup.boolean(),
   keep_exif: yup.boolean(),
 }).required();
@@ -99,6 +114,15 @@ const Settings: React.FC = () => {
       services_resize_enabled: true,
       services_max_width: 800,
       services_max_height: 600,
+      partners_resize_enabled: true,
+      partners_max_width: 400,
+      partners_max_height: 200,
+      settings_resize_enabled: true,
+      settings_max_width: 1600,
+      settings_max_height: 1200,
+      general_resize_enabled: true,
+      general_max_width: 1920,
+      general_max_height: 1080,
       keep_aspect_ratio: true,
       keep_exif: false,
     }
@@ -117,6 +141,9 @@ const Settings: React.FC = () => {
   const portfolioResizeEnabled = watch('portfolio_resize_enabled');
   const pagesResizeEnabled = watch('pages_resize_enabled');
   const servicesResizeEnabled = watch('services_resize_enabled');
+  const partnersResizeEnabled = watch('partners_resize_enabled');
+  const settingsResizeEnabled = watch('settings_resize_enabled');
+  const generalResizeEnabled = watch('general_resize_enabled');
   const globalCompressionLevel = watch('global_compression_level');
   
   const isSubmittingRef = React.useRef(false);
@@ -199,6 +226,18 @@ const Settings: React.FC = () => {
           services_max_width: imageSettings?.contexts?.services?.max_width ?? 800,
           services_max_height: imageSettings?.contexts?.services?.max_height ?? 600,
 
+          partners_resize_enabled: imageSettings?.contexts?.partners?.enabled ?? true,
+          partners_max_width: imageSettings?.contexts?.partners?.max_width ?? 400,
+          partners_max_height: imageSettings?.contexts?.partners?.max_height ?? 200,
+
+          settings_resize_enabled: imageSettings?.contexts?.settings?.enabled ?? true,
+          settings_max_width: imageSettings?.contexts?.settings?.max_width ?? 1600,
+          settings_max_height: imageSettings?.contexts?.settings?.max_height ?? 1200,
+
+          general_resize_enabled: imageSettings?.contexts?.general?.enabled ?? true,
+          general_max_width: imageSettings?.contexts?.general?.max_width ?? 1920,
+          general_max_height: imageSettings?.contexts?.general?.max_height ?? 1080,
+
           keep_aspect_ratio: imageSettings?.resize?.keep_aspect_ratio ?? true,
           keep_exif: imageSettings?.metadata?.keep_exif ?? false,
         });
@@ -249,6 +288,21 @@ const Settings: React.FC = () => {
             enabled: data.services_resize_enabled,
             max_width: data.services_max_width,
             max_height: data.services_max_height
+          },
+          partners: {
+            enabled: data.partners_resize_enabled,
+            max_width: data.partners_max_width,
+            max_height: data.partners_max_height
+          },
+          settings: {
+            enabled: data.settings_resize_enabled,
+            max_width: data.settings_max_width,
+            max_height: data.settings_max_height
+          },
+          general: {
+            enabled: data.general_resize_enabled,
+            max_width: data.general_max_width,
+            max_height: data.general_max_height
           }
         },
         resize: {
@@ -390,6 +444,15 @@ const Settings: React.FC = () => {
     setValue('services_resize_enabled', true);
     setValue('services_max_width', 800);
     setValue('services_max_height', 600);
+    setValue('partners_resize_enabled', true);
+    setValue('partners_max_width', 400);
+    setValue('partners_max_height', 200);
+    setValue('settings_resize_enabled', true);
+    setValue('settings_max_width', 1600);
+    setValue('settings_max_height', 1200);
+    setValue('general_resize_enabled', true);
+    setValue('general_max_width', 1920);
+    setValue('general_max_height', 1080);
     setValue('keep_aspect_ratio', true);
     setValue('keep_exif', false);
     toast.info('Valores padrão restaurados! Clique em Salvar para aplicar.');
@@ -540,6 +603,9 @@ const Settings: React.FC = () => {
                          { id: 'portfolio', title: 'Portfólio', desc: 'Imagens de projetos e obras.', enabled: portfolioResizeEnabled },
                          { id: 'pages', title: 'Páginas', desc: 'Conteúdo de páginas institucionais.', enabled: pagesResizeEnabled },
                          { id: 'services', title: 'Serviços', desc: 'Imagens de serviços oferecidos.', enabled: servicesResizeEnabled },
+                         { id: 'partners', title: 'Parceiros', desc: 'Logotipos e materiais da seção de parceiros.', enabled: partnersResizeEnabled },
+                         { id: 'settings', title: 'Configurações', desc: 'Logo do site, OG image e ativos institucionais.', enabled: settingsResizeEnabled },
+                         { id: 'general', title: 'Home e Geral', desc: 'Imagens usadas em home e formulários gerais.', enabled: generalResizeEnabled },
                        ].map((ctx) => (
                          <div key={ctx.id} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                             <div className="flex items-center justify-between mb-4">
@@ -684,7 +750,7 @@ const Settings: React.FC = () => {
                   <h2 className="text-lg font-medium text-gray-900">Política de Privacidade</h2>
                   <div className="prose max-w-none">
                     <React.Suspense fallback={<div className="h-64 bg-gray-50 rounded-lg border border-gray-200" />}>
-                      <TiptapEditor value={watch('privacy_policy') || ''} onChange={(content) => { if (content !== watch('privacy_policy')) setValue('privacy_policy', content, { shouldDirty: true }); }} placeholder="Digite a política de privacidade..." />
+                      <TiptapEditor value={watch('privacy_policy') || ''} onChange={(content) => { if (content !== watch('privacy_policy')) setValue('privacy_policy', content, { shouldDirty: true }); }} placeholder="Digite a política de privacidade..." mediaFolder="settings" />
                     </React.Suspense>
                   </div>
                 </div>
@@ -692,7 +758,7 @@ const Settings: React.FC = () => {
                   <h2 className="text-lg font-medium text-gray-900">Termos de Uso</h2>
                   <div className="prose max-w-none">
                     <React.Suspense fallback={<div className="h-64 bg-gray-50 rounded-lg border border-gray-200" />}>
-                      <TiptapEditor value={watch('terms_of_use') || ''} onChange={(content) => { if (content !== watch('terms_of_use')) setValue('terms_of_use', content, { shouldDirty: true }); }} placeholder="Digite os termos de uso..." />
+                      <TiptapEditor value={watch('terms_of_use') || ''} onChange={(content) => { if (content !== watch('terms_of_use')) setValue('terms_of_use', content, { shouldDirty: true }); }} placeholder="Digite os termos de uso..." mediaFolder="settings" />
                     </React.Suspense>
                   </div>
                 </div>

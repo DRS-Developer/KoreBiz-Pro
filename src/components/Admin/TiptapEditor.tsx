@@ -13,6 +13,8 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { THEME_COLORS } from '../../constants/themeColors';
+import { MediaFolder } from '../../types/media';
+import { resolveMediaFolderFromOrigin } from '../../services/storage/mediaFolderMapping';
 
 interface TiptapEditorProps {
   value: string;
@@ -20,6 +22,7 @@ interface TiptapEditorProps {
   label?: string;
   error?: string;
   placeholder?: string;
+  mediaFolder?: MediaFolder;
 }
 
 const MenuBar = ({ editor, onOpenMedia }: { editor: any, onOpenMedia: () => void }) => {
@@ -206,6 +209,7 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
   label,
   error,
   placeholder,
+  mediaFolder = 'general',
 }) => {
   const [mediaModalOpen, setMediaModalOpen] = useState(false);
   
@@ -298,6 +302,7 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({
         isOpen={mediaModalOpen}
         onClose={() => setMediaModalOpen(false)}
         onSelect={handleSelectImage}
+        initialFolder={resolveMediaFolderFromOrigin(mediaFolder)}
       />
 
       {/* CSS para personalizar o Tiptap (ProseMirror) se necessário */}

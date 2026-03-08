@@ -16,6 +16,7 @@ import { useSlug } from '../../../hooks/useSlug';
 import { useGlobalStore } from '../../../stores/useGlobalStore';
 import UnsavedChangesModal from '../../../components/Admin/UnsavedChangesModal';
 import FormSkeleton from '../../../components/Skeletons/FormSkeleton';
+import type { PageKey } from '../../../config/imageProfiles';
 
 // Lazy load heavy components
 const TiptapEditor = lazy(() => import('../../../components/Admin/TiptapEditor'));
@@ -79,6 +80,19 @@ const PageForm: React.FC = () => {
     reset,
     formState: { errors, isDirty },
   } = methods;
+
+  const resolveImagePageKey = (slugValue: string): PageKey => {
+    const normalized = slugValue.trim().toLowerCase();
+    if (normalized === 'empresa') return 'empresa';
+    if (normalized === 'contato') return 'contato';
+    if (normalized.includes('parceiro')) return 'parceiros';
+    if (normalized.includes('portfolio')) return 'portfolio:list';
+    if (normalized.includes('servico') || normalized.includes('serviço')) return 'servicos:list';
+    if (normalized.includes('area') || normalized.includes('área')) return 'areas:list';
+    return 'home';
+  };
+
+  const featuredImagePageKey = resolveImagePageKey(watch('slug') || '');
 
   // Watch all fields to save draft
   const allFields = watch();
@@ -500,7 +514,7 @@ const PageForm: React.FC = () => {
               minWidth={840}
               minHeight={500}
               description="Formato recomendado: 840x500px (Proporção 1.68:1)"
-              pageKey="home"
+              pageKey={featuredImagePageKey}
               role="card"
             />
           </div>
@@ -519,6 +533,7 @@ const PageForm: React.FC = () => {
                 value={field.value as any}
                 onChange={field.onChange}
                 placeholder="Conteúdo da página..."
+                mediaFolder="pages"
               />
             </Suspense>
                 )}

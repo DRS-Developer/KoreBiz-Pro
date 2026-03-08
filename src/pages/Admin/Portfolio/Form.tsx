@@ -548,6 +548,7 @@ const PortfolioForm: React.FC = () => {
                 onChange={(value) => setValue('description', value, { shouldDirty: true })}
                 error={errors.description?.message as string}
                 placeholder="Descreva o projeto aqui..."
+                mediaFolder="portfolio"
               />
             </Suspense>
           </div>
@@ -581,6 +582,12 @@ const PortfolioForm: React.FC = () => {
                      }
                    }}
                    folder="portfolio"
+                   aspectRatio={4 / 3}
+                   minWidth={800}
+                   minHeight={600}
+                   description="Galeria: padrão 800x600px (4:3)"
+                   pageKey="portfolio:detail"
+                   role="card"
                  />
                </div>
              </div>

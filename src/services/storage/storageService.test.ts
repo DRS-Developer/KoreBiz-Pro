@@ -2,11 +2,15 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { uploadImage, deleteImage } from './storageService';
 import { StorageFolder } from './folderStructure';
 
-// Mock do Supabase
 const mockUpload = vi.fn();
 const mockGetPublicUrl = vi.fn();
 const mockMove = vi.fn();
 const mockList = vi.fn();
+const mockUpsert = vi.fn();
+const mockDelete = vi.fn();
+const mockEq = vi.fn();
+const mockFrom = vi.fn();
+const mockValidateFile = vi.fn();
 
 vi.mock('../../lib/supabase', () => ({
   supabase: {
@@ -18,17 +22,33 @@ vi.mock('../../lib/supabase', () => ({
         list: mockList,
       }),
     },
+    from: (...args: unknown[]) => mockFrom(...args),
   },
 }));
 
-// Mock do validations para ignorar checagem de File real (que é difícil de criar em Node puro sem polyfills complexos)
 vi.mock('./validations', () => ({
-  validateFile: () => ({ isValid: true }),
+  validateFile: (...args: unknown[]) => mockValidateFile(...args),
 }));
 
 describe('Storage Service', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockValidateFile.mockResolvedValue({ isValid: true });
+    mockEq.mockResolvedValue({ data: null, error: null });
+    mockDelete.mockReturnValue({ eq: mockEq });
+    mockUpsert.mockResolvedValue({ data: null, error: null });
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'media_files') {
+        return {
+          upsert: mockUpsert,
+          delete: mockDelete,
+        };
+      }
+      return {
+        upsert: mockUpsert,
+        delete: mockDelete,
+      };
+    });
   });
 
   const mockFile = {
@@ -46,7 +66,14 @@ describe('Storage Service', () => {
     expect(result.url).toBe('https://example.com/image.png');
     expect(result.error).toBeUndefined();
     expect(mockUpload).toHaveBeenCalled();
-    expect(mockUpload.mock.calls[0][0]).toContain('geral/'); // Verifica se a pasta está correta
+    expect(mockUpload.mock.calls[0][0]).toContain('geral/');
+    expect(mockUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        folder: 'general',
+        url: 'https://example.com/image.png',
+      }),
+      { onConflict: 'url' }
+    );
   });
 
   it('deve retornar erro se o upload falhar', async () => {
@@ -56,6 +83,16 @@ describe('Storage Service', () => {
 
     expect(result.url).toBe('');
     expect(result.error).toContain('Upload failed');
+  });
+
+  it('deve retornar erro de validação quando regras falharem', async () => {
+    mockValidateFile.mockResolvedValue({ isValid: false, error: 'Proporção inválida.' });
+
+    const result = await uploadImage(mockFile, StorageFolder.SERVICOS);
+
+    expect(result.url).toBe('');
+    expect(result.error).toBe('Proporção inválida.');
+    expect(mockUpload).not.toHaveBeenCalled();
   });
 
   it('deve mover a imagem antiga para trash ao fazer update (ou upload com oldUrl)', async () => {
@@ -68,10 +105,10 @@ describe('Storage Service', () => {
     await uploadImage(mockFile, StorageFolder.GERAL, oldUrl);
 
     expect(mockMove).toHaveBeenCalled();
-    // Verifica se o path de origem está correto (extraído da URL)
     expect(mockMove.mock.calls[0][0]).toBe('geral/old-image.png');
-    // Verifica se o path de destino contém 'trash'
     expect(mockMove.mock.calls[0][1]).toContain('trash/');
+    expect(mockDelete).toHaveBeenCalled();
+    expect(mockEq).toHaveBeenCalledWith('url', oldUrl);
   });
 
   it('deve deletar uma imagem movendo-a para trash', async () => {
@@ -85,6 +122,8 @@ describe('Storage Service', () => {
       'sistema/logo.png',
       expect.stringContaining('trash/')
     );
+    expect(mockDelete).toHaveBeenCalled();
+    expect(mockEq).toHaveBeenCalledWith('url', urlToDelete);
   });
 
   it('deve lidar com falha ao deletar', async () => {
@@ -94,5 +133,38 @@ describe('Storage Service', () => {
     const success = await deleteImage(urlToDelete);
 
     expect(success).toBe(false);
+  });
+
+  it('deve categorizar upload de serviços como folder services', async () => {
+    mockUpload.mockResolvedValue({ data: { path: 'path/to/image' }, error: null });
+    mockGetPublicUrl.mockReturnValue({ data: { publicUrl: 'https://example.com/service-image.webp' } });
+
+    await uploadImage(mockFile, StorageFolder.SERVICOS);
+
+    expect(mockUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        folder: 'services',
+        url: 'https://example.com/service-image.webp',
+      }),
+      { onConflict: 'url' }
+    );
+  });
+
+  it('deve aplicar regras de validação no upload de serviço', async () => {
+    mockUpload.mockResolvedValue({ data: { path: 'path/to/image' }, error: null });
+    mockGetPublicUrl.mockReturnValue({ data: { publicUrl: 'https://example.com/service-image.webp' } });
+
+    const validationRules = {
+      minWidth: 800,
+      minHeight: 600,
+      aspectRatio: 4 / 3,
+      maxSizeMB: 5,
+      allowedTypes: ['image/webp'],
+    };
+    const inputDimensions = { width: 800, height: 600 };
+
+    await uploadImage(mockFile, StorageFolder.SERVICOS, undefined, { validationRules, inputDimensions });
+
+    expect(mockValidateFile).toHaveBeenCalledWith(mockFile, validationRules, inputDimensions);
   });
 });

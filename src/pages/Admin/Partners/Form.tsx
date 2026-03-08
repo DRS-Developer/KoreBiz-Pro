@@ -96,10 +96,10 @@ const PartnersForm: React.FC = () => {
                 value={logoUrl}
                 onChange={(url) => setValue('logo_url', url, { shouldDirty: true })}
                 folder="partners"
-                aspectRatio={16/9}
-                minWidth={320}
-                minHeight={180}
-                description="Fundo transparente recomendado"
+                aspectRatio={2}
+                minWidth={240}
+                minHeight={120}
+                description="Formato recomendado: 240x120px (2:1), preferencialmente transparente"
                 pageKey="parceiros"
                 role="logo"
                 />

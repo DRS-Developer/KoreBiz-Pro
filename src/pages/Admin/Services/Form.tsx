@@ -356,9 +356,10 @@ const ServicesForm: React.FC = () => {
                 onChange={(url) => setValue('image_url', url, { shouldDirty: true })}
                 folder="services"
                 error={errors.image_url?.message}
-                aspectRatio={4}
-                minWidth={200}
-                minHeight={50}
+                aspectRatio={4 / 3}
+                minWidth={800}
+                minHeight={600}
+                description="Padrão do módulo: 800x600px (4:3)"
                 pageKey="servicos:list"
                 role="card"
                 />
@@ -526,6 +527,7 @@ const ServicesForm: React.FC = () => {
                 onChange={(value) => setValue('full_description', value, { shouldDirty: true })}
                 error={errors.full_description?.message as string}
                 placeholder="Descreva o serviço detalhadamente..."
+                mediaFolder="services"
               />
             </Suspense>
           </div>

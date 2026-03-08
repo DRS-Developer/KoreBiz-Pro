@@ -149,7 +149,7 @@ const PracticeAreasForm: React.FC = () => {
                 aspectRatio={4/3}
                 minWidth={800}
                 minHeight={600}
-                pageKey="servicos:list"
+                pageKey="areas:list"
                 role="card"
                 />
             </div>
