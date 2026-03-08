@@ -53,6 +53,9 @@ Cada formulário deve ter, no mínimo:
   - [Users/Form.form.test.tsx](file:///c:/Users/danie/Projetos_IA/KoreBiz-Pro/src/pages/Admin/Users/Form.form.test.tsx)
   - [Partners/Form.form.test.tsx](file:///c:/Users/danie/Projetos_IA/KoreBiz-Pro/src/pages/Admin/Partners/Form.form.test.tsx)
   - [PracticeAreas/Form.form.test.tsx](file:///c:/Users/danie/Projetos_IA/KoreBiz-Pro/src/pages/Admin/PracticeAreas/Form.form.test.tsx)
+  - [Services/Form.form.test.tsx](file:///c:/Users/danie/Projetos_IA/KoreBiz-Pro/src/pages/Admin/Services/Form.form.test.tsx)
+  - [Portfolio/Form.form.test.tsx](file:///c:/Users/danie/Projetos_IA/KoreBiz-Pro/src/pages/Admin/Portfolio/Form.form.test.tsx)
+  - [Pages/Form.form.test.tsx](file:///c:/Users/danie/Projetos_IA/KoreBiz-Pro/src/pages/Admin/Pages/Form.form.test.tsx)
 - **Interface (E2E)**
   - [test-e2e-admin-forms.js](file:///c:/Users/danie/Projetos_IA/KoreBiz-Pro/scripts/test-e2e-admin-forms.js)
   - Rotas cobertas: serviços, portfólio, páginas, parceiros, áreas de atuação e usuários
