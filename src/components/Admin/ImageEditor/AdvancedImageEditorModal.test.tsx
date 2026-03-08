@@ -1,62 +1,77 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
+import { describe, expect, it, vi, beforeEach } from 'vitest';
 import AdvancedImageEditorModal from './AdvancedImageEditorModal';
 
-const mockGetCanvas = vi.fn();
-const mockDrawImage = vi.fn();
-const mockToBlob = vi.fn();
+const filerobotPropsRef: { current: any } = { current: null };
+const mockCanvasToBlob = vi.fn();
 
-vi.mock('react-advanced-cropper', () => {
-  const ReactModule = require('react');
-  const Cropper = ReactModule.forwardRef((props: any, ref: any) => {
-    ReactModule.useImperativeHandle(ref, () => ({
-      getCanvas: mockGetCanvas,
-    }));
-    return <div data-testid="mock-cropper" data-rotate={String(props.rotate ?? 0)} />;
-  });
-  return { Cropper, CropperRef: {} };
+vi.mock('react-filerobot-image-editor', () => {
+  const MockFilerobot = (props: any) => {
+    filerobotPropsRef.current = props;
+    return (
+      <button
+        type="button"
+        data-testid="mock-filerobot-save"
+        onClick={() => {
+          props.onSave({
+            imageCanvas: {
+              toBlob: mockCanvasToBlob,
+            },
+          });
+        }}
+      >
+        mock-save
+      </button>
+    );
+  };
+  return {
+    __esModule: true,
+    default: MockFilerobot,
+    TABS: {
+      ADJUST: 'Adjust',
+      FILTERS: 'Filters',
+      FINETUNE: 'Finetune',
+      RESIZE: 'Resize',
+    },
+    TOOLS: {
+      CROP: 'Crop',
+    },
+  };
 });
 
 describe('AdvancedImageEditorModal', () => {
-  const originalCreateElement = document.createElement.bind(document);
-
   beforeEach(() => {
     vi.clearAllMocks();
-    mockGetCanvas.mockReturnValue({ width: 800, height: 600 });
-    mockToBlob.mockImplementation((callback: (blob: Blob | null) => void) => {
+    mockCanvasToBlob.mockImplementation((callback: (blob: Blob | null) => void) => {
       callback(new Blob(['ok'], { type: 'image/webp' }));
     });
-    vi.spyOn(document, 'createElement').mockImplementation((tagName: string) => {
-      if (tagName.toLowerCase() === 'canvas') {
-        return {
-          width: 0,
-          height: 0,
-          getContext: () => ({ filter: '', drawImage: mockDrawImage }),
-          toBlob: mockToBlob,
-        } as any;
-      }
-      return originalCreateElement(tagName);
-    });
   });
 
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  it('abre painel de ajustes e aplica rotação', () => {
+  it('configura o Filerobot com regras de crop e tabs esperadas', () => {
     render(
-      <AdvancedImageEditorModal imageSrc="blob:test" onClose={vi.fn()} onSave={vi.fn()} />
+      <AdvancedImageEditorModal
+        imageSrc="blob:test"
+        onClose={vi.fn()}
+        onSave={vi.fn()}
+        aspectRatio={4 / 3}
+        minWidth={800}
+        minHeight={600}
+      />
     );
 
-    expect(screen.queryByText('Ajustes')).not.toBeInTheDocument();
-    fireEvent.click(screen.getByTitle('Ajustes de Imagem'));
-    expect(screen.getByText('Ajustes')).toBeInTheDocument();
-
-    fireEvent.click(screen.getByTitle('Rotacionar 90°'));
-    expect(screen.getByTestId('mock-cropper')).toHaveAttribute('data-rotate', '90');
+    expect(filerobotPropsRef.current).toBeTruthy();
+    expect(filerobotPropsRef.current.source).toBe('blob:test');
+    expect(filerobotPropsRef.current.Crop).toEqual(
+      expect.objectContaining({
+        ratio: 4 / 3,
+        minWidth: 800,
+        minHeight: 600,
+      })
+    );
+    expect(filerobotPropsRef.current.tabsIds).toEqual(['Adjust', 'Filters', 'Finetune', 'Resize']);
   });
 
-  it('exporta corte com filtros e dispara onSave', () => {
+  it('converte saída do editor para blob e dispara onSave', async () => {
     const onSave = vi.fn();
     render(
       <AdvancedImageEditorModal
@@ -68,11 +83,10 @@ describe('AdvancedImageEditorModal', () => {
       />
     );
 
-    fireEvent.click(screen.getByText('Salvar Corte'));
+    fireEvent.click(screen.getByTestId('mock-filerobot-save'));
+    await Promise.resolve();
 
-    expect(mockGetCanvas).toHaveBeenCalledWith({ width: 800, height: 600 });
-    expect(mockDrawImage).toHaveBeenCalled();
-    expect(mockToBlob).toHaveBeenCalledWith(expect.any(Function), 'image/webp', 0.9);
+    expect(mockCanvasToBlob).toHaveBeenCalledWith(expect.any(Function), 'image/webp', 0.9);
     expect(onSave).toHaveBeenCalledTimes(1);
   });
 });
