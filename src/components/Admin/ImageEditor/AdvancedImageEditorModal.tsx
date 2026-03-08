@@ -18,6 +18,10 @@ const AdvancedImageEditorModal: React.FC<AdvancedImageEditorModalProps> = ({
   minWidth = 800,
   minHeight = 500,
 }) => {
+  if (typeof window !== 'undefined') {
+    (window as any).React = React;
+  }
+
   const dataUrlToBlob = (dataUrl: string): Blob | null => {
     const parts = dataUrl.split(',');
     if (parts.length !== 2) return null;

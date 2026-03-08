@@ -57,11 +57,44 @@ const clickButtonByText = async (page, regexSource) => {
   }, regexSource);
 };
 
+const clickEditorSaveButton = async (page) => {
+  return page.evaluate(() => {
+    const buttons = Array.from(document.querySelectorAll('button'));
+    const preferredLabels = ['Save', 'Salvar', 'Salvar Corte'];
+    const button = buttons.find((candidate) => {
+      if (candidate.disabled) return false;
+      const text = (candidate.textContent || '').trim();
+      const style = window.getComputedStyle(candidate);
+      const visible = style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
+      return visible && preferredLabels.includes(text);
+    });
+    if (!button) return false;
+    button.click();
+    return true;
+  });
+};
+
+const getVisibleButtonTexts = async (page) => {
+  return page.evaluate(() =>
+    Array.from(document.querySelectorAll('button'))
+      .map((candidate) => ({
+        text: (candidate.textContent || '').trim(),
+        hidden:
+          window.getComputedStyle(candidate).display === 'none' ||
+          window.getComputedStyle(candidate).visibility === 'hidden' ||
+          window.getComputedStyle(candidate).opacity === '0',
+      }))
+      .filter((item) => item.text)
+      .slice(0, 50)
+  );
+};
+
 const run = async () => {
   await fs.mkdir(REPORTS_DIR, { recursive: true });
   let devServer = null;
 
   let browser;
+  let currentPage = null;
   let fixturePath = '';
   try {
     let serverReady = await waitForServer(BASE_URL, 2);
@@ -82,13 +115,25 @@ const run = async () => {
 
     browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
     const page = await browser.newPage();
+    currentPage = page;
     await page.setViewport({ width: 1440, height: 900 });
+    page.on('pageerror', (error) => {
+      console.error('PAGE_ERROR:', error.message);
+    });
+    page.on('console', (message) => {
+      const type = message.type().toUpperCase();
+      if (type === 'ERROR') {
+        console.error('BROWSER_CONSOLE_ERROR:', message.text());
+      }
+    });
 
-    await page.goto(`${BASE_URL}/admin/login`, { waitUntil: 'networkidle2' });
+    await page.goto(`${BASE_URL}/admin/login`, { waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => document.readyState === 'complete', { timeout: 30000 });
+    await page.waitForSelector('input[type="email"]', { timeout: 45000 });
     await page.type('input[type="email"]', credentials.email);
     await page.type('input[type="password"]', credentials.password);
     await clickButtonByText(page, 'entrar');
-    await page.waitForFunction(() => window.location.pathname.includes('/admin/dashboard'), { timeout: 30000 });
+    await page.waitForFunction(() => window.location.pathname.includes('/admin/dashboard'), { timeout: 45000 });
 
     const scenarios = [
       { name: 'services', route: '/admin/services/novo' },
@@ -99,30 +144,62 @@ const run = async () => {
     const summary = [];
 
     for (const scenario of scenarios) {
-      await page.goto(`${BASE_URL}${scenario.route}`, { waitUntil: 'networkidle2' });
-
-      const input = await page.$('input[type="file"]');
-      if (!input) throw new Error(`Input de arquivo não encontrado em ${scenario.route}`);
+      await page.goto(`${BASE_URL}${scenario.route}`, { waitUntil: 'domcontentloaded' });
+      await page.waitForFunction(() => document.readyState === 'complete', { timeout: 30000 });
+      const currentPath = new URL(page.url()).pathname;
+      if (currentPath.includes('/admin/login')) {
+        throw new Error(`Sessão expirada ao acessar ${scenario.route}.`);
+      }
+      await page.waitForSelector('input[type="file"]', { timeout: 45000 });
+      const inputs = await page.$$('input[type="file"]');
+      if (!inputs.length) throw new Error(`Input de arquivo não encontrado em ${scenario.route}. URL atual: ${currentPath}`);
+      let input = null;
+      for (const candidate of inputs) {
+        const accept = (await candidate.evaluate((node) => (node.getAttribute('accept') || '').toLowerCase())) || '';
+        if (accept.includes('image')) {
+          input = candidate;
+          break;
+        }
+      }
+      if (!input) {
+        input = inputs[0];
+      }
       await input.uploadFile(fixturePath);
-
-      const saveClicked = await page.waitForFunction(
-        () => {
-          const buttons = Array.from(document.querySelectorAll('button'));
-          const button = buttons.find((candidate) => {
-            if (candidate.disabled) return false;
+      await page.waitForFunction(
+        () =>
+          Array.from(document.querySelectorAll('button')).some((candidate) => {
             const text = (candidate.textContent || '').trim();
-            return /save|salvar/i.test(text);
-          });
-          if (!button) return false;
-          button.click();
-          return true;
-        },
-        { timeout: 40000 }
+            return text === 'Save' || text === 'Salvar' || text === 'Salvar Corte';
+          }),
+        { timeout: 45000 }
       );
-      if (!saveClicked) throw new Error(`Botão de salvar do editor não encontrado em ${scenario.route}`);
+
+      const saveClicked = await clickEditorSaveButton(page);
+      if (!saveClicked) {
+        await page.waitForFunction(
+          () => {
+            const buttons = Array.from(document.querySelectorAll('button'));
+            const button = buttons.find((candidate) => {
+              if (candidate.disabled) return false;
+              const text = (candidate.textContent || '').trim();
+              return text === 'Save' || text === 'Salvar' || text === 'Salvar Corte';
+            });
+            if (!button) return false;
+            button.click();
+            return true;
+          },
+          { timeout: 45000 }
+        );
+      }
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      await clickEditorSaveButton(page);
 
       await page.waitForFunction(
-        () => Array.from(document.images).some((image) => image.alt === 'Preview' && !!image.getAttribute('src')),
+        () =>
+          Array.from(document.images).some((image) => {
+            const alt = image.getAttribute('alt') || '';
+            return alt.startsWith('Preview') && !!image.getAttribute('src');
+          }),
         { timeout: 40000 }
       );
 
@@ -149,6 +226,21 @@ const run = async () => {
 
     console.log('E2E concluído com sucesso.');
     console.log(`Relatório: ${reportPath}`);
+  } catch (error) {
+    if (currentPage) {
+      try {
+        const failPath = path.join(REPORTS_DIR, `erro-${Date.now()}.png`);
+        await currentPage.screenshot({ path: failPath, fullPage: true });
+        const buttons = await getVisibleButtonTexts(currentPage);
+        const currentUrl = currentPage.url();
+        const html = await currentPage.content();
+        console.error('URL no erro:', currentUrl);
+        console.error('HTML length no erro:', html.length);
+        console.error('Botões visíveis (diagnóstico):', JSON.stringify(buttons, null, 2));
+        console.error('Screenshot de erro:', failPath);
+      } catch {}
+    }
+    throw error;
   } finally {
     if (browser) await browser.close();
     if (fixturePath) {
