@@ -4,11 +4,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import PortfolioForm from './Form';
 import { useSilenceConsoleError } from '../../../tests/utils/silenceConsoleError';
+import { toastMocks } from '../../../tests/utils/toastMocks';
 
 const mocks = vi.hoisted(() => ({
   navigateMock: vi.fn(),
-  toastSuccessMock: vi.fn(),
-  toastErrorMock: vi.fn(),
   setDraftMock: vi.fn(),
   clearDraftMock: vi.fn(),
   updatePortfolioMock: vi.fn(),
@@ -28,13 +27,6 @@ vi.mock('react-router-dom', async () => {
     useParams: () => ({ id: undefined }),
   };
 });
-
-vi.mock('sonner', () => ({
-  toast: {
-    success: mocks.toastSuccessMock,
-    error: mocks.toastErrorMock,
-  },
-}));
 
 vi.mock('../../../lib/supabase', () => ({
   supabase: {
@@ -155,7 +147,7 @@ describe('Portfolio Form', () => {
       expect(mocks.fromMock).toHaveBeenCalledWith('portfolios');
       expect(mocks.insertMock).toHaveBeenCalled();
     });
-    expect(mocks.toastSuccessMock).toHaveBeenCalledWith('Projeto criado com sucesso!');
+    expect(toastMocks.success).toHaveBeenCalledWith('Projeto criado com sucesso!');
     expect(mocks.navigateMock).toHaveBeenCalledWith('/admin/portfolio');
   });
 
@@ -180,7 +172,7 @@ describe('Portfolio Form', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Criar Projeto' }));
 
     await waitFor(() => {
-      expect(mocks.toastErrorMock).toHaveBeenCalledWith(expect.stringContaining('Erro ao salvar projeto'));
+      expect(toastMocks.error).toHaveBeenCalledWith(expect.stringContaining('Erro ao salvar projeto'));
     });
     expect(mocks.navigateMock).not.toHaveBeenCalledWith('/admin/portfolio');
   });

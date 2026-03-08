@@ -4,11 +4,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import ServicesForm from './Form';
 import { useSilenceConsoleError } from '../../../tests/utils/silenceConsoleError';
+import { toastMocks } from '../../../tests/utils/toastMocks';
 
 const mocks = vi.hoisted(() => ({
   navigateMock: vi.fn(),
-  toastSuccessMock: vi.fn(),
-  toastErrorMock: vi.fn(),
   setDraftMock: vi.fn(),
   clearDraftMock: vi.fn(),
   draftValue: null as any,
@@ -29,13 +28,6 @@ vi.mock('react-router-dom', async () => {
     useParams: () => ({ id: undefined }),
   };
 });
-
-vi.mock('sonner', () => ({
-  toast: {
-    success: mocks.toastSuccessMock,
-    error: mocks.toastErrorMock,
-  },
-}));
 
 vi.mock('../../../lib/supabase', () => ({
   supabase: {
@@ -161,7 +153,7 @@ describe('Services Form', () => {
       expect(mocks.fromMock).toHaveBeenCalledWith('services');
       expect(mocks.insertMock).toHaveBeenCalled();
     });
-    expect(mocks.toastSuccessMock).toHaveBeenCalledWith('Serviço criado com sucesso!');
+    expect(toastMocks.success).toHaveBeenCalledWith('Serviço criado com sucesso!');
     expect(mocks.navigateMock).toHaveBeenCalledWith('/admin/services');
   });
 
@@ -194,7 +186,7 @@ describe('Services Form', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Salvar Serviço' }));
 
     await waitFor(() => {
-      expect(mocks.toastErrorMock).toHaveBeenCalledWith(expect.stringContaining('Erro ao salvar serviço'));
+      expect(toastMocks.error).toHaveBeenCalledWith(expect.stringContaining('Erro ao salvar serviço'));
     });
     expect(mocks.navigateMock).not.toHaveBeenCalledWith('/admin/services');
   });

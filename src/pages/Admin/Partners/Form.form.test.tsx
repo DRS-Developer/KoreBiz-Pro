@@ -3,11 +3,10 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import PartnersForm from './Form';
 import { useSilenceConsoleError } from '../../../tests/utils/silenceConsoleError';
+import { toastMocks } from '../../../tests/utils/toastMocks';
 
 const mocks = vi.hoisted(() => ({
   navigateMock: vi.fn(),
-  toastSuccessMock: vi.fn(),
-  toastErrorMock: vi.fn(),
   createMock: vi.fn(),
   updateMock: vi.fn(),
   getByIdMock: vi.fn(),
@@ -22,13 +21,6 @@ vi.mock('react-router-dom', async () => {
     useParams: () => ({ id: currentId }),
   };
 });
-
-vi.mock('sonner', () => ({
-  toast: {
-    success: mocks.toastSuccessMock,
-    error: mocks.toastErrorMock,
-  },
-}));
 
 vi.mock('../../../repositories/PartnersRepository', () => ({
   PartnersRepository: {
@@ -93,7 +85,7 @@ describe('Partners Form', () => {
         })
       );
     });
-    expect(mocks.toastSuccessMock).toHaveBeenCalledWith('Parceiro criado!');
+    expect(toastMocks.success).toHaveBeenCalledWith('Parceiro criado!');
     expect(mocks.navigateMock).toHaveBeenCalledWith('/admin/parceiros');
   });
 
@@ -107,7 +99,7 @@ describe('Partners Form', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Salvar' }));
 
     await waitFor(() => {
-      expect(mocks.toastErrorMock).toHaveBeenCalledWith('Erro ao salvar.');
+      expect(toastMocks.error).toHaveBeenCalledWith('Erro ao salvar.');
     });
     expect(mocks.navigateMock).not.toHaveBeenCalledWith('/admin/parceiros');
   });

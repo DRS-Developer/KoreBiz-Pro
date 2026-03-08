@@ -4,11 +4,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import PageForm from './Form';
 import { useSilenceConsoleError } from '../../../tests/utils/silenceConsoleError';
+import { toastMocks } from '../../../tests/utils/toastMocks';
 
 const mocks = vi.hoisted(() => ({
   navigateMock: vi.fn(),
-  toastSuccessMock: vi.fn(),
-  toastErrorMock: vi.fn(),
   setDraftMock: vi.fn(),
   clearDraftMock: vi.fn(),
   updatePageMock: vi.fn(),
@@ -27,13 +26,6 @@ vi.mock('react-router-dom', async () => {
     useParams: () => ({ id: undefined }),
   };
 });
-
-vi.mock('sonner', () => ({
-  toast: {
-    success: mocks.toastSuccessMock,
-    error: mocks.toastErrorMock,
-  },
-}));
 
 vi.mock('../../../lib/supabase', () => ({
   supabase: {
@@ -148,7 +140,7 @@ describe('Pages Form', () => {
       expect(mocks.fromMock).toHaveBeenCalledWith('pages');
       expect(mocks.insertMock).toHaveBeenCalled();
     });
-    expect(mocks.toastSuccessMock).toHaveBeenCalledWith('Página criada com sucesso!');
+    expect(toastMocks.success).toHaveBeenCalledWith('Página criada com sucesso!');
     expect(mocks.navigateMock).toHaveBeenCalledWith('/admin/paginas');
   });
 
@@ -170,7 +162,7 @@ describe('Pages Form', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Salvar Página' }));
 
     await waitFor(() => {
-      expect(mocks.toastErrorMock).toHaveBeenCalledWith('Erro ao salvar página');
+      expect(toastMocks.error).toHaveBeenCalledWith('Erro ao salvar página');
     });
     expect(mocks.navigateMock).not.toHaveBeenCalledWith('/admin/paginas');
   });

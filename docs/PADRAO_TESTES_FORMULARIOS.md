@@ -30,6 +30,9 @@ Padronizar organização, nomenclatura e cobertura dos testes de formulários pa
 
 - Para cenários que disparam `console.error` esperado, usar helper compartilhado:
   - [silenceConsoleError.ts](file:///c:/Users/danie/Projetos_IA/KoreBiz-Pro/src/tests/utils/silenceConsoleError.ts)
+- Para asserts de notificação, usar mock compartilhado de toast:
+  - [toastMocks.ts](file:///c:/Users/danie/Projetos_IA/KoreBiz-Pro/src/tests/utils/toastMocks.ts)
+  - mock global configurado em [setupTests.ts](file:///c:/Users/danie/Projetos_IA/KoreBiz-Pro/src/setupTests.ts)
 - Padrão de uso por suíte:
   - `useSilenceConsoleError()` no escopo do `describe`
 - Objetivo:

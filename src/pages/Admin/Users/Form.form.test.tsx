@@ -3,11 +3,10 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import UserForm from './Form';
 import { useSilenceConsoleError } from '../../../tests/utils/silenceConsoleError';
+import { toastMocks } from '../../../tests/utils/toastMocks';
 
 const mocks = vi.hoisted(() => ({
   navigateMock: vi.fn(),
-  toastSuccessMock: vi.fn(),
-  toastErrorMock: vi.fn(),
   signUpMock: vi.fn(),
 }));
 
@@ -18,13 +17,6 @@ vi.mock('react-router-dom', async () => {
     useNavigate: () => mocks.navigateMock,
   };
 });
-
-vi.mock('sonner', () => ({
-  toast: {
-    success: mocks.toastSuccessMock,
-    error: mocks.toastErrorMock,
-  },
-}));
 
 vi.mock('../../../lib/supabase', () => ({
   supabase: {
@@ -105,7 +97,7 @@ describe('Users Form', () => {
       );
     });
     await waitFor(() => {
-      expect(mocks.toastSuccessMock).toHaveBeenCalled();
+      expect(toastMocks.success).toHaveBeenCalled();
       expect(mocks.navigateMock).toHaveBeenCalledWith('/admin/usuarios');
     });
   });
@@ -134,7 +126,7 @@ describe('Users Form', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Criar Usuário' }));
 
     await waitFor(() => {
-      expect(mocks.toastErrorMock).toHaveBeenCalledWith(expect.stringContaining('Erro ao criar usuário'));
+      expect(toastMocks.error).toHaveBeenCalledWith(expect.stringContaining('Erro ao criar usuário'));
     });
     expect(mocks.navigateMock).not.toHaveBeenCalled();
   });

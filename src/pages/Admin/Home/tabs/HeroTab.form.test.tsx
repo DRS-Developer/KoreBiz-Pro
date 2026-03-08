@@ -3,19 +3,11 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import HeroTab from './HeroTab';
 import { useSilenceConsoleError } from '../../../../tests/utils/silenceConsoleError';
+import { toastMocks } from '../../../../tests/utils/toastMocks';
 
 const mocks = vi.hoisted(() => ({
-  toastSuccessMock: vi.fn(),
-  toastErrorMock: vi.fn(),
   getSectionMock: vi.fn(),
   updateSectionMock: vi.fn(),
-}));
-
-vi.mock('sonner', () => ({
-  toast: {
-    success: mocks.toastSuccessMock,
-    error: mocks.toastErrorMock,
-  },
 }));
 
 vi.mock('../../../../repositories/HomeContentRepository', () => ({
@@ -70,7 +62,7 @@ describe('HeroTab Form', () => {
         expect.objectContaining({ title: 'Novo título principal' })
       );
     });
-    expect(mocks.toastSuccessMock).toHaveBeenCalledWith('Banner atualizado com sucesso!');
+    expect(toastMocks.success).toHaveBeenCalledWith('Banner atualizado com sucesso!');
   });
 
   it('trata erro ao carregar conteúdo', async () => {
@@ -78,7 +70,7 @@ describe('HeroTab Form', () => {
     render(<HeroTab />);
 
     await waitFor(() => {
-      expect(mocks.toastErrorMock).toHaveBeenCalledWith('Erro ao carregar conteúdo do banner.');
+      expect(toastMocks.error).toHaveBeenCalledWith('Erro ao carregar conteúdo do banner.');
     });
   });
 });

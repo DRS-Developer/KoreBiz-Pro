@@ -3,19 +3,11 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import ContentEditorTab from './ContentEditorTab';
 import { useSilenceConsoleError } from '../../../../tests/utils/silenceConsoleError';
+import { toastMocks } from '../../../../tests/utils/toastMocks';
 
 const mocks = vi.hoisted(() => ({
-  toastSuccessMock: vi.fn(),
-  toastErrorMock: vi.fn(),
   getSectionMock: vi.fn(),
   updateSectionMock: vi.fn(),
-}));
-
-vi.mock('sonner', () => ({
-  toast: {
-    success: mocks.toastSuccessMock,
-    error: mocks.toastErrorMock,
-  },
 }));
 
 vi.mock('../../../../repositories/HomeContentRepository', () => ({
@@ -87,7 +79,7 @@ describe('ContentEditorTab Form', () => {
         })
       );
     });
-    expect(mocks.toastSuccessMock).toHaveBeenCalledWith('Seção "Sobre Nós" atualizada!');
+    expect(toastMocks.success).toHaveBeenCalledWith('Seção "Sobre Nós" atualizada!');
   });
 
   it('trata erro ao salvar CTA', async () => {
@@ -101,7 +93,7 @@ describe('ContentEditorTab Form', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Salvar CTA' }));
 
     await waitFor(() => {
-      expect(mocks.toastErrorMock).toHaveBeenCalledWith('Erro ao atualizar seção.');
+      expect(toastMocks.error).toHaveBeenCalledWith('Erro ao atualizar seção.');
     });
   });
 });

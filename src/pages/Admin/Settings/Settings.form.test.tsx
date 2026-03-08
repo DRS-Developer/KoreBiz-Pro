@@ -3,25 +3,15 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import Settings from './index';
 import { useSilenceConsoleError } from '../../../tests/utils/silenceConsoleError';
+import { toastMocks } from '../../../tests/utils/toastMocks';
 
 const mocks = vi.hoisted(() => ({
-  toastSuccessMock: vi.fn(),
-  toastErrorMock: vi.fn(),
-  toastInfoMock: vi.fn(),
   fromMock: vi.fn(),
   selectMock: vi.fn(),
   limitMock: vi.fn(),
   singleMock: vi.fn(),
   updateMock: vi.fn(),
   eqMock: vi.fn(),
-}));
-
-vi.mock('sonner', () => ({
-  toast: {
-    success: mocks.toastSuccessMock,
-    error: mocks.toastErrorMock,
-    info: mocks.toastInfoMock,
-  },
 }));
 
 vi.mock('../../../lib/supabase', () => ({
@@ -86,7 +76,7 @@ describe('Settings Form', () => {
       expect(mocks.updateMock).toHaveBeenCalled();
       expect(mocks.eqMock).toHaveBeenCalledWith('id', 'settings-id');
     });
-    expect(mocks.toastSuccessMock).toHaveBeenCalledWith('Configurações salvas com sucesso!');
+    expect(toastMocks.success).toHaveBeenCalledWith('Configurações salvas com sucesso!');
   });
 
   it('trata erro de permissão no salvamento', async () => {
@@ -100,7 +90,7 @@ describe('Settings Form', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Salvar Alterações' }));
 
     await waitFor(() => {
-      expect(mocks.toastErrorMock).toHaveBeenCalledWith(
+      expect(toastMocks.error).toHaveBeenCalledWith(
         'Erro de Permissão: Você não tem permissão para alterar as configurações do sistema. Verifique se seu usuário é administrador.'
       );
     });

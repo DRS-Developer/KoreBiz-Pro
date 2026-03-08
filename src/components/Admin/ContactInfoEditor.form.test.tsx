@@ -3,10 +3,9 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import ContactInfoEditor from './ContactInfoEditor';
 import { useSilenceConsoleError } from '../../tests/utils/silenceConsoleError';
+import { toastMocks } from '../../tests/utils/toastMocks';
 
 const mocks = vi.hoisted(() => ({
-  toastSuccessMock: vi.fn(),
-  toastErrorMock: vi.fn(),
   refetchMock: vi.fn(async () => {}),
   onCloseMock: vi.fn(),
   onSuccessMock: vi.fn(),
@@ -20,13 +19,6 @@ const mocks = vi.hoisted(() => ({
     address: 'Rua Teste, 100',
     social_links: { whatsapp: '(11) 98888-7777' },
     map_settings: { lat: -23.5, lng: -46.6, zoom: 14 },
-  },
-}));
-
-vi.mock('sonner', () => ({
-  toast: {
-    success: mocks.toastSuccessMock,
-    error: mocks.toastErrorMock,
   },
 }));
 
@@ -79,7 +71,7 @@ describe('ContactInfoEditor Form', () => {
       expect(mocks.updateMock).toHaveBeenCalled();
       expect(mocks.eqMock).toHaveBeenCalledWith('id', 'settings-1');
     });
-    expect(mocks.toastSuccessMock).toHaveBeenCalledWith('Informações de contato atualizadas!');
+    expect(toastMocks.success).toHaveBeenCalledWith('Informações de contato atualizadas!');
     expect(mocks.refetchMock).toHaveBeenCalled();
     expect(mocks.onSuccessMock).toHaveBeenCalled();
     expect(mocks.onCloseMock).toHaveBeenCalled();
@@ -92,7 +84,7 @@ describe('ContactInfoEditor Form', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Salvar Alterações' }));
 
     await waitFor(() => {
-      expect(mocks.toastErrorMock).toHaveBeenCalledWith('Erro ao salvar alterações.');
+      expect(toastMocks.error).toHaveBeenCalledWith('Erro ao salvar alterações.');
     });
     expect(mocks.onCloseMock).not.toHaveBeenCalled();
   });

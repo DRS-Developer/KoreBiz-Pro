@@ -3,11 +3,10 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import PracticeAreasForm from './Form';
 import { useSilenceConsoleError } from '../../../tests/utils/silenceConsoleError';
+import { toastMocks } from '../../../tests/utils/toastMocks';
 
 const mocks = vi.hoisted(() => ({
   navigateMock: vi.fn(),
-  toastSuccessMock: vi.fn(),
-  toastErrorMock: vi.fn(),
   createMock: vi.fn(),
   updateMock: vi.fn(),
   getByIdMock: vi.fn(),
@@ -22,13 +21,6 @@ vi.mock('react-router-dom', async () => {
     useParams: () => ({ id: currentId }),
   };
 });
-
-vi.mock('sonner', () => ({
-  toast: {
-    success: mocks.toastSuccessMock,
-    error: mocks.toastErrorMock,
-  },
-}));
 
 vi.mock('../../../repositories/PracticeAreasRepository', () => ({
   PracticeAreasRepository: {
@@ -114,7 +106,7 @@ describe('PracticeAreas Form', () => {
         })
       );
     });
-    expect(mocks.toastSuccessMock).toHaveBeenCalledWith('Área de atuação criada!');
+    expect(toastMocks.success).toHaveBeenCalledWith('Área de atuação criada!');
     expect(mocks.navigateMock).toHaveBeenCalledWith('/admin/areas-atuacao');
 
     fireEvent.change(screen.getAllByRole('textbox')[0], {
@@ -123,7 +115,7 @@ describe('PracticeAreas Form', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Salvar' }));
 
     await waitFor(() => {
-      expect(mocks.toastErrorMock).toHaveBeenCalledWith('Erro ao salvar.');
+      expect(toastMocks.error).toHaveBeenCalledWith('Erro ao salvar.');
     });
   });
 });
