@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import PartnersForm from './Form';
+import { useSilenceConsoleError } from '../../../tests/utils/silenceConsoleError';
 
 const mocks = vi.hoisted(() => ({
   navigateMock: vi.fn(),
@@ -50,17 +51,11 @@ vi.mock('../../../components/Skeletons/FormSkeleton', () => ({
 }));
 
 describe('Partners Form', () => {
-  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
-
   beforeEach(() => {
     vi.clearAllMocks();
     currentId = undefined;
-    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
   });
-
-  afterEach(() => {
-    consoleErrorSpy.mockRestore();
-  });
+  useSilenceConsoleError();
 
   it('valida obrigatório de nome e impede envio vazio', async () => {
     render(<PartnersForm />);

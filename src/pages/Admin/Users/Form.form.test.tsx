@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import UserForm from './Form';
+import { useSilenceConsoleError } from '../../../tests/utils/silenceConsoleError';
 
 const mocks = vi.hoisted(() => ({
   navigateMock: vi.fn(),
@@ -34,16 +35,10 @@ vi.mock('../../../lib/supabase', () => ({
 }));
 
 describe('Users Form', () => {
-  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
-
   beforeEach(() => {
     vi.clearAllMocks();
-    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
   });
-
-  afterEach(() => {
-    consoleErrorSpy.mockRestore();
-  });
+  useSilenceConsoleError();
 
   it('valida campos obrigatórios e regras de senha', async () => {
     render(<UserForm />);

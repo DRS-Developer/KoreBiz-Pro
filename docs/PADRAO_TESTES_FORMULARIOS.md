@@ -26,6 +26,15 @@ Padronizar organização, nomenclatura e cobertura dos testes de formulários pa
   - `trata erro ...`
   - `adiciona/remove ...` para interação de usuário
 
+## Convenção de logs em testes
+
+- Para cenários que disparam `console.error` esperado, usar helper compartilhado:
+  - [silenceConsoleError.ts](file:///c:/Users/danie/Projetos_IA/KoreBiz-Pro/src/tests/utils/silenceConsoleError.ts)
+- Padrão de uso por suíte:
+  - `useSilenceConsoleError()` no escopo do `describe`
+- Objetivo:
+  - manter saída de teste limpa sem alterar assertivas de erro
+
 ## Matriz mínima por formulário
 
 Cada formulário deve ter, no mínimo:
