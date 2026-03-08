@@ -61,13 +61,10 @@ vi.mock('../../../stores/useGlobalStore', () => ({
   }),
 }));
 
-vi.mock('../../../components/Admin/ImageUpload', () => ({
-  default: ({ onChange }: any) => (
-    <button type="button" onClick={() => onChange('https://cdn.example/page.png')}>
-      mock-image-upload
-    </button>
-  ),
-}));
+vi.mock('../../../components/Admin/ImageUpload', async () => {
+  const { createImageUploadMock } = await import('../../../tests/utils/componentMocks');
+  return createImageUploadMock('https://cdn.example/page.png');
+});
 
 vi.mock('../../../components/Admin/TiptapEditor', () => ({
   default: ({ value, onChange }: any) => (
@@ -91,9 +88,10 @@ vi.mock('../../../components/Admin/UnsavedChangesModal', () => ({
   default: () => null,
 }));
 
-vi.mock('../../../components/Skeletons/FormSkeleton', () => ({
-  default: () => <div>loading</div>,
-}));
+vi.mock('../../../components/Skeletons/FormSkeleton', async () => {
+  const { createFormSkeletonMock } = await import('../../../tests/utils/componentMocks');
+  return createFormSkeletonMock();
+});
 
 describe('Pages Form', () => {
   beforeEach(() => {

@@ -27,9 +27,10 @@ vi.mock('../../../hooks/useFormGuard', () => ({
   }),
 }));
 
-vi.mock('../../../components/Admin/ImageUpload', () => ({
-  default: () => <div>mock-image-upload</div>,
-}));
+vi.mock('../../../components/Admin/ImageUpload', async () => {
+  const { createImageUploadPlaceholderMock } = await import('../../../tests/utils/componentMocks');
+  return createImageUploadPlaceholderMock();
+});
 
 vi.mock('./EmailSettingsTab', () => ({ default: () => <div>email-tab</div> }));
 vi.mock('./AnalyticsSettingsTab', () => ({ default: () => <div>analytics-tab</div> }));

@@ -33,8 +33,11 @@ Padronizar organização, nomenclatura e cobertura dos testes de formulários pa
 - Para asserts de notificação, usar mock compartilhado de toast:
   - [toastMocks.ts](file:///c:/Users/danie/Projetos_IA/KoreBiz-Pro/src/tests/utils/toastMocks.ts)
   - mock global configurado em [setupTests.ts](file:///c:/Users/danie/Projetos_IA/KoreBiz-Pro/src/setupTests.ts)
+- Para mocks recorrentes de componentes visuais, usar helper compartilhado:
+  - [componentMocks.tsx](file:///c:/Users/danie/Projetos_IA/KoreBiz-Pro/src/tests/utils/componentMocks.tsx)
 - Padrão de uso por suíte:
   - `useSilenceConsoleError()` no escopo do `describe`
+  - `vi.mock(..., async () => { const { helper } = await import(...); return helper(...); })` para evitar problema de hoisting do Vitest
 - Objetivo:
   - manter saída de teste limpa sem alterar assertivas de erro
 

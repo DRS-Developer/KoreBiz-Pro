@@ -17,17 +17,14 @@ vi.mock('../../../../repositories/HomeContentRepository', () => ({
   },
 }));
 
-vi.mock('../../../../components/Admin/ImageUpload', () => ({
-  default: ({ onChange }: any) => (
-    <button type="button" onClick={() => onChange('https://cdn.example/hero.png')}>
-      mock-image-upload
-    </button>
-  ),
-}));
-
-vi.mock('../../../../components/Skeletons/FormSkeleton', () => ({
-  default: () => <div>loading</div>,
-}));
+vi.mock('../../../../components/Admin/ImageUpload', async () => {
+  const { createImageUploadMock } = await import('../../../../tests/utils/componentMocks');
+  return createImageUploadMock('https://cdn.example/hero.png');
+});
+vi.mock('../../../../components/Skeletons/FormSkeleton', async () => {
+  const { createFormSkeletonMock } = await import('../../../../tests/utils/componentMocks');
+  return createFormSkeletonMock();
+});
 
 describe('HeroTab Form', () => {
   beforeEach(() => {
