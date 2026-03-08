@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import HeroTab from './HeroTab';
 
 const mocks = vi.hoisted(() => ({
@@ -37,8 +37,11 @@ vi.mock('../../../../components/Skeletons/FormSkeleton', () => ({
 }));
 
 describe('HeroTab Form', () => {
+  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+
   beforeEach(() => {
     vi.clearAllMocks();
+    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     mocks.getSectionMock.mockResolvedValue({
       content: {
         title: 'Título inicial',
@@ -50,6 +53,10 @@ describe('HeroTab Form', () => {
         background_image: 'https://cdn.example/hero-old.png',
       },
     });
+  });
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
   });
 
   it('carrega dados e salva alterações com sucesso', async () => {

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import ContactInfoEditor from './ContactInfoEditor';
 
 const mocks = vi.hoisted(() => ({
@@ -43,11 +43,18 @@ vi.mock('../../lib/supabase', () => ({
 }));
 
 describe('ContactInfoEditor Form', () => {
+  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+
   beforeEach(() => {
     vi.clearAllMocks();
+    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     mocks.eqMock.mockResolvedValue({ error: null });
     mocks.updateMock.mockReturnValue({ eq: mocks.eqMock });
     mocks.fromMock.mockReturnValue({ update: mocks.updateMock });
+  });
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
   });
 
   it('valida formato de email', async () => {

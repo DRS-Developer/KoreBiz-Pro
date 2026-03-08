@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import PortfolioForm from './Form';
 
@@ -102,12 +102,19 @@ vi.mock('../../../components/Skeletons/FormSkeleton', () => ({
 }));
 
 describe('Portfolio Form', () => {
+  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+
   beforeEach(() => {
     vi.clearAllMocks();
+    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     mocks.singleMock.mockResolvedValue({ data: { id: 'pf-1' }, error: null });
     mocks.selectMock.mockReturnValue({ single: mocks.singleMock });
     mocks.insertMock.mockReturnValue({ select: mocks.selectMock });
     mocks.fromMock.mockReturnValue({ insert: mocks.insertMock });
+  });
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
   });
 
   it('valida campos obrigatórios', async () => {

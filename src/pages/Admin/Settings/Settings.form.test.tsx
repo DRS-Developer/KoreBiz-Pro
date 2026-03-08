@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import Settings from './index';
 
 const mocks = vi.hoisted(() => ({
@@ -45,8 +45,11 @@ vi.mock('./AnalyticsSettingsTab', () => ({ default: () => <div>analytics-tab</di
 vi.mock('./MenuSidebarTab', () => ({ default: () => <div>menu-tab</div> }));
 
 describe('Settings Form', () => {
+  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+
   beforeEach(() => {
     vi.clearAllMocks();
+    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     mocks.singleMock.mockResolvedValue({
       data: {
         id: 'settings-id',
@@ -70,6 +73,10 @@ describe('Settings Form', () => {
       }
       return {};
     });
+  });
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
   });
 
   it('abre ferramenta de imagens e salva com sucesso', async () => {

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import ContentEditorTab from './ContentEditorTab';
 
 const mocks = vi.hoisted(() => ({
@@ -37,8 +37,11 @@ vi.mock('../../../../components/Skeletons/FormSkeleton', () => ({
 }));
 
 describe('ContentEditorTab Form', () => {
+  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+
   beforeEach(() => {
     vi.clearAllMocks();
+    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     mocks.getSectionMock.mockImplementation(async (section: string) => {
       if (section === 'about') {
         return {
@@ -64,6 +67,10 @@ describe('ContentEditorTab Form', () => {
         },
       };
     });
+  });
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
   });
 
   it('adiciona item em diferenciais e salva seção Sobre', async () => {
