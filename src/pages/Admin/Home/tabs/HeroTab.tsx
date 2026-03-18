@@ -76,6 +76,7 @@ const HeroTab: React.FC = () => {
               description="Alta resolução recomendada"
               pageKey="home"
               role="hero"
+              formKey="home.hero"
             />
           </div>
 

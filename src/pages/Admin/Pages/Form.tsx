@@ -516,6 +516,7 @@ const PageForm: React.FC = () => {
               description="Formato recomendado: 840x500px (Proporção 1.68:1)"
               pageKey={featuredImagePageKey}
               role="card"
+              formKey="pages.featured"
             />
           </div>
 

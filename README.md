@@ -2,6 +2,38 @@
 
 Este repositório contém o código fonte da plataforma KoreBiz-Pro.
 
+## Desenvolvimento
+
+### Setup
+
+```bash
+npm install
+npm run dev
+```
+
+### Build e validação
+
+```bash
+npm run check
+npm run build
+```
+
+### Testes
+
+```bash
+npm test
+npm run test:e2e:forms
+npm run test:e2e:editor
+npm run test:e2e:home-builder
+```
+
+### Home Widget Builder v2
+
+- Documentação da arquitetura: `docs/HOME_WIDGET_BUILDER_ARCH.md`
+- Contrato de API: `docs/HOME_WIDGET_API.md`
+- Plano de migração e rollback: `docs/HOME_WIDGET_MIGRATION.md`
+- Fallback legado: `site_settings.layout_settings.home_builder_v2_enabled = false`
+
 ## Visão Geral
 
 KoreBiz-Pro é uma solução completa para gestão de serviços de instalação e manutenção, incluindo:

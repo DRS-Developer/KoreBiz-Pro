@@ -7,9 +7,11 @@ import { MediaFolder } from '../../types/media';
 import { useSiteSettings } from '../../hooks/useSiteSettings';
 import { resolveManagedImage } from '../../utils/imageManager';
 import type { PageKey, ImageRole } from '../../config/imageProfiles';
+import type { FormImageCropKey } from '../../config/formImageCropProfiles';
 import { uploadImage, deleteImage } from '../../services/storage/storageService';
 import { mapMediaFolderToStorageFolder, resolveMediaFolderFromOrigin } from '../../services/storage/mediaFolderMapping';
 import type { ImageValidationRules } from '../../services/storage/validations';
+import { useFormImageCropConfig } from '../../hooks/useFormImageCropConfig';
 
 interface ImageUploadProps {
   label?: string;
@@ -23,6 +25,7 @@ interface ImageUploadProps {
   description?: string; // Instructions for the user
   pageKey?: PageKey;
   role?: ImageRole;
+  formKey?: FormImageCropKey;
 }
 
 const DEFAULT_ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
@@ -45,7 +48,8 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   minHeight = 450,
   description,
   pageKey,
-  role
+  role,
+  formKey
 }) => {
   const { settings } = useSiteSettings();
   const [uploading, setUploading] = useState(false);
@@ -64,6 +68,11 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   const [mediaModalOpen, setMediaModalOpen] = useState(false);
   const [selectedImageSrc, setSelectedImageSrc] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { config: dynamicCropConfig } = useFormImageCropConfig(formKey, {
+    aspectRatio,
+    minWidth,
+    minHeight,
+  });
 
   // Clean up object URLs to prevent memory leaks
   React.useEffect(() => {
@@ -138,16 +147,36 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     return null;
   }, [settings, folder]);
 
+  const effectiveAspectRatio = dynamicCropConfig?.aspectRatio || aspectRatio;
+  const effectiveMinWidth = dynamicCropConfig?.minWidth || minWidth;
+  const effectiveMinHeight = dynamicCropConfig?.minHeight || minHeight;
+  const dynamicMaxWidth = dynamicCropConfig?.maxWidth;
+  const dynamicMaxHeight = dynamicCropConfig?.maxHeight;
+
+  const effectiveMaxWidth = useMemo(() => {
+    if (dynamicMaxWidth && activeResizeConfig?.width) {
+      return Math.min(dynamicMaxWidth, activeResizeConfig.width);
+    }
+    return dynamicMaxWidth || activeResizeConfig?.width;
+  }, [activeResizeConfig?.width, dynamicMaxWidth]);
+
+  const effectiveMaxHeight = useMemo(() => {
+    if (dynamicMaxHeight && activeResizeConfig?.height) {
+      return Math.min(dynamicMaxHeight, activeResizeConfig.height);
+    }
+    return dynamicMaxHeight || activeResizeConfig?.height;
+  }, [activeResizeConfig?.height, dynamicMaxHeight]);
+
   const activeValidationRules = useMemo<ImageValidationRules>(() => ({
-    minWidth,
-    minHeight,
-    maxWidth: activeResizeConfig?.width,
-    maxHeight: activeResizeConfig?.height,
-    aspectRatio,
+    minWidth: effectiveMinWidth,
+    minHeight: effectiveMinHeight,
+    maxWidth: effectiveMaxWidth,
+    maxHeight: effectiveMaxHeight,
+    aspectRatio: effectiveAspectRatio,
     minSizeMB: 0.01,
     maxSizeMB: maxUploadSizeMB,
     allowedTypes: allowedImageTypes,
-  }), [activeResizeConfig, allowedImageTypes, aspectRatio, maxUploadSizeMB, minHeight, minWidth]);
+  }), [allowedImageTypes, effectiveAspectRatio, effectiveMaxHeight, effectiveMaxWidth, effectiveMinHeight, effectiveMinWidth, maxUploadSizeMB]);
 
   const handleEditExisting = async () => {
     if (!value) return;
@@ -543,7 +572,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         <div className="bg-gray-50 border-t border-gray-100 px-3 py-2 flex justify-between items-center text-xs text-gray-500">
             <span className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
-                Recomendado: {minWidth}x{minHeight}px ({aspectRatio.toFixed(2)}:1)
+                Recomendado: {effectiveMinWidth}x{effectiveMinHeight}px ({effectiveAspectRatio.toFixed(2)}:1)
             </span>
             {description && (
                 <span className="hidden sm:block text-gray-400 truncate max-w-[50%]" title={description}>
@@ -573,9 +602,9 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
           imageSrc={selectedImageSrc}
           onClose={handleEditorClose}
           onSave={handleEditorSave}
-          aspectRatio={aspectRatio}
-          minWidth={minWidth}
-          minHeight={minHeight}
+          aspectRatio={effectiveAspectRatio}
+          minWidth={effectiveMinWidth}
+          minHeight={effectiveMinHeight}
         />
       )}
       

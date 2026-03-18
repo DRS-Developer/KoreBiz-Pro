@@ -362,6 +362,7 @@ const ServicesForm: React.FC = () => {
                 description="Padrão do módulo: 800x600px (4:3)"
                 pageKey="servicos:list"
                 role="card"
+                formKey="services.featured"
                 />
             </div>
           </div>

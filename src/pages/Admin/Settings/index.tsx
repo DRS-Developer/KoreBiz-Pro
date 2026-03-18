@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Mail, Share2, Image as ImageIcon, RotateCcw, FileText, Search, Layout, FileCode, BarChart3, Wrench, Menu } from 'lucide-react';
+import { Mail, Share2, Image as ImageIcon, FileText, Search, Layout, FileCode, BarChart3, Wrench, Menu } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '../../../lib/supabase';
 import ImageUpload from '../../../components/Admin/ImageUpload';
@@ -13,6 +13,7 @@ import AnalyticsSettingsTab from './AnalyticsSettingsTab';
 import MenuSidebarTab from './MenuSidebarTab';
 import SettingsCard from './components/SettingsCard';
 import SettingsModal from './components/SettingsModal';
+import FormCropSettingsPanel from './components/FormCropSettingsPanel';
 
 const TiptapEditor = React.lazy(() => import('../../../components/Admin/TiptapEditor'));
 
@@ -38,6 +39,7 @@ const schema = yup.object({
   not_found_message: yup.string().nullable(),
   indexing_enabled: yup.boolean(),
   topbar_enabled: yup.boolean(),
+  home_builder_v2_enabled: yup.boolean(),
   
   // Email Settings
   email_settings: yup.object().nullable(),
@@ -92,6 +94,7 @@ type FormData = yup.InferType<typeof schema>;
 const Settings: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [settingsId, setSettingsId] = useState<string | null>(null);
+  const [storedLayoutSettings, setStoredLayoutSettings] = useState<Record<string, unknown>>({});
 
   const [activeTool, setActiveTool] = useState<string | null>(null);
   const menuSaveFnRef = React.useRef<(() => Promise<boolean>) | null>(null);
@@ -125,6 +128,8 @@ const Settings: React.FC = () => {
       general_max_height: 1080,
       keep_aspect_ratio: true,
       keep_exif: false,
+      topbar_enabled: true,
+      home_builder_v2_enabled: false,
     }
   });
 
@@ -137,15 +142,6 @@ const Settings: React.FC = () => {
     formState: { errors, isDirty },
   } = methods;
 
-  const globalResizeEnabled = watch('global_resize_enabled');
-  const portfolioResizeEnabled = watch('portfolio_resize_enabled');
-  const pagesResizeEnabled = watch('pages_resize_enabled');
-  const servicesResizeEnabled = watch('services_resize_enabled');
-  const partnersResizeEnabled = watch('partners_resize_enabled');
-  const settingsResizeEnabled = watch('settings_resize_enabled');
-  const generalResizeEnabled = watch('general_resize_enabled');
-  const globalCompressionLevel = watch('global_compression_level');
-  
   const isSubmittingRef = React.useRef(false);
   const { blocker, showModal } = useFormGuard(isDirty, isSubmittingRef);
 
@@ -170,6 +166,7 @@ const Settings: React.FC = () => {
         const socialLinks = data.social_links as Record<string, string>;
         const imageSettings = data.image_settings as any;
         const layoutSettings = data.layout_settings as any;
+        setStoredLayoutSettings(layoutSettings || {});
 
         reset({
           site_name: data.site_name,
@@ -192,6 +189,7 @@ const Settings: React.FC = () => {
           not_found_message: data.not_found_message || '',
           indexing_enabled: data.indexing_enabled !== false,
           topbar_enabled: layoutSettings?.topbar_enabled ?? true,
+          home_builder_v2_enabled: layoutSettings?.home_builder_v2_enabled ?? false,
           
           email_settings: data.email_settings || {
             provider: 'emailjs',
@@ -317,7 +315,9 @@ const Settings: React.FC = () => {
       };
       
       const layout_settings = {
-        topbar_enabled: data.topbar_enabled
+        ...(storedLayoutSettings || {}),
+        topbar_enabled: data.topbar_enabled,
+        home_builder_v2_enabled: data.home_builder_v2_enabled
       };
 
       const settingsData = {
@@ -428,36 +428,6 @@ const Settings: React.FC = () => {
     blocker.proceed?.();
   };
 
-  const handleRestoreDefaults = () => {
-    setValue('max_upload_size_mb', 5);
-    setValue('output_formats', ['webp', 'jpeg']);
-    setValue('global_compression_level', 80);
-    setValue('global_resize_enabled', true);
-    setValue('global_max_width', 1920);
-    setValue('global_max_height', 1920);
-    setValue('portfolio_resize_enabled', true);
-    setValue('portfolio_max_width', 840);
-    setValue('portfolio_max_height', 500);
-    setValue('pages_resize_enabled', true);
-    setValue('pages_max_width', 840);
-    setValue('pages_max_height', 500);
-    setValue('services_resize_enabled', true);
-    setValue('services_max_width', 800);
-    setValue('services_max_height', 600);
-    setValue('partners_resize_enabled', true);
-    setValue('partners_max_width', 400);
-    setValue('partners_max_height', 200);
-    setValue('settings_resize_enabled', true);
-    setValue('settings_max_width', 1600);
-    setValue('settings_max_height', 1200);
-    setValue('general_resize_enabled', true);
-    setValue('general_max_width', 1920);
-    setValue('general_max_height', 1080);
-    setValue('keep_aspect_ratio', true);
-    setValue('keep_exif', false);
-    toast.info('Valores padrão restaurados! Clique em Salvar para aplicar.');
-  };
-
   const tools = [
     {
       id: 'general',
@@ -559,82 +529,7 @@ const Settings: React.FC = () => {
             
             {activeTool === 'general' && (
               <>
-                {/* Image Settings */}
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-6">
-                  <div className="flex items-center justify-between border-b pb-4">
-                    <div className="flex items-center gap-2">
-                      <ImageIcon className="w-5 h-5 text-gray-500" />
-                      <h2 className="text-lg font-medium text-gray-900">Configurações de Imagens</h2>
-                    </div>
-                    <button type="button" onClick={handleRestoreDefaults} className="flex items-center gap-1 text-sm text-blue-600"><RotateCcw size={14} /> Restaurar Padrões</button>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="col-span-2 md:col-span-1">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Tamanho Máximo de Upload (MB)</label>
-                      <input type="number" step="0.1" {...register('max_upload_size_mb')} className="w-full px-3 py-2 border border-gray-300 rounded-md" />
-                      {errors.max_upload_size_mb && <p className="mt-1 text-sm text-red-600">{errors.max_upload_size_mb.message}</p>}
-                    </div>
-
-                    <div className="col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Nível de Otimização Global (Qualidade: {globalCompressionLevel}%)</label>
-                      <div className="flex items-center gap-4">
-                        <input type="range" min="1" max="100" {...register('global_compression_level')} className="w-full h-2 bg-gray-200 rounded-lg cursor-pointer" />
-                        <div className="w-16 h-16 bg-gray-100 rounded border flex items-center justify-center overflow-hidden"><div style={{ filter: `blur(${(100 - globalCompressionLevel) / 20}px)` }} className="text-xs text-center text-gray-400">Preview</div></div>
-                      </div>
-                    </div>
-
-                    <div className="col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Formatos de Saída Permitidos</label>
-                      <div className="flex flex-wrap gap-4">
-                        {['webp', 'jpeg', 'png'].map(fmt => (
-                          <label key={fmt} className="flex items-center space-x-2">
-                            <input type="checkbox" value={fmt} {...register('output_formats')} className="rounded text-primary focus:ring-primary" />
-                            <span className="uppercase text-sm text-gray-700">{fmt}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="col-span-2 space-y-6 mt-4">
-                       <h3 className="font-medium text-gray-900 border-b pb-2">Regras de Redimensionamento</h3>
-                       {[
-                         { id: 'global', title: 'Padrão Global', desc: 'Usado quando não há regra específica.', enabled: globalResizeEnabled },
-                         { id: 'portfolio', title: 'Portfólio', desc: 'Imagens de projetos e obras.', enabled: portfolioResizeEnabled },
-                         { id: 'pages', title: 'Páginas', desc: 'Conteúdo de páginas institucionais.', enabled: pagesResizeEnabled },
-                         { id: 'services', title: 'Serviços', desc: 'Imagens de serviços oferecidos.', enabled: servicesResizeEnabled },
-                         { id: 'partners', title: 'Parceiros', desc: 'Logotipos e materiais da seção de parceiros.', enabled: partnersResizeEnabled },
-                         { id: 'settings', title: 'Configurações', desc: 'Logo do site, OG image e ativos institucionais.', enabled: settingsResizeEnabled },
-                         { id: 'general', title: 'Home e Geral', desc: 'Imagens usadas em home e formulários gerais.', enabled: generalResizeEnabled },
-                       ].map((ctx) => (
-                         <div key={ctx.id} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                            <div className="flex items-center justify-between mb-4">
-                                <div>
-                                    <label className="flex items-center space-x-2 cursor-pointer">
-                                      <input type="checkbox" {...register(`${ctx.id}_resize_enabled` as any)} className="rounded text-primary focus:ring-primary" />
-                                      <span className="font-bold text-gray-800">{ctx.title}</span>
-                                    </label>
-                                    <p className="text-xs text-gray-500 ml-6">{ctx.desc}</p>
-                                </div>
-                            </div>
-                            {ctx.enabled && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pl-6 border-l-2 border-gray-300">
-                                  <div><label className="block text-xs font-medium text-gray-600 mb-1">Largura Máx (px)</label><input type="number" {...register(`${ctx.id}_max_width` as any)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" /></div>
-                                  <div><label className="block text-xs font-medium text-gray-600 mb-1">Altura Máx (px)</label><input type="number" {...register(`${ctx.id}_max_height` as any)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" /></div>
-                                </div>
-                            )}
-                         </div>
-                       ))}
-                    </div>
-
-                    <div className="col-span-2 border-t pt-4">
-                       <label className="flex items-center space-x-2 cursor-pointer">
-                          <input type="checkbox" {...register('keep_exif')} className="rounded text-primary focus:ring-primary" />
-                          <span className="font-medium text-gray-700">Manter Metadados EXIF</span>
-                        </label>
-                    </div>
-                  </div>
-                </div>
+                <FormCropSettingsPanel />
               </>
             )}
 
@@ -653,6 +548,14 @@ const Settings: React.FC = () => {
                         </label>
                      </div>
                   </div>
+                  <div className="col-span-2">
+                     <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                        <label className="flex items-start gap-3 cursor-pointer">
+                           <div className="mt-1"><input type="checkbox" {...register('home_builder_v2_enabled')} className="w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500" /></div>
+                           <div><span className="font-bold text-gray-900 block">Ativar Home Builder v2</span><span className="text-sm text-gray-600 block mt-1">Liga o construtor dinâmico da Home. Se desativado, o layout legado é usado automaticamente.</span></div>
+                        </label>
+                     </div>
+                  </div>
 
                   <div className="col-span-2">
                     <div className="w-full md:max-w-[50%] mx-auto transition-all duration-300 ease-in-out">
@@ -668,6 +571,7 @@ const Settings: React.FC = () => {
                             description="Recomendado fundo transparente (PNG/WebP)."
                             pageKey="home"
                             role="logo" 
+                            formKey="settings.logo"
                         />
                     </div>
                   </div>
@@ -719,6 +623,7 @@ const Settings: React.FC = () => {
                             minHeight={630} 
                             pageKey="home"
                             role="hero" 
+                            formKey="settings.og"
                         />
                     </div>
                   </div>

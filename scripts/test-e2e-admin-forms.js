@@ -51,6 +51,39 @@ const clickButtonByRegex = async (page, regexSource) => {
   }, regexSource.normalize('NFD').replace(/[\u0300-\u036f]/g, ''));
 };
 
+const collectVisibleButtons = async (page) => {
+  return page.evaluate(() => {
+    const normalize = (value) =>
+      (value || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+    return Array.from(document.querySelectorAll('button'))
+      .filter((button) => {
+        const style = window.getComputedStyle(button);
+        return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
+      })
+      .map((button) => normalize((button.textContent || '').trim()))
+      .filter(Boolean);
+  });
+};
+
+const waitForSubmitButton = async (page, regexSource, timeoutMs = 45000) => {
+  const startedAt = Date.now();
+  const normalizedPattern = regexSource.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const regex = new RegExp(normalizedPattern, 'i');
+
+  while (Date.now() - startedAt < timeoutMs) {
+    const buttons = await collectVisibleButtons(page);
+    if (buttons.some((label) => regex.test(label))) {
+      return { found: true, buttons };
+    }
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+
+  const buttons = await collectVisibleButtons(page);
+  return { found: false, buttons };
+};
+
 const fillMinimalSuccessData = async (page) => {
   await page.evaluate(() => {
     const textInputs = Array.from(document.querySelectorAll('input[type="text"], input[type="email"], input[type="password"], textarea'));
@@ -115,12 +148,12 @@ const run = async () => {
 
     const credentials = ensureCredentials();
     const scenarios = [
-      { name: 'services', route: '/admin/services/novo', submit: 'Salvar Servico' },
+      { name: 'services', route: '/admin/services/novo', submit: 'Criar Servico|Salvar Alteracoes|Salvar Servico' },
       { name: 'portfolio', route: '/admin/portfolio/novo', submit: 'Criar Projeto|Salvar Alteracoes' },
       { name: 'pages', route: '/admin/paginas/nova', submit: 'Salvar Pagina' },
       { name: 'partners', route: '/admin/parceiros/novo', submit: 'Salvar' },
       { name: 'practice-areas', route: '/admin/areas-atuacao/novo', submit: 'Salvar' },
-      { name: 'users', route: '/admin/usuarios/novo', submit: 'Criar Usuario' },
+      { name: 'users', route: '/admin/usuarios/novo', submit: 'Criar Usuario|Salvar Alteracoes' },
     ];
 
     browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
@@ -144,11 +177,25 @@ const run = async () => {
         { timeout: 45000 }
       );
 
+      const readiness = await waitForSubmitButton(page, scenario.submit, 60000);
+      if (!readiness.found) {
+        const screenshotPath = path.join(REPORTS_DIR, `${scenario.name}-timeout.png`);
+        await page.screenshot({ path: screenshotPath, fullPage: true });
+        report.push({
+          name: scenario.name,
+          route: scenario.route,
+          status: 'timeout',
+          reason: 'submit não apareceu dentro do tempo limite',
+          currentUrl: page.url(),
+          buttons: readiness.buttons,
+          screenshotPath,
+        });
+        continue;
+      }
+
       const emptySubmitClicked = await clickButtonByRegex(page, scenario.submit);
       if (!emptySubmitClicked) {
-        const diagnostic = await page.evaluate(() =>
-          Array.from(document.querySelectorAll('button')).map((button) => (button.textContent || '').trim()).filter(Boolean)
-        );
+        const diagnostic = await collectVisibleButtons(page);
         const screenshotPath = path.join(REPORTS_DIR, `${scenario.name}-unavailable.png`);
         await page.screenshot({ path: screenshotPath, fullPage: true });
         report.push({
@@ -183,11 +230,12 @@ const run = async () => {
     }
 
     const reportPath = path.join(REPORTS_DIR, 'resultado.json');
+    const failedScenarios = report.filter((scenario) => scenario.status !== 'executed');
     await fs.writeFile(
       reportPath,
       JSON.stringify(
         {
-          status: 'ok',
+          status: failedScenarios.length ? 'failed' : 'ok',
           executedAt: new Date().toISOString(),
           scenarios: report,
         },
@@ -196,6 +244,9 @@ const run = async () => {
       )
     );
     console.log(`E2E formulários concluído: ${reportPath}`);
+    if (failedScenarios.length) {
+      throw new Error(`Falha em ${failedScenarios.length} cenário(s): ${failedScenarios.map((item) => item.name).join(', ')}`);
+    }
   } finally {
     if (browser) await browser.close();
     if (devServer && devServer.exitCode === null && !devServer.killed) {

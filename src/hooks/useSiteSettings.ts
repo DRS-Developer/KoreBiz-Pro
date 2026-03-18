@@ -39,6 +39,10 @@ export function useSiteSettings(): UseSiteSettingsResult {
 
   // Subscribe to realtime changes
   useEffect(() => {
+    refetch();
+  }, []);
+
+  useEffect(() => {
     const channel = supabase
       .channel('settings_changes')
       .on('postgres_changes', { 

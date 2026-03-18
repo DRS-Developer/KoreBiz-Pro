@@ -51,6 +51,7 @@ const PracticeAreasList = lazy(() => import('./pages/Admin/PracticeAreas/List'))
 const PracticeAreasForm = lazy(() => import('./pages/Admin/PracticeAreas/Form'));
 const PartnersList = lazy(() => import('./pages/Admin/Partners/List'));
 const PartnersForm = lazy(() => import('./pages/Admin/Partners/Form'));
+const DocumentationPage = lazy(() => import('./pages/Admin/Documentation'));
 
 // Lazy load less critical or one-off pages
 const InstallWizard = lazy(() => import('./pages/Install/InstallWizard'));
@@ -91,6 +92,7 @@ const PracticeAreasListLazy = withSuspense(PracticeAreasList);
 const PracticeAreasFormLazy = withSuspense(PracticeAreasForm);
 const PartnersListLazy = withSuspense(PartnersList);
 const PartnersFormLazy = withSuspense(PartnersForm);
+const DocumentationPageLazy = withSuspense(DocumentationPage);
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -206,6 +208,7 @@ const router = createBrowserRouter(
           
           {/* Home Settings */}
           <Route path="/admin/home" element={<AdminLayout><HomeSettingsLazy /></AdminLayout>} />
+          <Route path="/admin/documentacao/:categoryId?" element={<AdminLayout><DocumentationPageLazy /></AdminLayout>} />
 
           {/* Practice Areas Management */}
           <Route path="/admin/areas-atuacao" element={<AdminLayout><PracticeAreasListLazy /></AdminLayout>} />

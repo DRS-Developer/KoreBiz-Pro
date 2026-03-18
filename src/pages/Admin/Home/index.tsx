@@ -1,18 +1,32 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { LayoutTemplate, Image, Type } from 'lucide-react';
 import HeroTab from './tabs/HeroTab';
 import SectionsTab from './tabs/SectionsTab';
 import VisualsTab from './tabs/VisualsTab';
+import { useSiteSettings } from '../../../hooks/useSiteSettings';
 
 const HomeSettings: React.FC = () => {
   const [activeTab, setActiveTab] = useState('hero');
+  const { settings } = useSiteSettings();
+  const layoutSettings = settings?.layout_settings as Record<string, unknown> | null;
+  const useWidgetLayout = layoutSettings?.home_builder_v2_enabled === true;
 
-  const tabs = [
-    { id: 'hero', label: 'Banner Principal', icon: Image },
-    { id: 'sections', label: 'Seções da Home', icon: LayoutTemplate },
-    { id: 'visuals', label: 'Elementos Visuais', icon: Type },
-  ];
+  useEffect(() => {
+    if (useWidgetLayout && activeTab === 'hero') {
+      setActiveTab('sections');
+    }
+  }, [useWidgetLayout, activeTab]);
+
+  const tabs = useMemo(
+    () =>
+      [
+        !useWidgetLayout ? { id: 'hero', label: 'Banner Principal', icon: Image } : null,
+        { id: 'sections', label: 'Seções da Home', icon: LayoutTemplate },
+        { id: 'visuals', label: 'Elementos Visuais', icon: Type },
+      ].filter(Boolean) as Array<{ id: string; label: string; icon: React.ComponentType<{ size?: number }> }>,
+    [useWidgetLayout]
+  );
 
   const renderTabContent = () => {
     switch (activeTab) {

@@ -12,9 +12,11 @@ Padronizar organização, nomenclatura e cobertura dos testes de formulários pa
 - Testes de interface (navegação real):
   - `scripts/test-e2e-admin-forms.js`
   - `scripts/test-e2e-editor-filerobot.js`
+  - `scripts/test-e2e-home-builder.js`
 - Evidências de execução:
   - `reports/e2e-forms/`
   - `reports/e2e-editor/`
+  - `reports/e2e-home-builder/`
 
 ## Convenção de nomenclatura
 
@@ -77,6 +79,7 @@ Cada formulário deve ter, no mínimo:
   - [ContentEditorTab.form.test.tsx](file:///c:/Users/danie/Projetos_IA/KoreBiz-Pro/src/pages/Admin/Home/tabs/ContentEditorTab.form.test.tsx)
 - **Interface (E2E)**
   - [test-e2e-admin-forms.js](file:///c:/Users/danie/Projetos_IA/KoreBiz-Pro/scripts/test-e2e-admin-forms.js)
+  - [test-e2e-home-builder.js](file:///c:/Users/danie/Projetos_IA/KoreBiz-Pro/scripts/test-e2e-home-builder.js)
   - Rotas cobertas: serviços, portfólio, páginas, parceiros, áreas de atuação e usuários
 
 ## Catálogo de testes existentes (referência)
@@ -97,4 +100,6 @@ Cada formulário deve ter, no mínimo:
   - `npm run test -- src/pages/Admin/**/*.form.test.tsx`
 - E2E formulários:
   - `npm run test:e2e:forms`
+- E2E Home Builder:
+  - `npm run test:e2e:home-builder`
   - Requer: `E2E_ADMIN_EMAIL` e `E2E_ADMIN_PASSWORD`

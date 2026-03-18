@@ -1,0 +1,48 @@
+{
+  "status": "ok",
+  "executedAt": "2026-03-08T20:51:15.874Z",
+  "scenarios": [
+    {
+      "name": "services",
+      "route": "/admin/services/novo",
+      "status": "executed",
+      "emptyValidationDetected": true,
+      "screenshotPath": "C:\\Users\\danie\\Projetos_IA\\KoreBiz-Pro\\reports\\e2e-forms\\services.png"
+    },
+    {
+      "name": "portfolio",
+      "route": "/admin/portfolio/novo",
+      "status": "executed",
+      "emptyValidationDetected": true,
+      "screenshotPath": "C:\\Users\\danie\\Projetos_IA\\KoreBiz-Pro\\reports\\e2e-forms\\portfolio.png"
+    },
+    {
+      "name": "pages",
+      "route": "/admin/paginas/nova",
+      "status": "executed",
+      "emptyValidationDetected": true,
+      "screenshotPath": "C:\\Users\\danie\\Projetos_IA\\KoreBiz-Pro\\reports\\e2e-forms\\pages.png"
+    },
+    {
+      "name": "partners",
+      "route": "/admin/parceiros/novo",
+      "status": "executed",
+      "emptyValidationDetected": true,
+      "screenshotPath": "C:\\Users\\danie\\Projetos_IA\\KoreBiz-Pro\\reports\\e2e-forms\\partners.png"
+    },
+    {
+      "name": "practice-areas",
+      "route": "/admin/areas-atuacao/novo",
+      "status": "executed",
+      "emptyValidationDetected": true,
+      "screenshotPath": "C:\\Users\\danie\\Projetos_IA\\KoreBiz-Pro\\reports\\e2e-forms\\practice-areas.png"
+    },
+    {
+      "name": "users",
+      "route": "/admin/usuarios/novo",
+      "status": "executed",
+      "emptyValidationDetected": true,
+      "screenshotPath": "C:\\Users\\danie\\Projetos_IA\\KoreBiz-Pro\\reports\\e2e-forms\\users.png"
+    }
+  ]
+}

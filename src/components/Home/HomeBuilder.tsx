@@ -6,6 +6,39 @@ import ProjectsDefault from './Sections/Projects/ProjectsDefault';
 import AboutDefault from './Sections/About/AboutDefault';
 import PartnersDefault from './Sections/Partners/PartnersDefault';
 import ContactDefault from './Sections/Contact/ContactDefault';
+import GalleryDefault from './Sections/Gallery/GalleryDefault';
+import CTADefault from './Sections/CTA/CTADefault';
+import GridDefault from './Sections/Grid/GridDefault';
+import CardListDefault from './Sections/CardList/CardListDefault';
+import FormEmbedDefault from './Sections/FormEmbed/FormEmbedDefault';
+import TestimonialsDefault from './Sections/Testimonials/TestimonialsDefault';
+import FaqDefault from './Sections/Faq/FaqDefault';
+import StatsDefault from './Sections/Stats/StatsDefault';
+import ProcessDefault from './Sections/Process/ProcessDefault';
+import PricingDefault from './Sections/Pricing/PricingDefault';
+import ComparisonDefault from './Sections/Comparison/ComparisonDefault';
+import LogosWallDefault from './Sections/LogosWall/LogosWallDefault';
+import CaseHighlightsDefault from './Sections/CaseHighlights/CaseHighlightsDefault';
+import BeforeAfterDefault from './Sections/BeforeAfter/BeforeAfterDefault';
+import FeatureTabsDefault from './Sections/FeatureTabs/FeatureTabsDefault';
+import TeamCardsDefault from './Sections/TeamCards/TeamCardsDefault';
+import TrustBadgesDefault from './Sections/TrustBadges/TrustBadgesDefault';
+import MediaSplitDefault from './Sections/MediaSplit/MediaSplitDefault';
+import IconFeaturesDefault from './Sections/IconFeatures/IconFeaturesDefault';
+import ChecklistStepsDefault from './Sections/ChecklistSteps/ChecklistStepsDefault';
+import QuoteHighlightDefault from './Sections/QuoteHighlight/QuoteHighlightDefault';
+import MilestonesDefault from './Sections/Milestones/MilestonesDefault';
+import DualCtaBandDefault from './Sections/DualCtaBand/DualCtaBandDefault';
+import KpiStripDefault from './Sections/KpiStrip/KpiStripDefault';
+import ImageQuoteDefault from './Sections/ImageQuote/ImageQuoteDefault';
+import BenefitGridDefault from './Sections/BenefitGrid/BenefitGridDefault';
+import MiniTimelineDefault from './Sections/MiniTimeline/MiniTimelineDefault';
+import ValueCardsDefault from './Sections/ValueCards/ValueCardsDefault';
+import QuickFactsDefault from './Sections/QuickFacts/QuickFactsDefault';
+import FeatureBulletsDefault from './Sections/FeatureBullets/FeatureBulletsDefault';
+import StatBannerDefault from './Sections/StatBanner/StatBannerDefault';
+import OutcomeTilesDefault from './Sections/OutcomeTiles/OutcomeTilesDefault';
+import HighlightListDefault from './Sections/HighlightList/HighlightListDefault';
 
 // Registry mapping
 const SECTION_REGISTRY: Record<string, Record<string, React.ComponentType<any>>> = {
@@ -24,6 +57,105 @@ const SECTION_REGISTRY: Record<string, Record<string, React.ComponentType<any>>>
   },
   partners: {
     default: PartnersDefault,
+  },
+  gallery: {
+    default: GalleryDefault,
+  },
+  grid: {
+    default: GridDefault,
+  },
+  'card-list': {
+    default: CardListDefault,
+  },
+  'form-embed': {
+    default: FormEmbedDefault,
+  },
+  testimonials: {
+    default: TestimonialsDefault,
+  },
+  faq: {
+    default: FaqDefault,
+  },
+  stats: {
+    default: StatsDefault,
+  },
+  process: {
+    default: ProcessDefault,
+  },
+  pricing: {
+    default: PricingDefault,
+  },
+  comparison: {
+    default: ComparisonDefault,
+  },
+  'logos-wall': {
+    default: LogosWallDefault,
+  },
+  'case-highlights': {
+    default: CaseHighlightsDefault,
+  },
+  'before-after': {
+    default: BeforeAfterDefault,
+  },
+  'feature-tabs': {
+    default: FeatureTabsDefault,
+  },
+  'team-cards': {
+    default: TeamCardsDefault,
+  },
+  'trust-badges': {
+    default: TrustBadgesDefault,
+  },
+  'media-split': {
+    default: MediaSplitDefault,
+  },
+  'icon-features': {
+    default: IconFeaturesDefault,
+  },
+  'checklist-steps': {
+    default: ChecklistStepsDefault,
+  },
+  'quote-highlight': {
+    default: QuoteHighlightDefault,
+  },
+  milestones: {
+    default: MilestonesDefault,
+  },
+  'dual-cta-band': {
+    default: DualCtaBandDefault,
+  },
+  'kpi-strip': {
+    default: KpiStripDefault,
+  },
+  'image-quote': {
+    default: ImageQuoteDefault,
+  },
+  'benefit-grid': {
+    default: BenefitGridDefault,
+  },
+  'mini-timeline': {
+    default: MiniTimelineDefault,
+  },
+  'value-cards': {
+    default: ValueCardsDefault,
+  },
+  'quick-facts': {
+    default: QuickFactsDefault,
+  },
+  'feature-bullets': {
+    default: FeatureBulletsDefault,
+  },
+  'stat-banner': {
+    default: StatBannerDefault,
+  },
+  'outcome-tiles': {
+    default: OutcomeTilesDefault,
+  },
+  'highlight-list': {
+    default: HighlightListDefault,
+  },
+  cta: {
+    default: CTADefault,
   },
   contact: {
     default: ContactDefault,

@@ -1,0 +1,13 @@
+{
+  "status": "ok",
+  "mode": "builder_v2",
+  "executedAt": "2026-03-18T03:48:46.599Z",
+  "steps": [
+    "Elemento Hero adicionado",
+    "Elemento Contato adicionado",
+    "Reordenação por drag-and-drop executada",
+    "Edição de propriedades e salvamento executados",
+    "Página Home carregada após mudanças"
+  ],
+  "screenshotPath": "C:\\Users\\danie\\Projetos_IA\\KoreBiz-Pro\\reports\\e2e-home-builder\\home-builder.png"
+}

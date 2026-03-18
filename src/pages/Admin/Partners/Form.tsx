@@ -102,6 +102,7 @@ const PartnersForm: React.FC = () => {
                 description="Formato recomendado: 240x120px (2:1), preferencialmente transparente"
                 pageKey="parceiros"
                 role="logo"
+                formKey="partners.logo"
                 />
             </div>
           </div>

@@ -151,6 +151,7 @@ const PracticeAreasForm: React.FC = () => {
                 minHeight={600}
                 pageKey="areas:list"
                 role="card"
+                formKey="practice-areas.image"
                 />
             </div>
             <p className="text-xs text-gray-500 text-center">

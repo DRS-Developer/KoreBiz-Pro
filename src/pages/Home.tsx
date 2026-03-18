@@ -7,12 +7,16 @@ import { HomeContentRepository } from '../repositories/HomeContentRepository';
 import { PracticeAreasRepository } from '../repositories/PracticeAreasRepository';
 import { PartnersRepository } from '../repositories/PartnersRepository';
 import { useHomeConfig } from '../hooks/useHomeConfig';
-import HomeBuilder from '../components/Home/HomeBuilder';
+import HomeRuntimeRenderer from '../components/Home/HomeRuntimeRenderer';
 import { deepEqual } from '../utils/equality';
+import { useHomeWidgets } from '../hooks/useHomeWidgets';
 
 const Home: FC = () => {
   const { settings, loading: loadingSettings } = useSiteSettings();
   const { config, loading: loadingConfig } = useHomeConfig();
+  const layoutSettings = settings?.layout_settings as Record<string, unknown> | null;
+  const useWidgetLayout = layoutSettings?.home_builder_v2_enabled === true;
+  const { widgets, loading: loadingWidgets, error: widgetsError } = useHomeWidgets(useWidgetLayout);
   
   // Use Global Store (Already Hydrated by AppLoader)
   const { 
@@ -75,7 +79,7 @@ const Home: FC = () => {
   // Relaxed check: Only Hero is strictly required to show the page structure. 
   // Other sections can render empty or their own skeletons if needed.
   const hasCachedContent = !!homeHero; 
-  const showSkeleton = !hasCachedContent && (loadingSettings || loadingConfig || !isHydrated || isRefreshing);
+  const showSkeleton = !hasCachedContent && (loadingSettings || loadingConfig || (useWidgetLayout && loadingWidgets) || !isHydrated || isRefreshing);
 
   if (showSkeleton) {
     return (
@@ -102,8 +106,11 @@ const Home: FC = () => {
         image={hero?.background_image || bannerUrl}
       />
       
-      {/* Modular Home Builder */}
-      <HomeBuilder sections={config.sections} />
+      <HomeRuntimeRenderer
+        useWidgetLayout={useWidgetLayout && !widgetsError}
+        widgets={widgets}
+        legacySections={config.sections}
+      />
     </div>
   );
 };

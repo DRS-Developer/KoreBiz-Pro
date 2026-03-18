@@ -385,6 +385,7 @@ const PortfolioForm: React.FC = () => {
                 minHeight={500}
                 pageKey="portfolio:detail"
                 role="hero"
+                formKey="portfolio.cover"
                 />
             </div>
           </div>
@@ -588,6 +589,7 @@ const PortfolioForm: React.FC = () => {
                    description="Galeria: padrão 800x600px (4:3)"
                    pageKey="portfolio:detail"
                    role="card"
+                   formKey="portfolio.gallery"
                  />
                </div>
              </div>

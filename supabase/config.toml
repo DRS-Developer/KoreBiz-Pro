@@ -1,2 +1,8 @@
 [functions.submit-contact]
 verify_jwt = false
+
+[functions.form-image-crop-configs]
+verify_jwt = false
+
+[functions.home-widgets]
+verify_jwt = false

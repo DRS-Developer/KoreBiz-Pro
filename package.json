@@ -16,7 +16,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e:editor": "node scripts/test-e2e-editor-filerobot.js",
-    "test:e2e:forms": "node scripts/test-e2e-admin-forms.js"
+    "test:e2e:forms": "node scripts/test-e2e-admin-forms.js",
+    "test:e2e:home-builder": "node scripts/test-e2e-home-builder.js"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
