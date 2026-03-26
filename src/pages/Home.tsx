@@ -6,17 +6,15 @@ import { useGlobalStore } from '../stores/useGlobalStore';
 import { HomeContentRepository } from '../repositories/HomeContentRepository';
 import { PracticeAreasRepository } from '../repositories/PracticeAreasRepository';
 import { PartnersRepository } from '../repositories/PartnersRepository';
-import { useHomeConfig } from '../hooks/useHomeConfig';
 import HomeRuntimeRenderer from '../components/Home/HomeRuntimeRenderer';
 import { deepEqual } from '../utils/equality';
 import { useHomeWidgets } from '../hooks/useHomeWidgets';
 
+const HOME_WIDGETS_LOCAL_FALLBACK_KEY = 'home_widgets_local_fallback_v1';
+
 const Home: FC = () => {
   const { settings, loading: loadingSettings } = useSiteSettings();
-  const { config, loading: loadingConfig } = useHomeConfig();
-  const layoutSettings = settings?.layout_settings as Record<string, unknown> | null;
-  const useWidgetLayout = layoutSettings?.home_builder_v2_enabled === true;
-  const { widgets, loading: loadingWidgets, error: widgetsError } = useHomeWidgets(useWidgetLayout);
+  const { widgets, loading: loadingWidgets } = useHomeWidgets();
   
   // Use Global Store (Already Hydrated by AppLoader)
   const { 
@@ -27,6 +25,12 @@ const Home: FC = () => {
   
   // Local state for background loading
   const [isRefreshing, setIsRefreshing] = useState(true);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (window.location.pathname.startsWith('/admin')) return;
+    window.localStorage.removeItem(HOME_WIDGETS_LOCAL_FALLBACK_KEY);
+  }, []);
 
   useEffect(() => {
     const loadContent = async () => {
@@ -76,16 +80,31 @@ const Home: FC = () => {
   // Combine loading states
   // We only show the skeleton if we have absolutely NO content to show (first load)
   // If we have cached content (homeHero etc), we show it while fetching updates in background
-  // Relaxed check: Only Hero is strictly required to show the page structure. 
-  // Other sections can render empty or their own skeletons if needed.
   const hasCachedContent = !!homeHero; 
-  const showSkeleton = !hasCachedContent && (loadingSettings || loadingConfig || (useWidgetLayout && loadingWidgets) || !isHydrated || isRefreshing);
+  const hasCachedWidgets = widgets.length > 0;
+  
+  // Se não temos conteúdo em cache E não temos widgets em cache, e estamos carregando algo, mostramos o skeleton
+  const showSkeleton = (!hasCachedContent && !hasCachedWidgets) && (loadingSettings || loadingWidgets || !isHydrated || isRefreshing);
+  
+  // Mostra em construção se terminou de carregar os widgets e a lista está vazia
+  const showUnderConstruction = !showSkeleton && !loadingWidgets && widgets.length === 0;
 
   if (showSkeleton) {
     return (
       <div className="relative">
         <HomeSkeleton />
         {/* Optional: Show loading indicator even if skeleton is shown? No, skeleton implies loading. */}
+      </div>
+    );
+  }
+
+  if (showUnderConstruction) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center px-6">
+        <div className="text-center">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-800">Em construção</h1>
+          <p className="mt-3 text-gray-500">Estamos preparando esta página para você.</p>
+        </div>
       </div>
     );
   }
@@ -107,9 +126,7 @@ const Home: FC = () => {
       />
       
       <HomeRuntimeRenderer
-        useWidgetLayout={useWidgetLayout && !widgetsError}
         widgets={widgets}
-        legacySections={config.sections}
       />
     </div>
   );

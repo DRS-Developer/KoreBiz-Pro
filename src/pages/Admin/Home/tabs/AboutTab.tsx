@@ -4,13 +4,21 @@ import { toast } from 'sonner';
 import { Save, Plus, Trash2, GripVertical } from 'lucide-react';
 import { HomeContentRepository } from '../../../../repositories/HomeContentRepository';
 import { AboutContent } from '../../../../types/home-content';
+import { homeWidgetService } from '../../../../services/homeWidgetService';
+import { HomeWidgetDto } from '../../../../types/home-widgets';
 import ImageUpload from '../../../../components/Admin/ImageUpload';
 import FormSkeleton from '../../../../components/Skeletons/FormSkeleton';
 
-const AboutTab: React.FC = () => {
+interface AboutTabProps {
+  widget?: HomeWidgetDto | null;
+  onWidgetUpdated?: (widget: HomeWidgetDto) => void;
+}
+
+const AboutTab: React.FC<AboutTabProps> = ({ widget, onWidgetUpdated }) => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-
+  const [variant, setVariant] = useState(widget?.variant || 'default');
+  
   const { register, control, handleSubmit, setValue, watch, formState: { isDirty } } = useForm<AboutContent>({
     defaultValues: {
       features: []
@@ -54,6 +62,15 @@ const AboutTab: React.FC = () => {
     setSaving(true);
     try {
       await HomeContentRepository.updateSection('about', data);
+      if (widget && variant !== widget.variant) {
+        const updatedWidget = await homeWidgetService.upsert({
+          ...widget,
+          variant,
+        });
+        if (onWidgetUpdated) {
+          onWidgetUpdated(updatedWidget);
+        }
+      }
       toast.success('Seção "Sobre Nós" atualizada!');
     } catch (error) {
       toast.error('Erro ao atualizar seção.');
@@ -64,15 +81,34 @@ const AboutTab: React.FC = () => {
 
   if (loading) return <FormSkeleton />;
 
+  const isVariantChanged = widget ? variant !== widget.variant : false;
+  const canSave = isDirty || isVariantChanged;
+
   return (
     <div className="space-y-12">
+      {widget && (
+        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Variante</label>
+          <select
+            value={variant}
+            onChange={(e) => setVariant(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="default">Padrão</option>
+            <option value="split">Dividido (Imagem ao lado)</option>
+            <option value="minimal">Minimalista</option>
+          </select>
+          <p className="text-xs text-gray-500 mt-1">Nome da variação de design a ser usada.</p>
+        </div>
+      )}
+
       <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
         <div className="flex justify-between items-center mb-6 border-b pb-4">
           <h3 className="text-xl font-bold text-gray-800">Seção "Sobre Nós"</h3>
           <button
             onClick={handleSubmit(onSave)}
-            disabled={saving || !isDirty}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold text-white ${saving || !isDirty ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700'}`}
+            disabled={saving || !canSave}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold text-white ${saving || !canSave ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700'}`}
           >
             <Save size={16} /> Salvar "Sobre Nós"
           </button>

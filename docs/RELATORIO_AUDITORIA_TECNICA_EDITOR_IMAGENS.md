@@ -91,7 +91,7 @@ Todos os formulários abaixo usam `ImageUpload` e, portanto, abrem o editor avan
 - Páginas: [Pages/Form.tsx](file:///c:/Users/danie/Projetos_IA/KoreBiz-Pro/src/pages/Admin/Pages/Form.tsx#L507-L519)
 - Parceiros: [Partners/Form.tsx](file:///c:/Users/danie/Projetos_IA/KoreBiz-Pro/src/pages/Admin/Partners/Form.tsx#L94-L105)
 - Áreas de Atuação: [PracticeAreas/Form.tsx](file:///c:/Users/danie/Projetos_IA/KoreBiz-Pro/src/pages/Admin/PracticeAreas/Form.tsx#L144-L154)
-- Home (Hero e Sobre): [HeroTab.tsx](file:///c:/Users/danie/Projetos_IA/KoreBiz-Pro/src/pages/Admin/Home/tabs/HeroTab.tsx#L68-L79), [ContentEditorTab.tsx](file:///c:/Users/danie/Projetos_IA/KoreBiz-Pro/src/pages/Admin/Home/tabs/ContentEditorTab.tsx#L112-L122)
+- Home (Hero, Sobre e CTA): [HeroTab.tsx](file:///c:/Users/danie/Projetos_IA/KoreBiz-Pro/src/pages/Admin/Home/tabs/HeroTab.tsx#L68-L79), [AboutTab.tsx](file:///c:/Users/danie/Projetos_IA/KoreBiz-Pro/src/pages/Admin/Home/tabs/AboutTab.tsx), [CtaTab.tsx](file:///c:/Users/danie/Projetos_IA/KoreBiz-Pro/src/pages/Admin/Home/tabs/CtaTab.tsx)
 - Settings (logo/OG): [Settings/index.tsx](file:///c:/Users/danie/Projetos_IA/KoreBiz-Pro/src/pages/Admin/Settings/index.tsx#L659-L671), [Settings/index.tsx](file:///c:/Users/danie/Projetos_IA/KoreBiz-Pro/src/pages/Admin/Settings/index.tsx#L711-L722)
 
 Conclusão: configuração presente em todos os formulários com upload. Sem formulário “sem editor”.

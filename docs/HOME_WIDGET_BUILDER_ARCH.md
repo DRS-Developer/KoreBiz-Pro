@@ -2,40 +2,44 @@
 
 ## Objetivo
 
-Evoluir a aba "Seções da Home" para um construtor dinâmico de widgets, preservando fallback para o layout legado baseado em `layout_config`.
+Operar a Home exclusivamente com o Builder v2, sem dependências do módulo legado.
 
 ## Arquitetura Runtime
 
-- Fonte legada: `home_content.section_key = 'layout_config'`
-- Fonte nova: `home_widgets` + `home_widget_audit_logs`
-- Chave de ativação: `site_settings.layout_settings.home_builder_v2_enabled`
-- Renderização:
-  - Flag desligada: usa layout legado
-  - Flag ligada + widgets válidos: usa widgets
-  - Falha de API/estrutura vazia: fallback automático para layout legado
+- Fonte de estrutura: `home_widgets` + `home_widget_audit_logs`
+- Fonte de conteúdo compartilhado: `home_content` (`hero`, `about`, `cta`)
+- Renderização pública: `HomeRuntimeRenderer` → `HomeBuilder`
+- Fallback operacional: se não houver widgets válidos, renderiza composição mínima v2 (`hero`, `about`, `cta`)
 
 ## Frontend
 
-- `useHomeConfig` mantém fluxo legado ativo
-- `useHomeWidgets` carrega widgets da API/tabela
-- `HomeRuntimeRenderer` decide em tempo real entre widgets e seções legadas
-- `homeWidgetService` centraliza contrato REST e fallback de leitura
+- `useHomeWidgets` carrega widgets da API/tabela para Home pública e Admin
+- `HomeRuntimeRenderer` converte widgets ativos para seções consumidas por `HomeBuilder`
+- `HomeWidgetManager` gerencia canvas, ordenação, visibilidade e ações de configuração
+- Configuração de conteúdo por modal:
+  - `HeroTab`
+  - `AboutTab`
+  - `CtaTab`
 
 ## Backend
 
-- Nova tabela `home_widgets` para composição da Home
+- Tabela `home_widgets` para composição da Home
 - Auditoria em `home_widget_audit_logs`
 - RPC `reorder_home_widgets` para ordenação em lote
 - Edge Function `home-widgets` para CRUD + reorder com controle de acesso
 
-## Compatibilidade e Rollback
+## Remoções do Legado (Home v1)
 
-- Deploy não destrutivo: layout legado permanece intacto
-- Rollback operacional: desligar `home_builder_v2_enabled`
-- Migração reversível: remover consumo de `home_widgets` sem perda de conteúdo legado
+- Removidos:
+  - `useHomeConfig`
+  - `types/home-config`
+  - `SectionManager`
+  - `SortableSectionItem`
+- Removida alternância de modo no Admin e em runtime público
+- `home_builder_v2_enabled` mantido apenas como valor forçado em persistência de settings por compatibilidade de dados
 
 ## Performance
 
-- Renderização pública mantém fallback imediato
-- Otimização de widgets pesados via carregamento progressivo em próximas fases
-- Métricas RUM existentes (LCP/CLS/INP/TTFB) são usadas como gate de rollout
+- Renderização pública baseada em composição de widgets ativos
+- Componentes de seção com import estático para evitar flicker
+- Métricas RUM existentes (LCP/CLS/INP/TTFB) permanecem como referência de regressão

@@ -4,13 +4,21 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { Save } from 'lucide-react';
 import { HomeContentRepository } from '../../../../repositories/HomeContentRepository';
+import { homeWidgetService } from '../../../../services/homeWidgetService';
+import { HomeWidgetDto } from '../../../../types/home-widgets';
 import ImageUpload from '../../../../components/Admin/ImageUpload';
 import { HeroContent } from '../../../../types/home-content';
 import FormSkeleton from '../../../../components/Skeletons/FormSkeleton';
 
-const HeroTab: React.FC = () => {
+interface HeroTabProps {
+  widget?: HomeWidgetDto | null;
+  onWidgetUpdated?: (widget: HomeWidgetDto) => void;
+}
+
+const HeroTab: React.FC<HeroTabProps> = ({ widget, onWidgetUpdated }) => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [variant, setVariant] = useState(widget?.variant || 'default');
   const { register, handleSubmit, setValue, watch, formState: { isDirty } } = useForm<HeroContent>();
 
   const bannerUrl = watch('background_image');
@@ -45,6 +53,15 @@ const HeroTab: React.FC = () => {
     setSaving(true);
     try {
       await HomeContentRepository.updateSection('hero', data);
+      if (widget && variant !== widget.variant) {
+        const updatedWidget = await homeWidgetService.upsert({
+          ...widget,
+          variant,
+        });
+        if (onWidgetUpdated) {
+          onWidgetUpdated(updatedWidget);
+        }
+      }
       toast.success('Banner atualizado com sucesso!');
     } catch (error) {
       console.error('Error updating hero content:', error);
@@ -58,8 +75,27 @@ const HeroTab: React.FC = () => {
     return <FormSkeleton />;
   }
 
+  const isVariantChanged = widget ? variant !== widget.variant : false;
+  const canSave = isDirty || isVariantChanged;
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+      {widget && (
+        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Variante</label>
+          <select
+            value={variant}
+            onChange={(e) => setVariant(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="default">Padrão</option>
+            <option value="split">Dividido (Imagem ao lado)</option>
+            <option value="minimal">Minimalista (Sem imagem de fundo)</option>
+          </select>
+          <p className="text-xs text-gray-500 mt-1">Nome da variação de design a ser usada.</p>
+        </div>
+      )}
+
       <div className="flex flex-col gap-8">
         <div className="space-y-6">
           <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Imagem de Fundo</h3>
@@ -155,10 +191,10 @@ const HeroTab: React.FC = () => {
       <div className="flex justify-end pt-6 border-t border-gray-200">
         <button
           type="submit"
-          disabled={saving || !isDirty}
+          disabled={saving || !canSave}
           className={`
             flex items-center gap-2 px-6 py-3 rounded-lg font-bold text-white
-            ${saving || !isDirty 
+            ${saving || !canSave 
               ? 'bg-gray-400 cursor-not-allowed' 
               : 'bg-blue-600'
             }

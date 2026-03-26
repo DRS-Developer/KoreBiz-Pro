@@ -76,7 +76,7 @@ Cada formulário deve ter, no mínimo:
   - [Settings.form.test.tsx](file:///c:/Users/danie/Projetos_IA/KoreBiz-Pro/src/pages/Admin/Settings/Settings.form.test.tsx)
   - [ContactInfoEditor.form.test.tsx](file:///c:/Users/danie/Projetos_IA/KoreBiz-Pro/src/components/Admin/ContactInfoEditor.form.test.tsx)
   - [HeroTab.form.test.tsx](file:///c:/Users/danie/Projetos_IA/KoreBiz-Pro/src/pages/Admin/Home/tabs/HeroTab.form.test.tsx)
-  - [ContentEditorTab.form.test.tsx](file:///c:/Users/danie/Projetos_IA/KoreBiz-Pro/src/pages/Admin/Home/tabs/ContentEditorTab.form.test.tsx)
+  - [CtaTab.test.tsx](file:///c:/Users/danie/Projetos_IA/KoreBiz-Pro/src/pages/Admin/Home/tabs/CtaTab.test.tsx)
 - **Interface (E2E)**
   - [test-e2e-admin-forms.js](file:///c:/Users/danie/Projetos_IA/KoreBiz-Pro/scripts/test-e2e-admin-forms.js)
   - [test-e2e-home-builder.js](file:///c:/Users/danie/Projetos_IA/KoreBiz-Pro/scripts/test-e2e-home-builder.js)

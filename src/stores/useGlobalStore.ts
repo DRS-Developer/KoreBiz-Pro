@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { Database } from '../types/database.types';
 import { HeroContent, AboutContent, CTAContent, PracticeArea, Partner } from '../types/home-content';
+import { HomeWidgetDto } from '../types/home-widgets';
 import { SystemModule } from '../hooks/useSystemModules';
 import { deepEqual } from '../utils/equality';
 import { isAllowedImageSource } from '../utils/imageManager';
@@ -77,6 +78,7 @@ interface GlobalState {
   homeHero: HeroContent | null;
   homeAbout: AboutContent | null;
   homeCta: CTAContent | null;
+  homeWidgets: HomeWidgetDto[];
   
   // System Modules
   systemModules: SystemModule[];
@@ -101,6 +103,7 @@ interface GlobalState {
   setHomeHero: (data: HeroContent | null) => void;
   setHomeAbout: (data: AboutContent | null) => void;
   setHomeCta: (data: CTAContent | null) => void;
+  setHomeWidgets: (data: HomeWidgetDto[]) => void;
 
   setHydrated: (status: boolean) => void;
   setLastUpdateCheck: (timestamp: string) => void;
@@ -128,9 +131,11 @@ export const useGlobalStore = create<GlobalState>()(
       
       practiceAreas: [],
       partners: [],
-      homeHero: null,
+      // Se window.HERO_DATA foi injetado pelo Vite no build, hidrata sincronamente
+      homeHero: (typeof window !== 'undefined' && (window as any).HERO_DATA?.homeHero) || null,
       homeAbout: null,
       homeCta: null,
+      homeWidgets: [],
 
       systemModules: [],
 
@@ -181,6 +186,9 @@ export const useGlobalStore = create<GlobalState>()(
       setHomeCta: (data) => {
         const clean = sanitizeData(data);
         if (!deepEqual(get().homeCta, clean)) set({ homeCta: clean });
+      },
+      setHomeWidgets: (data) => {
+        if (!deepEqual(get().homeWidgets, data)) set({ homeWidgets: data });
       },
       
       setSystemModules: (data) => {
@@ -273,6 +281,7 @@ export const useGlobalStore = create<GlobalState>()(
             homeHero: null,
             homeAbout: null,
             homeCta: null,
+            homeWidgets: [],
             systemModules: [],
             isHydrated: false,
             lastSync: 0,
@@ -291,6 +300,7 @@ export const useGlobalStore = create<GlobalState>()(
         homeHero: state.homeHero,
         homeAbout: state.homeAbout,
         homeCta: state.homeCta,
+        homeWidgets: state.homeWidgets,
         systemModules: state.systemModules,
         isHydrated: state.isHydrated,
         lastSync: state.lastSync,

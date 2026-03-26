@@ -39,7 +39,6 @@ const schema = yup.object({
   not_found_message: yup.string().nullable(),
   indexing_enabled: yup.boolean(),
   topbar_enabled: yup.boolean(),
-  home_builder_v2_enabled: yup.boolean(),
   
   // Email Settings
   email_settings: yup.object().nullable(),
@@ -129,7 +128,6 @@ const Settings: React.FC = () => {
       keep_aspect_ratio: true,
       keep_exif: false,
       topbar_enabled: true,
-      home_builder_v2_enabled: false,
     }
   });
 
@@ -189,7 +187,6 @@ const Settings: React.FC = () => {
           not_found_message: data.not_found_message || '',
           indexing_enabled: data.indexing_enabled !== false,
           topbar_enabled: layoutSettings?.topbar_enabled ?? true,
-          home_builder_v2_enabled: layoutSettings?.home_builder_v2_enabled ?? false,
           
           email_settings: data.email_settings || {
             provider: 'emailjs',
@@ -317,7 +314,7 @@ const Settings: React.FC = () => {
       const layout_settings = {
         ...(storedLayoutSettings || {}),
         topbar_enabled: data.topbar_enabled,
-        home_builder_v2_enabled: data.home_builder_v2_enabled
+        home_builder_v2_enabled: true
       };
 
       const settingsData = {
@@ -548,13 +545,9 @@ const Settings: React.FC = () => {
                         </label>
                      </div>
                   </div>
-                  <div className="col-span-2">
-                     <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-                        <label className="flex items-start gap-3 cursor-pointer">
-                           <div className="mt-1"><input type="checkbox" {...register('home_builder_v2_enabled')} className="w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500" /></div>
-                           <div><span className="font-bold text-gray-900 block">Ativar Home Builder v2</span><span className="text-sm text-gray-600 block mt-1">Liga o construtor dinâmico da Home. Se desativado, o layout legado é usado automaticamente.</span></div>
-                        </label>
-                     </div>
+                  <div className="col-span-2 bg-purple-50 p-4 rounded-lg border border-purple-200">
+                    <span className="font-bold text-gray-900 block">Home Builder v2</span>
+                    <span className="text-sm text-gray-600 block mt-1">Arquitetura ativa de forma permanente.</span>
                   </div>
 
                   <div className="col-span-2">

@@ -9,6 +9,8 @@ interface ApiResult<T> {
 const DEFAULT_PAGE_KEY = 'home';
 const CORS_ERROR_SIGNATURES = ['Failed to fetch', 'NetworkError', 'ERR_FAILED', 'CORS'];
 const LOCAL_STORAGE_KEY = 'home_widgets_local_fallback_v1';
+export const HOME_WIDGETS_PUBLIC_UNAVAILABLE_KEY = 'home_widgets_public_unavailable_v1';
+export const HOME_WIDGETS_PUBLIC_UNAVAILABLE_AT_KEY = 'home_widgets_public_unavailable_at_v1';
 type TransportMode = 'unknown' | 'function' | 'table' | 'local';
 let transportMode: TransportMode = 'unknown';
 
@@ -89,6 +91,10 @@ const isRecoverableTransportError = (error: unknown) => {
 };
 
 const canUseLocalStorage = () => typeof window !== 'undefined' && !!window.localStorage;
+const isAdminContext = () =>
+  typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
+const isPublicContext = () =>
+  typeof window !== 'undefined' && !window.location.pathname.startsWith('/admin');
 
 const sortWidgets = (items: HomeWidgetDto[]) => {
   return [...items].sort((a, b) => a.orderIndex - b.orderIndex);
@@ -113,6 +119,29 @@ const writeLocalWidgets = (items: HomeWidgetDto[]) => {
 
 const listViaLocal = (pageKey = DEFAULT_PAGE_KEY): HomeWidgetDto[] => {
   return sortWidgets(readLocalWidgets().filter((item) => item.pageKey === pageKey));
+};
+
+const listViaSafeLocal = (pageKey = DEFAULT_PAGE_KEY): HomeWidgetDto[] => {
+  if (!isAdminContext()) {
+    return [];
+  }
+  return listViaLocal(pageKey);
+};
+
+const readPublicUnavailableFlag = () => {
+  if (typeof window === 'undefined') return false;
+  return window.localStorage.getItem(HOME_WIDGETS_PUBLIC_UNAVAILABLE_KEY) === '1';
+};
+
+const writePublicUnavailableFlag = (value: boolean) => {
+  if (typeof window === 'undefined') return;
+  if (value) {
+    window.localStorage.setItem(HOME_WIDGETS_PUBLIC_UNAVAILABLE_KEY, '1');
+    window.localStorage.setItem(HOME_WIDGETS_PUBLIC_UNAVAILABLE_AT_KEY, new Date().toISOString());
+    return;
+  }
+  window.localStorage.removeItem(HOME_WIDGETS_PUBLIC_UNAVAILABLE_KEY);
+  window.localStorage.removeItem(HOME_WIDGETS_PUBLIC_UNAVAILABLE_AT_KEY);
 };
 
 const toIso = () => new Date().toISOString();
@@ -282,10 +311,62 @@ const reorderViaTable = async (ids: string[], pageKey = DEFAULT_PAGE_KEY): Promi
   return listViaTable(pageKey);
 };
 
+export const revalidatePublicHomeWidgetsFlag = async (pageKey = DEFAULT_PAGE_KEY): Promise<boolean> => {
+  try {
+    await listViaTable(pageKey);
+    writePublicUnavailableFlag(false);
+    return true;
+  } catch (error) {
+    if (isTableUnavailableError(error)) {
+      writePublicUnavailableFlag(true);
+      return false;
+    }
+    throw error;
+  }
+};
+
 export const homeWidgetService = {
   async list(pageKey = DEFAULT_PAGE_KEY): Promise<HomeWidgetDto[]> {
+    if (isPublicContext()) {
+      if (import.meta.env.DEV) {
+        try {
+          const rows = await listViaTable(pageKey);
+          writePublicUnavailableFlag(false);
+          transportMode = 'table';
+          return rows;
+        } catch (error) {
+          if (isTableUnavailableError(error)) {
+            writePublicUnavailableFlag(true);
+            return listViaLocal(pageKey);
+          }
+          if (isRecoverableTransportError(error)) {
+            return listViaLocal(pageKey);
+          }
+          throw error;
+        }
+      }
+      if (readPublicUnavailableFlag()) {
+        return [];
+      }
+      try {
+        const rows = await listViaTable(pageKey);
+        writePublicUnavailableFlag(false);
+        transportMode = 'table';
+        return rows;
+      } catch (error) {
+        if (isTableUnavailableError(error)) {
+          writePublicUnavailableFlag(true);
+          return [];
+        }
+        if (isRecoverableTransportError(error)) {
+          return [];
+        }
+        throw error;
+      }
+    }
+
     if (transportMode === 'local') {
-      return listViaLocal(pageKey);
+      return listViaSafeLocal(pageKey);
     }
     if (transportMode === 'table') {
       try {
@@ -295,7 +376,7 @@ export const homeWidgetService = {
           throw tableError;
         }
         transportMode = 'local';
-        return listViaLocal(pageKey);
+        return listViaSafeLocal(pageKey);
       }
     }
     try {
@@ -315,7 +396,7 @@ export const homeWidgetService = {
           throw tableError;
         }
         transportMode = 'local';
-        return listViaLocal(pageKey);
+        return listViaSafeLocal(pageKey);
       }
     }
   },

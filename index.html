@@ -10,23 +10,13 @@
     <link rel="preconnect" href="https://vymiwxuizkcvtgrobgro.supabase.co" />
     <link rel="dns-prefetch" href="https://vymiwxuizkcvtgrobgro.supabase.co" />
 
-    <script>
-      // Runtime Configuration Loader
-      (function() {
-        window.ENV = window.ENV || {};
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', '/config.json', false); // Synchronous to ensure config is loaded before app
-        try {
-          xhr.send(null);
-          if (xhr.status === 200) {
-            var config = JSON.parse(xhr.responseText);
-            Object.assign(window.ENV, config);
-          }
-        } catch (e) {
-          // Config file might not exist in dev or vercel env, relying on build-time env vars
-          console.log('No runtime config found, using environment variables.');
-        }
-      })();
+    <script id="runtime-config">
+      // Injeção de variáveis de ambiente no cliente (Zero network request)
+      // Pode ser substituído em tempo de deploy (ex: Docker envsubst)
+      window.ENV = {
+        VITE_SUPABASE_URL: "%VITE_SUPABASE_URL%",
+        VITE_SUPABASE_ANON_KEY: "%VITE_SUPABASE_ANON_KEY%"
+      };
     </script>
   </head>
   <body>

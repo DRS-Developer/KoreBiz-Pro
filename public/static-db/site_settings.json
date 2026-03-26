@@ -14,7 +14,7 @@
       "instagram": ""
     },
     "created_at": "2026-01-25T15:03:35.4173+00:00",
-    "updated_at": "2026-03-18T03:48:55.575+00:00",
+    "updated_at": "2026-03-19T10:18:55.336057+00:00",
     "image_settings": {
       "global": {
         "enabled": true,
@@ -104,7 +104,7 @@
       "zoom": 15
     },
     "layout_settings": {
-      "topbar_enabled": false,
+      "topbar_enabled": true,
       "home_builder_v2_enabled": true
     },
     "features": {

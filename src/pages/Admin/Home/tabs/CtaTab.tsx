@@ -5,11 +5,19 @@ import { toast } from 'sonner';
 import { Save } from 'lucide-react';
 import { HomeContentRepository } from '../../../../repositories/HomeContentRepository';
 import { CTAContent } from '../../../../types/home-content';
+import { homeWidgetService } from '../../../../services/homeWidgetService';
+import { HomeWidgetDto } from '../../../../types/home-widgets';
 import FormSkeleton from '../../../../components/Skeletons/FormSkeleton';
 
-const CtaTab: React.FC = () => {
+interface CtaTabProps {
+  widget?: HomeWidgetDto | null;
+  onWidgetUpdated?: (widget: HomeWidgetDto) => void;
+}
+
+const CtaTab: React.FC<CtaTabProps> = ({ widget, onWidgetUpdated }) => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [variant, setVariant] = useState(widget?.variant || 'default');
 
   const { register: registerCTA, handleSubmit: handleSubmitCTA, setValue: setValueCTA, formState: { isDirty: isDirtyCTA } } = useForm<CTAContent>();
 
@@ -42,6 +50,15 @@ const CtaTab: React.FC = () => {
     setSaving(true);
     try {
       await HomeContentRepository.updateSection('cta', data);
+      if (widget && variant !== widget.variant) {
+        const updatedWidget = await homeWidgetService.upsert({
+          ...widget,
+          variant,
+        });
+        if (onWidgetUpdated) {
+          onWidgetUpdated(updatedWidget);
+        }
+      }
       toast.success('Seção "Chamada para Ação" atualizada!');
     } catch (error) {
       toast.error('Erro ao atualizar seção.');
@@ -52,16 +69,35 @@ const CtaTab: React.FC = () => {
 
   if (loading) return <FormSkeleton />;
 
+  const isVariantChanged = widget ? variant !== widget.variant : false;
+  const canSave = isDirtyCTA || isVariantChanged;
+
   return (
     <div className="space-y-12">
+      {widget && (
+        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Variante</label>
+          <select
+            value={variant}
+            onChange={(e) => setVariant(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="default">Padrão</option>
+            <option value="split">Dividido (Imagem ao lado)</option>
+            <option value="minimal">Minimalista</option>
+          </select>
+          <p className="text-xs text-gray-500 mt-1">Nome da variação de design a ser usada.</p>
+        </div>
+      )}
+
       {/* CTA Section */}
       <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
         <div className="flex justify-between items-center mb-6 border-b border-blue-200 pb-4">
           <h3 className="text-xl font-bold text-blue-900">Seção "Chamada para Ação" (Final da Página)</h3>
           <button
             onClick={handleSubmitCTA(onSaveCTA)}
-            disabled={saving || !isDirtyCTA}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold text-white ${saving || !isDirtyCTA ? 'bg-blue-300' : 'bg-blue-600'}`}
+            disabled={saving || !canSave}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold text-white ${saving || !canSave ? 'bg-blue-300' : 'bg-blue-600'}`}
           >
             <Save size={16} /> Salvar CTA
           </button>

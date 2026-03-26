@@ -40,6 +40,7 @@ export const logImageReplacement = (context: string, reason: string, oldSrc?: st
  * Policy:
  * 1. Must be a relative path (starts with /)
  * 2. OR must be a valid Supabase Storage URL
+ * 3. OR must be a valid Cloudflare Images URL (if configured)
  */
 export const isAllowedImageSource = (url: string | null | undefined): boolean => {
   if (!url) return false;
@@ -48,15 +49,53 @@ export const isAllowedImageSource = (url: string | null | undefined): boolean =>
   if (url.startsWith('/')) return true;
   
   // 2. Allow Supabase Storage URLs
-  // Regex strictness: https protocol, subdomains allowed, supabase.co domain, storage/v1 path
   const supabaseRegex = /^https:\/\/[a-zA-Z0-9-]+\.supabase\.co\/storage\/v1\/(object|render)\/(image\/)?public\//i;
-  return supabaseRegex.test(url);
+  if (supabaseRegex.test(url)) return true;
+
+  // 3. Allow Cloudflare CDN URLs (assuming standard custom domain or workers.dev setup for image delivery)
+  // Example: https://cdn.korebiz.com.br/cdn-cgi/imagedelivery/...
+  const cloudflareRegex = /^https:\/\/[a-zA-Z0-9.-]+\/cdn-cgi\/imagedelivery\//i;
+  if (cloudflareRegex.test(url)) return true;
+
+  return false;
 };
 
-// Deprecated: Use isAllowedImageSource instead, but kept for compatibility with existing code if any
+// Deprecated: Use isAllowedImageSource instead
 export const isSupabasePublicUrl = (url: string) => {
   if (!url) return false;
   return /^https:\/\/[a-zA-Z0-9-]+\.supabase\.co\/storage\/v1\/(object|render)\/(image\/)?public\//i.test(url);
+};
+
+// Check if URL is configured for Cloudflare Image Resizing
+const isCloudflareDelivery = (url: string) => {
+  if (!url) return false;
+  // This matches standard Cloudflare Image Delivery or Custom Domain with CF proxy
+  // e.g. https://cdn.example.com/cdn-cgi/imagedelivery/<account_hash>/<image_id>/<variant_name>
+  return url.includes('/cdn-cgi/imagedelivery/');
+};
+
+// Configuration for Cloudflare provider usage
+const CLOUDFLARE_ENABLED = import.meta.env.VITE_ENABLE_CLOUDFLARE_IMAGES === 'true';
+const CLOUDFLARE_DOMAIN = import.meta.env.VITE_CLOUDFLARE_DOMAIN; // e.g. "cdn.korebiz.com.br"
+
+// Helper to construct Cloudflare URL
+const buildCloudflareUrl = (originalUrl: string, width: number, height: number, quality: number, resize: string) => {
+  // If we already have a Cloudflare URL, just adjust its variant/params
+  if (isCloudflareDelivery(originalUrl)) {
+    // Basic variant substitution logic could go here
+    return originalUrl; 
+  }
+
+  // If we want to proxy a Supabase URL through Cloudflare Image Resizing:
+  // Format: https://<ZONE>/cdn-cgi/image/width=X,height=Y,quality=Z,fit=cover/<ORIGINAL_URL>
+  if (CLOUDFLARE_ENABLED && CLOUDFLARE_DOMAIN) {
+    const fit = resize === 'contain' ? 'contain' : 'cover';
+    // Cloudflare uses 'format=auto' by default when using cdn-cgi/image, which handles AVIF/WebP automatically
+    // based on the Accept header of the browser.
+    return `https://${CLOUDFLARE_DOMAIN}/cdn-cgi/image/width=${width},height=${height},quality=${quality},fit=${fit},format=auto/${encodeURIComponent(originalUrl)}`;
+  }
+
+  return null;
 };
 
 // Map page/role to local SVG default
@@ -78,35 +117,33 @@ const withTransformParams = (url: string, width: number, height: number, quality
     return url;
   }
 
+  // 1. Try Cloudflare Provider First (if enabled and applicable)
+  // Cloudflare handles formats automatically, so we don't need to generate specific 'webp' or 'avif' URLs
+  // when using Cloudflare. We just return the CF URL for all format requests if we are using it.
+  const cfUrl = buildCloudflareUrl(url, width, height, quality, resize);
+  if (cfUrl) {
+    return cfUrl;
+  }
+
+  // 2. Fallback to Supabase Provider
   // If not Supabase (and not local, though local usually falls into SVG check above), return as is
-  // But wait, if it's local non-SVG (e.g. /images/banner.jpg), we can't transform it via Supabase unless we use a resizer.
-  // For now, we assume local images are static assets served as is.
-  if (!isSupabasePublicUrl(url)) {
+  if (!isAllowedImageSource(url) || !url.includes('.supabase.co')) {
     return url;
   }
 
-  // Check if it's a render URL (Supabase Image Transformation)
+  // Check if it's already a render URL
   if (url.includes('/render/image/public')) {
-    // It's already a render URL, we might append params if supported, but usually we construct it.
-    // For simplicity, if it's a standard storage URL, we append transform.
-    // Supabase standard: /storage/v1/object/public/bucket/file
-    // Transform: /storage/v1/render/image/public/bucket/file?width=...
     return `${url}?width=${width}&height=${height}&quality=${quality}&resize=${resize}&format=${format}`;
   }
-  
-  // DISABLE IMAGE TRANSFORMATION (Temporary Fix for HTTP 403)
-  // The project does not seem to have Supabase Image Transformation enabled.
-  // We return the original URL to ensure the image loads.
-  return url;
 
-  /*
-  // Convert standard URL to render URL if needed
+  // Convert standard URL to render URL
   // Current URL: .../storage/v1/object/public/...
   // New URL: .../storage/v1/render/image/public/...
   
-  const renderUrl = url.replace('/object/public/', '/render/image/public/');
+  // Clean up any existing query string to avoid malformed URLs like ?t=123?width=...
+  const [baseUrl] = url.split('?');
+  const renderUrl = baseUrl.replace('/object/public/', '/render/image/public/');
   return `${renderUrl}?width=${width}&height=${height}&quality=${quality}&resize=${resize}&format=${format}`;
-  */
 };
 
 export const resolveManagedImage = (page: PageKey, role: ImageRole, src?: string | null): ManagedImageResult => {
@@ -129,12 +166,62 @@ export const resolveManagedImage = (page: PageKey, role: ImageRole, src?: string
   // 3. Apply transformations
   // If it's a default SVG or local path, withTransformParams will return it as is (mostly).
   const original = withTransformParams(base, profile.width, profile.height, profile.quality, profile.resize, 'origin');
-  const webp = withTransformParams(base, profile.width, profile.height, profile.quality, profile.resize, 'webp');
+  let webp = withTransformParams(base, profile.width, profile.height, profile.quality, profile.resize, 'webp');
+  let avif = withTransformParams(base, profile.width, profile.height, profile.quality, profile.resize, 'avif');
 
-  return { original, webp };
+  // If the transformation didn't change the URL (e.g. not a Supabase URL) and it's not explicitly a webp/avif file,
+  // we shouldn't claim it's a webp/avif.
+  if (webp === original && !webp.toLowerCase().endsWith('.webp')) {
+    webp = undefined as any; 
+  }
+  if (avif === original && !avif.toLowerCase().endsWith('.avif')) {
+    avif = undefined as any; 
+  }
+
+  // Generate srcset for responsive images (400w, 800w, 1200w, and optionally 1600w for heroes)
+  // Only apply srcset if it's a transformable Supabase/Cloudflare URL
+  let srcset;
+  if (original !== base) {
+    const isHero = role === 'hero';
+    const breakpoints = isHero ? [400, 800, 1200, 1600] : [400, 800, 1200];
+    
+    // If it's Cloudflare, we only need one srcset because format is 'auto' (content-negotiated)
+    const isCF = isCloudflareDelivery(original);
+
+    // Helper to generate a single srcset string for a specific format
+    const generateSrcSetString = (format: string) => {
+      return breakpoints.map(w => {
+        const h = Math.round(w * (profile.height / profile.width));
+        const url = withTransformParams(base, w, h, profile.quality, profile.resize, format);
+        return `${url} ${w}w`;
+      }).join(', ');
+    };
+
+    if (isCF) {
+      // Cloudflare handles AVIF/WebP automatically based on Accept headers, 
+      // so we just generate the original srcset and leave webp/avif undefined.
+      // This forces the <picture> tag to just use the standard <img srcset="...">
+      // and let the CDN do the magic.
+      srcset = {
+        original: generateSrcSetString('origin')
+      };
+      // Explicitly clear webp/avif since CF does it implicitly
+      webp = undefined as any;
+      avif = undefined as any;
+    } else {
+      // Supabase fallback: Generate full <picture> sources
+      srcset = {
+        original: generateSrcSetString('origin'),
+        webp: webp ? generateSrcSetString('webp') : undefined,
+        avif: avif ? generateSrcSetString('avif') : undefined,
+      };
+    }
+  }
+
+  return { original, webp, avif, srcset };
 };
 
 export const resolveDefaultImageByRole = (role: ImageRole, page: PageKey = 'home'): ManagedImageResult => {
   const path = getLocalDefaultPath(page, role);
-  return { original: path, webp: path };
+  return { original: path, webp: undefined, avif: undefined };
 };

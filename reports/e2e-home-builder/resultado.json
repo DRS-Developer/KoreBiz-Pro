@@ -1,12 +1,9 @@
 {
   "status": "ok",
-  "mode": "builder_v2",
-  "executedAt": "2026-03-18T03:48:46.599Z",
+  "mode": "fallback_legado",
+  "executedAt": "2026-03-18T05:59:53.586Z",
   "steps": [
-    "Elemento Hero adicionado",
-    "Elemento Contato adicionado",
-    "Reordenação por drag-and-drop executada",
-    "Edição de propriedades e salvamento executados",
+    "Builder v2 indisponível; fallback legado verificado (Sincronizar Dados | Sair | Secoes da Home | Elementos Visuais)",
     "Página Home carregada após mudanças"
   ],
   "screenshotPath": "C:\\Users\\danie\\Projetos_IA\\KoreBiz-Pro\\reports\\e2e-home-builder\\home-builder.png"

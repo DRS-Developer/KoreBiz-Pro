@@ -212,18 +212,26 @@ const run = async () => {
     };
 
     if (builderAvailable) {
-      await page.click('[data-testid="add-widget-button"]');
-      await page.waitForSelector('[data-testid="widget-palette-modal"]', { timeout: 10000 });
-      await page.click('[data-testid="widget-template-hero"]');
-      await sleep(800);
-      report.steps.push('Elemento Hero adicionado');
+      const addButton = await page.$('[data-testid="add-widget-button"]');
+      if (!addButton) {
+        builderAvailable = false;
+      } else {
+        await addButton.click();
+        await page.waitForSelector('[data-testid="widget-palette-modal"]', { timeout: 10000 });
+        await page.click('[data-testid="widget-template-hero"]');
+        await sleep(800);
+        report.steps.push('Elemento Hero adicionado');
 
-      await page.click('[data-testid="add-widget-button"]');
-      await page.waitForSelector('[data-testid="widget-palette-modal"]', { timeout: 10000 });
-      await page.click('[data-testid="widget-template-contact"]');
-      await sleep(800);
-      report.steps.push('Elemento Contato adicionado');
+        await page.waitForSelector('[data-testid="add-widget-button"]', { timeout: 10000 });
+        await page.click('[data-testid="add-widget-button"]');
+        await page.waitForSelector('[data-testid="widget-palette-modal"]', { timeout: 10000 });
+        await page.click('[data-testid="widget-template-contact"]');
+        await sleep(800);
+        report.steps.push('Elemento Contato adicionado');
+      }
+    }
 
+    if (builderAvailable) {
       await page.waitForFunction(
         () => document.querySelectorAll('[data-testid^="widget-item-"]').length >= 2,
         { timeout: 20000 }

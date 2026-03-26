@@ -45,12 +45,17 @@ if (typeof window !== 'undefined') {
   }
 }
 
+// Inicialização imediata. Configurações de runtime (se necessárias) 
+// devem ser injetadas no index.html via <script>window.ENV = {...}</script>
+// eliminando completamente o gargalo de requisição de rede (fetch).
+window.ENV = window.ENV || {};
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <HelmetProvider>
       <App />
     </HelmetProvider>
   </StrictMode>,
-)
+);
 
 reportWebVitals(console.log);

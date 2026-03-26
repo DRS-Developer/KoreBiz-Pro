@@ -14,6 +14,7 @@ interface OptimizedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> 
   effect?: string; // Kept for compatibility but ignored
   pageKey?: PageKey;
   role?: ImageRole;
+  sizes?: string; // Allow custom sizes override
 }
 
 const OptimizedImage: React.FC<OptimizedImageProps> = memo(({ 
@@ -25,6 +26,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = memo(({
   effect,
   pageKey,
   role,
+  sizes: customSizes,
   ...props 
 }) => {
   const [hasError, setHasError] = useState(false);
@@ -35,7 +37,9 @@ const OptimizedImage: React.FC<OptimizedImageProps> = memo(({
   
   // Initialize with fallback/src
   let webpSrc = managed ? managed.webp : undefined;
+  let avifSrc = managed ? managed.avif : undefined;
   let originalSrc = managed ? managed.original : (src || '');
+  let srcsets = managed ? managed.srcset : undefined;
 
   // If NOT managed (i.e. just a direct src prop)
   if (!managed) {
@@ -45,12 +49,11 @@ const OptimizedImage: React.FC<OptimizedImageProps> = memo(({
     if (src && src.length > 0) {
         // It's a valid URL (internal or external)
         originalSrc = src;
-        // If it happens to be Supabase, we could generate WebP, but let's keep it simple for now
-        // to avoid "Sem Imagem" flicker on external URLs.
     } else {
         // No source provided, use default placeholder
         const def = resolveDefaultImageByRole(r);
         webpSrc = def.webp;
+        avifSrc = def.avif;
         originalSrc = def.original;
     }
   }
@@ -91,6 +94,50 @@ const OptimizedImage: React.FC<OptimizedImageProps> = memo(({
     }
   }, [originalSrc]);
 
+  // Determine sizes dynamically or use fallback
+  const fallbackSizes = role === 'hero' 
+    ? '100vw' 
+    : '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw';
+  const effectiveSizes = customSizes || fallbackSizes;
+
+  // Handle Preload injection for priority images
+  useEffect(() => {
+    if (priority && originalSrc && typeof document !== 'undefined') {
+      // Create a unique identifier for this specific preload to avoid DOM duplication
+      const preloadId = `preload-${btoa(originalSrc).replace(/[/+=]/g, '').substring(0, 16)}`;
+      
+      // Check if preload already exists by our ID or exact href
+      const existingPreload = document.getElementById(preloadId) || 
+                              document.querySelector(`link[rel="preload"][href="${originalSrc}"]`);
+                              
+      if (!existingPreload) {
+        const link = document.createElement('link');
+        link.id = preloadId;
+        link.rel = 'preload';
+        link.as = 'image';
+        
+        // Let the browser decide the format based on the srcset and Accept headers
+        // Just provide the srcset variants. If CF is used, only 'original' exists and the CDN auto-formats.
+        // If Supabase is used, we give preference to avif/webp if available in the srcset.
+        if (srcsets?.avif) {
+          link.setAttribute('imagesrcset', srcsets.avif);
+          link.setAttribute('imagesizes', effectiveSizes);
+        } else if (srcsets?.webp) {
+          link.setAttribute('imagesrcset', srcsets.webp);
+          link.setAttribute('imagesizes', effectiveSizes);
+        } else if (srcsets?.original) {
+          link.setAttribute('imagesrcset', srcsets.original);
+          link.setAttribute('imagesizes', effectiveSizes);
+        } else {
+          // Fallback if no srcset is available
+          link.href = originalSrc;
+        }
+
+        document.head.appendChild(link);
+      }
+    }
+  }, [priority, originalSrc, srcsets, effectiveSizes]);
+
   const handleError = () => {
     setHasError(true);
   };
@@ -110,6 +157,11 @@ const OptimizedImage: React.FC<OptimizedImageProps> = memo(({
   // Disable transition if we detected it's already loaded (cache) or priority
   // hasLoadedRef.current is initialized from global cache, so this works on first render
   const enableTransition = !priority && !hasLoadedRef.current;
+
+  // Render Low Quality Image Placeholder (LQIP) Blur if not loaded and not priority
+  const blurStyle = !shouldShow && !priority && managed && originalSrc.includes('render/image')
+    ? { backgroundImage: `url(${originalSrc}&blur=50)`, backgroundSize: 'cover', backgroundPosition: 'center' }
+    : undefined;
 
   if (hasError) {
     return (
@@ -132,47 +184,56 @@ const OptimizedImage: React.FC<OptimizedImageProps> = memo(({
     );
   }
 
+  const renderImage = () => {
+    const commonImgProps = {
+      ref: imgRef,
+      src: originalSrc,
+      alt: alt,
+      className: clsx(
+        "w-full h-full object-cover text-transparent", 
+        enableTransition && "transition-opacity duration-300",
+        shouldShow ? "opacity-100" : "opacity-0"
+      ),
+      loading: priority ? "eager" : "lazy" as any,
+      // 'async' is generally safer and recommended even for LCP in modern browsers,
+      // as it prevents the main thread from blocking entirely while decoding large images,
+      // avoiding TBT (Total Blocking Time) penalties, while eager/fetchpriority handle the network speed.
+      decoding: priority ? "async" : "async" as any,
+      // Tell browser this is a high priority resource (for HTTP/2+ prioritization)
+      fetchPriority: priority ? "high" : "auto" as any,
+      onError: handleError,
+      onLoad: handleLoad,
+      ...props
+    };
+
+    if (avifSrc || webpSrc || srcsets) {
+      return (
+        <picture>
+          {srcsets?.avif && <source srcSet={srcsets.avif} sizes={effectiveSizes} type="image/avif" />}
+          {avifSrc && !srcsets?.avif && <source srcSet={avifSrc} type="image/avif" />}
+          
+          {srcsets?.webp && <source srcSet={srcsets.webp} sizes={effectiveSizes} type="image/webp" />}
+          {webpSrc && !srcsets?.webp && <source srcSet={webpSrc} type="image/webp" />}
+          
+          {srcsets?.original && <source srcSet={srcsets.original} sizes={effectiveSizes} />}
+          
+          <img {...commonImgProps} />
+        </picture>
+      );
+    }
+
+    return <img {...commonImgProps} />;
+  };
+
   return (
-    <div className={clsx("overflow-hidden relative h-full w-full", className)}>
-      {!shouldShow && (
+    <div 
+      className={clsx("overflow-hidden relative h-full w-full", className)}
+      style={blurStyle}
+    >
+      {!shouldShow && !blurStyle && (
         <div className="absolute inset-0 bg-gray-200 animate-pulse" />
       )}
-      {webpSrc ? (
-        <picture>
-          <source srcSet={webpSrc} type="image/webp" />
-          <img
-            ref={imgRef}
-            src={originalSrc}
-            alt={alt}
-            className={clsx(
-              "w-full h-full object-cover text-transparent", 
-              enableTransition && "transition-opacity duration-300",
-              shouldShow ? "opacity-100" : "opacity-0"
-            )}
-            loading={priority ? "eager" : "lazy"}
-            decoding={priority ? "sync" : "async"}
-            onError={handleError}
-            onLoad={handleLoad}
-            {...props}
-          />
-        </picture>
-      ) : (
-        <img
-          ref={imgRef}
-          src={originalSrc}
-          alt={alt}
-          className={clsx(
-            "w-full h-full object-cover text-transparent", 
-            enableTransition && "transition-opacity duration-300",
-            shouldShow ? "opacity-100" : "opacity-0"
-          )}
-          loading={priority ? "eager" : "lazy"}
-          decoding={priority ? "sync" : "async"}
-          onError={handleError}
-          onLoad={handleLoad}
-          {...props}
-        />
-      )}
+      {renderImage()}
     </div>
   );
 });

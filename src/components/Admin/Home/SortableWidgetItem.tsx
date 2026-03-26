@@ -10,7 +10,9 @@ interface SortableWidgetItemProps {
   onSelect: (widget: HomeWidgetDto) => void;
   onToggle: (widget: HomeWidgetDto) => void;
   onRemove: (widget: HomeWidgetDto) => void;
+  onConfigure: (widget: HomeWidgetDto) => void;
   customAction?: React.ReactNode;
+  showConfigureButton?: boolean;
 }
 
 const LABELS: Record<string, string> = {
@@ -55,7 +57,7 @@ const LABELS: Record<string, string> = {
   'highlight-list': 'Lista de Destaques',
 };
 
-const SortableWidgetItem: React.FC<SortableWidgetItemProps> = ({ widget, selected, onSelect, onToggle, onRemove, customAction }) => {
+const SortableWidgetItem: React.FC<SortableWidgetItemProps> = ({ widget, selected, onSelect, onToggle, onRemove, onConfigure, customAction, showConfigureButton = true }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: widget.id });
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -106,6 +108,18 @@ const SortableWidgetItem: React.FC<SortableWidgetItemProps> = ({ widget, selecte
 
       <div className="flex items-center gap-2">
         {customAction}
+        {showConfigureButton && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onConfigure(widget);
+            }}
+            className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded hover:bg-gray-200 border border-gray-200 mr-1"
+            title="Configurar Elemento"
+          >
+            Configurar
+          </button>
+        )}
         <button
           onClick={() => onToggle(widget)}
           data-testid={`widget-toggle-${widget.id}`}

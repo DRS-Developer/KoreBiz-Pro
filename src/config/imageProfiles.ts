@@ -85,5 +85,11 @@ export const IMAGE_PROFILES: Record<PageKey, ImageProfile> = {
 
 export interface ManagedImageResult {
   original: string;
-  webp: string;
+  webp?: string;
+  avif?: string;
+  srcset?: {
+    original: string;
+    webp?: string;
+    avif?: string;
+  };
 }

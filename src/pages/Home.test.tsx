@@ -31,7 +31,7 @@ vi.mock('../repositories/PartnersRepository');
 
 // Mock OptimizedImage to avoid lazy loading issues
 vi.mock('../components/OptimizedImage', () => ({
-  default: ({ src, alt, priority, ...props }: any) => <img src={src} alt={alt} {...props} />,
+  default: ({ src, alt, priority, pageKey, role, formKey, ...props }: any) => <img src={src} alt={alt} {...props} />,
 }));
 
 // Mock SEO component
@@ -91,7 +91,7 @@ describe('Home Page Flickering Fix', () => {
     });
   });
 
-  it('renders Skeleton on first load (no cached content)', () => {
+  it('renders Skeleton on first load (no cached content)', async () => {
     const initialState = {
       services: [],
       portfolio: [],
@@ -120,6 +120,10 @@ describe('Home Page Flickering Fix', () => {
     // Should show skeleton (HomeSkeleton uses react-loading-skeleton)
     const skeleton = document.querySelector('.react-loading-skeleton');
     expect(skeleton).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(HomeContentRepository.getSection).toHaveBeenCalled();
+    });
   });
 
   it('renders Cached Content immediately (prevent flickering)', async () => {

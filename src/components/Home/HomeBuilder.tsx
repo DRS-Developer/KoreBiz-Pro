@@ -1,5 +1,5 @@
 import React from 'react';
-import { SectionConfig, SectionVariant } from '../../types/home-config';
+import { SectionConfig, SectionVariant } from '../../types/home-sections';
 import HeroDefault from './Sections/Hero/HeroDefault'; // Static import for LCP
 import ServicesDefault from './Sections/Services/ServicesDefault';
 import ProjectsDefault from './Sections/Projects/ProjectsDefault';
